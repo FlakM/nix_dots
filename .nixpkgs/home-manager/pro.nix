@@ -5,12 +5,11 @@
     ./modules/home-manager.nix
     ./modules/common.nix
     ./modules/nvim/neovim.nix
+    ./modules/tmux.nix
+    ./modules/alacritty.nix
   ];
 
-
   home = {
-    homeDirectory = "/Users/mflak";
-    username = "mflak";
     stateVersion = "22.05";
   };
 

@@ -24,6 +24,10 @@
     , ...
     }@inputs:
     {
+    fonts.fonts = with nixpkgs; [
+      (nerdfonts.override { fonts = [ "Roboto Mono" ]; })
+    ];
+
       darwinConfigurations.Maciejs-MacBook-Pro =
         darwin.lib.darwinSystem {
           system = "x86_64-darwin";
@@ -34,6 +38,16 @@
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
               home-manager.users.mflak = import ./home-manager/pro.nix;
+            }
+            {
+              users = {
+                users = {
+                  mflak = {
+                    description = "Mflak";
+                    home = "/Users/mflak";
+                  };
+                };
+               };
             }
           ];
         };

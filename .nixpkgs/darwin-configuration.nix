@@ -1,11 +1,20 @@
 { config, pkgs, ... }:
 
 {
+
+
   # List packages installed in system profile. To search by name, run:
   # $ nix-env -qaP | grep wget
   environment.systemPackages =
-    [ pkgs.vim
+    [ 
+        pkgs.vim
+        pkgs.nerdfonts
     ];
+
+  fonts.fontDir.enable = true;
+  fonts.fonts = with pkgs; [
+    (nerdfonts.override { fonts = [ "RobotoMono" ]; })
+  ];
 
   # Use a custom configuration.nix location.
   # $ darwin-rebuild switch -I darwin-config=$HOME/.config/nixpkgs/darwin/configuration.nix
@@ -22,4 +31,11 @@
   # Used for backwards compatibility, please read the changelog before changing.
   # $ darwin-rebuild changelog
   system.stateVersion = 4;
+
+
+  users.users."mflak" = {
+    home = "/Users/mflak";
+    description = "mflak";
+  };
+
 }

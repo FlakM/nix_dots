@@ -6,6 +6,7 @@
   programs.direnv.nix-direnv.enable = true;
   
   
+
   home.packages = with pkgs; [
      jq
      wget
@@ -27,14 +28,8 @@
     coreutils # provides `dd` with --status=progress
   ] ++ lib.optionals stdenv.isLinux [
     iputils # provides `ping`, `ifconfig`, ...
-
     libuuid # `uuidgen` (already pre-installed on mac)
   ];
-
-  programs.tmux = {
-    enable = true;
-    clock24 = true;
-  };
 
   programs.dircolors = {
     enable = true;
@@ -45,7 +40,6 @@
        autocd = true;
        enableAutosuggestions = true;
        enableCompletion = true;
-
        zplug = {
          enable = true;
          plugins = [
@@ -78,7 +72,7 @@ bindkey  "^[[1;eD" backward-word
        '';
      };  
 
-  home.file."~/.p10k.zsh".source = config.lib.file.mkOutOfStoreSymlink ./home-manager/modules/.p10k.zsh;
+  #home.file."~/.p10k.zsh".source = config.lib.file.mkOutOfStoreSymlink ./home-manager/modules/.p10k.zsh;
 
   programs.git = {
     enable = true;
@@ -90,21 +84,5 @@ bindkey  "^[[1;eD" backward-word
     };
   };
 
-  programs.alacritty = {
-    enable = true;
-    settings = {
-
-
-      window.padding = {
-        x = 2;
-        y = 2;
-      };
-
-      shell.program = "${pkgs.zsh}/bin/zsh";
-
-      cursor.style = "Beam";
-
-    };
-  };
 
 }
