@@ -75,6 +75,17 @@
           white = "0xFEFEF8";
         };
 
+        dim = {
+          black =   "0x9E9F9F";
+          red =     "0x864343";
+          green =   "0x777c44";
+          yellow =  "0x9e824c";
+          blue =    "0x556a7d";
+          magenta = "0x75617b";
+          cyan =    "0x5b7d78";
+          white =   "0x828482";
+        };
+
       };
      selection.semantic_escape_chars = ",?`|:\"' ()[]{}<>";
     };

@@ -1,8 +1,11 @@
 { config, lib, pkgs, ... }:
 {
+  home.sessionVariables = {
+     EDITOR = "nvim";
+  };
+
   programs.neovim = {
     enable = true;
-
     plugins = with pkgs.vimPlugins; [
       # VIM enhancments
       editorconfig-vim
@@ -61,6 +64,7 @@
       rust-tools-nvim 
       
       gruvbox-nvim
+      papercolor-theme
 
     ] ++ lib.optionals (pkgs.stdenv.system != "aarch64-linux") [
       #vim-go

@@ -27,11 +27,33 @@
     fonts.fonts = with nixpkgs; [
       (nerdfonts.override { fonts = [ "Roboto Mono" ]; })
     ];
+    
+      darwinConfigurations.Maciejs-MacBook-Pro-2 =
+        let
+          mkIntelPackages = source: import source {
+            localSystem = "x86_64-darwin";
+          };
 
-      darwinConfigurations.Maciejs-MacBook-Pro =
+          pkgs_x86 = mkIntelPackages nixpkgs;
+
+          arm-overrides = final: prev: {
+            inherit (pkgs_x86) openconnect; # scala-cli;
+            bloop = pkgs_x86.bloop;
+            #bloop = pkgs_x86.bloop.override { jre = prev.openjdk11; };
+          };
+
+        in
         darwin.lib.darwinSystem {
-          system = "x86_64-darwin";
+          system = "aarch64-darwin";
           modules = [
+            {
+              nixpkgs.overlays = [
+                arm-overrides
+              ];
+              nix.extraOptions = ''
+                extra-platforms = x86_64-darwin
+              '';
+            }
             ./darwin-configuration.nix
             home-manager.darwinModules.home-manager
             {

@@ -11,7 +11,6 @@
      jq
      wget
      curl
-     git
      unzip
      zip
 
@@ -70,19 +69,13 @@ bindkey  "^[[1;5D" backward-word
 bindkey  "^[[1;3C" forward-word
 bindkey  "^[[1;eD" backward-word
        '';
+       initExtraBeforeCompInit = ''
+    fpath+=("${config.home.profileDirectory}"/share/zsh/site-functions "${config.home.profileDirectory}"/share/zsh/$ZSH_VERSION/functions "${config.home.profileDirectory}"/share/zsh/vendor-completions)
+  '';
      };  
 
   #home.file."~/.p10k.zsh".source = config.lib.file.mkOutOfStoreSymlink ./home-manager/modules/.p10k.zsh;
 
-  programs.git = {
-    enable = true;
-    userName  = "FlakM";
-    userEmail = "maciej.jan.flak@gmail.com";
-    signing = {
-       key = "AD7821B8";
-       signByDefault = true;
-    };
-  };
 
 
 }

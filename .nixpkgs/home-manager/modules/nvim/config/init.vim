@@ -39,7 +39,7 @@ colorscheme gruvbox
 
 lua << EOF
 require('lualine').setup({
-    options = {theme = 'ayu_light'},
+    options = {theme = 'gruvbox'},
     sections = {
        lualine_a = {'mode'},
        --lualine_a = {'buffers'},
@@ -304,7 +304,7 @@ map <F1> <Esc>
 imap <F1> <Esc>
 
 " shortuts for FZF
-nnoremap <silent> <leader>f :FZF<cr>
+nnoremap <silent> <leader>f :Files<cr>
 nnoremap <silent> <leader>F :FZF ~<cr>
 
 " =============================================================================
