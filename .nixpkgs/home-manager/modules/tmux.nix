@@ -18,6 +18,15 @@
     set-option -ga terminal-overrides ",xterm-256color:Tc"
     set -g default-terminal "screen-256color"
     set-option -g status-style bg=default
+
+    # to enter press prefix + [
+    setw -g mode-keys vi
+
+    # use hjkl to navigate between panes
+    bind h select-pane -L
+    bind j select-pane -D
+    bind k select-pane -U
+    bind l select-pane -R
     '';
     plugins = with pkgs.tmuxPlugins; [ sensible yank];
 

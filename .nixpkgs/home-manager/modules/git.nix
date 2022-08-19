@@ -10,10 +10,11 @@
     userName  = "FlakM";
     userEmail = "maciej.jan.flak@gmail.com";
     # mac os is messed up...
-    #signing = {
-    #   key = "AD7821B8";
-    #   signByDefault = true;
-    #};
+    signing = {
+       key = "AD7821B8";
+       signByDefault = true;
+    };
+
     delta.enable = true;
     lfs.enable = true;
 
@@ -31,6 +32,8 @@
       ".bsp/"
       ".scala-build/"
       ".direnv/"
+      "flake.nix"
+      "flake.lock"
     ];
     
     extraConfig = {

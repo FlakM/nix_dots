@@ -29,7 +29,7 @@ set clipboard=unnamedplus
 
 " this must be here to stop router from changing directory
 " it seems that ie rust analyzer needs it to provide errors to coc
-let g:rooter_patterns = ['.git', 'Makefile', '*.sln', 'build/env.sh', "Cargo.toml", "settings.gradle", "package.json"]
+"let g:rooter_patterns = ['.git', 'Makefile', '*.sln', 'build/env.sh', "settings.gradle", "Cargo.toml", "package.json"]
 
 set termguicolors " this variable must be enabled for colors to be applied properly
 "set background=dark " or light if you want light mode
@@ -324,10 +324,6 @@ if has("autocmd")
   au BufReadPost * if expand('%:p') !~# '\m/\.git/' && line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
 endif
 
-" Follow Rust code style rules
-au Filetype rust source ~/.config/nvim/scripts/spacetab.vim
-au Filetype rust set colorcolumn=100
-
 " Help filetype detection
 autocmd BufRead *.plot set filetype=gnuplot
 autocmd BufRead *.lds set filetype=ld
@@ -415,3 +411,7 @@ require'nvim-treesitter.configs'.setup {
   },
 }
 EOF
+
+
+imap <silent><script><expr> <C-J> copilot#Accept("\<CR>")
+let g:copilot_no_tab_map = v:true

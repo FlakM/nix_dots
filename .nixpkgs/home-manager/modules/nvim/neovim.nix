@@ -4,6 +4,11 @@
      EDITOR = "nvim";
   };
 
+  home.packages = with pkgs; [
+    # for copilot
+    nodejs-16_x
+  ];
+
   programs.neovim = {
     enable = true;
     plugins = with pkgs.vimPlugins; [
@@ -17,7 +22,7 @@
       vim-matchup
 
       # Fuzzy searcher
-      vim-rooter
+      #vim-rooter
       fzf-vim
 
       # Synctactic language support
@@ -38,17 +43,16 @@
       nvim-metals
       nvim-dap
       nvim-lspconfig
-      cmp-nvim-lsp
-      cmp-buffer
-      cmp-path
-      cmp-cmdline
-      nvim-cmp
 
       # for vsnip users
       cmp-vsnip
       vim-vsnip
       nvim-cmp
       cmp-nvim-lsp
+      cmp-buffer
+      cmp-path
+      cmp-cmdline
+      nvim-cmp
   
       nvim-bqf
       nvim-treesitter
@@ -66,6 +70,14 @@
       gruvbox-nvim
       papercolor-theme
 
+      copilot-vim
+
+      # java tols
+      nvim-jdtls
+
+      # handlebars support
+      vim-mustache-handlebars
+
     ] ++ lib.optionals (pkgs.stdenv.system != "aarch64-linux") [
       #vim-go
     ];
@@ -73,9 +85,21 @@
     extraConfig = (builtins.concatStringsSep "\n" [
       (builtins.readFile ./config/init.vim)
       (builtins.readFile ./config/lsp-config.vim)
-      (builtins.readFile ./config/metals-config.vim)
+      """
+lua << EOF
+      custom = {
+        java = '${pkgs.jdk}/bin/java';
+        jar = '${pkgs.jdt-language-server}/share/java/plugins/org.eclipse.equinox.launcher_1.6.400.v20210924-0641.jar',
+        configuration = '${pkgs.jdt-language-server}/share/config/config.ini', 
+        home = '${config.home.homeDirectory}/',
+}
+EOF
+      """
       (builtins.readFile ./config/rust-config.vim)
-
+      (builtins.readFile ./config/metals-config.vim)
     ]);
   };
+
+  home.file."${config.home.homeDirectory}/.config/nvim/ftplugin/java.lua".source = config.lib.file.mkOutOfStoreSymlink ./config/java.lua;
+  home.file."${config.home.homeDirectory}/.ideavimrc".source = config.lib.file.mkOutOfStoreSymlink ./config/idea-vim-config.vim;
 }

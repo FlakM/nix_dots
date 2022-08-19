@@ -27,8 +27,7 @@
     fonts.fonts = with nixpkgs; [
       (nerdfonts.override { fonts = [ "Roboto Mono" ]; })
     ];
-    
-      darwinConfigurations.Maciejs-MacBook-Pro-2 =
+      darwinConfigurations.m1pro =
         let
           mkIntelPackages = source: import source {
             localSystem = "x86_64-darwin";
