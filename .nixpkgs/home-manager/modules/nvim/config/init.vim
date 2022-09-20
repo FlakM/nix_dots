@@ -216,11 +216,6 @@ nnoremap <C-f> :sus<cr>
 map H ^
 map L $
 
-" Neat X clipboard integration
-" ,p will paste clipboard into buffer
-" ,c will copy entire buffer into clipboard
-noremap <leader>p :read !xsel --clipboard --output<cr>
-noremap <leader>c :w !xsel -ib<cr><cr>
 
 
 filetype plugin indent on
@@ -383,9 +378,11 @@ nnoremap <leader>ch :let @+=expand("%:p:h")<CR>
 
 
 lua << EOF
+require'nvim-treesitter.install'.compilers = { "gcc" }
+
 require'nvim-treesitter.configs'.setup {
   -- A list of parser names, or "all"
-  ensure_installed = { "scala", "java", "rust", "json" },
+  ensure_installed = { "scala", "java", "rust", "json", "python" },
 
   -- Install parsers synchronously (only applied to `ensure_installed`)
   sync_install = false,

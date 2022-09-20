@@ -77,13 +77,17 @@
 
       # handlebars support
       vim-mustache-handlebars
-
     ] ++ lib.optionals (pkgs.stdenv.system != "aarch64-linux") [
       #vim-go
     ];
 
     extraConfig = (builtins.concatStringsSep "\n" [
       (builtins.readFile ./config/init.vim)
+      # this is a hack because pyright installed from brew also brings node but in version 18 into scope
+      # and copilot stops working so in this way we tell copilot where the valid version of node is
+      """
+      let g:copilot_node_command = '${pkgs.nodejs-16_x}/bin/node'
+      """
       (builtins.readFile ./config/lsp-config.vim)
       """
 lua << EOF
@@ -97,6 +101,7 @@ EOF
       """
       (builtins.readFile ./config/rust-config.vim)
       (builtins.readFile ./config/metals-config.vim)
+      (builtins.readFile ./config/python-config.vim)
     ]);
   };
 
