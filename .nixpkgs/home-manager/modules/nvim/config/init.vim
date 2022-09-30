@@ -4,7 +4,6 @@ nnoremap <C-n> :NvimTreeToggle<CR>
 nnoremap <leader>r :NvimTreeRefresh<CR>
 nnoremap <leader>n :NvimTreeFindFile<CR>
 
-
 lua << EOF
 require'nvim-tree'.setup {
   view = {
@@ -382,7 +381,7 @@ require'nvim-treesitter.install'.compilers = { "gcc" }
 
 require'nvim-treesitter.configs'.setup {
   -- A list of parser names, or "all"
-  ensure_installed = { "scala", "java", "rust", "json", "python" },
+  ensure_installed = { "scala", "java", "rust", "json", "python", "go" },
 
   -- Install parsers synchronously (only applied to `ensure_installed`)
   sync_install = false,

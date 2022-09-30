@@ -7,6 +7,8 @@
   home.packages = with pkgs; [
     # for copilot
     nodejs-16_x
+    go
+    gopls
   ];
 
   programs.neovim = {
@@ -102,6 +104,7 @@ EOF
       (builtins.readFile ./config/rust-config.vim)
       (builtins.readFile ./config/metals-config.vim)
       (builtins.readFile ./config/python-config.vim)
+      (builtins.readFile ./config/go-config.vim)
     ]);
   };
 
