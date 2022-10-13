@@ -7,12 +7,12 @@
 
   programs.git = {
     enable = true;
-    userName  = "FlakM";
+    userName = "FlakM";
     userEmail = "maciej.jan.flak@gmail.com";
     # mac os is messed up...
     signing = {
-       key = "AD7821B8";
-       signByDefault = true;
+      key = "AD7821B8";
+      signByDefault = true;
     };
 
     delta.enable = true;
@@ -33,7 +33,7 @@
       ".direnv/"
       ".flake_dir/"
     ];
-    
+
     extraConfig = {
       pull = { ff = "only"; };
       init.defaultBranch = "main";

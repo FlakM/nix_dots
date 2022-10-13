@@ -2,15 +2,15 @@
   description = "Macieks's system config";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.05";
     nixpkgs-unstable.url = "github:nixos/nixpkgs";
     flake-utils.url = "github:numtide/flake-utils";
-    darwin = { 
-	url = "github:lnl7/nix-darwin/master";
-        inputs.nixpkgs.follows = "nixpkgs";
+    darwin = {
+      url = "github:lnl7/nix-darwin/master";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     home-manager = {
-      url = "github:nix-community/home-manager";
+      url = "github:nix-community/home-manager/release-22.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -24,9 +24,12 @@
     , ...
     }@inputs:
     {
-    fonts.fonts = with nixpkgs; [
-      (nerdfonts.override { fonts = [ "Roboto Mono" ]; })
-    ];
+
+      formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixpkgs-fmt;
+      formatter.aarch64-darwin = nixpkgs.legacyPackages.aarch64-darwin.nixpkgs-fmt;
+      fonts.fonts = with nixpkgs; [
+        (nerdfonts.override { fonts = [ "Roboto Mono" ]; })
+      ];
       darwinConfigurations.m1pro =
         let
           mkIntelPackages = source: import source {
@@ -41,6 +44,15 @@
             #bloop = pkgs_x86.bloop.override { jre = prev.openjdk11; };
           };
 
+          # Inject 'unstable' and 'trunk' into the overridden package set, so that
+          # the following overlays may access them (along with any system configs
+          # that wish to do so).
+          pkg-sets = (
+            final: prev: {
+              unstable = import inputs.nixpkgs-unstable { system = final.system; };
+            }
+          );
+
         in
         darwin.lib.darwinSystem {
           system = "aarch64-darwin";
@@ -48,6 +60,7 @@
             {
               nixpkgs.overlays = [
                 arm-overrides
+                pkg-sets
               ];
               nix.extraOptions = ''
                 extra-platforms = x86_64-darwin
@@ -68,7 +81,7 @@
                     home = "/Users/mflak";
                   };
                 };
-               };
+              };
             }
           ];
         };

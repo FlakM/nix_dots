@@ -6,21 +6,21 @@
   programs.direnv.nix-direnv.enable = true;
 
   home.packages = with pkgs; [
-     jq
-     wget
-     curl
-     unzip
-     zip
+    jq
+    wget
+    curl
+    unzip
+    zip
 
-     xclip
+    xclip
 
-     bat
-     fd
-     ripgrep
-     fzf
-     delta
-     htop
-     timewarrior
+    bat
+    fd
+    ripgrep
+    fzf
+    delta
+    htop
+    timewarrior
   ] ++ lib.optionals stdenv.isDarwin [
     coreutils # provides `dd` with --status=progress
   ] ++ lib.optionals stdenv.isLinux [

@@ -2,14 +2,14 @@
 {
 
   home.packages = with pkgs; [
-     bloop
-     scalafix
-     scalafmt
-#     sbt
-#     dotty
-     metals
+    bloop
+    scalafix
+    scalafmt
+    #     sbt
+    #     dotty
+    metals
 
-     coursier
+    coursier
   ];
 
   # This adds JAVA_HOME to the global environment, by sourcing the jdk's
@@ -18,9 +18,9 @@
   # 
   #   environment.variables.JAVA_HOME = ${pkgs.jdk.home}/lib/openjdk;
   #   environment.systemPackages = [ pkgs.jdk ];
-#  programs.java = {
-#    enable = true;
-#    package = pkgs.openjdk11;
-#  };
+  #  programs.java = {
+  #    enable = true;
+  #    package = pkgs.openjdk11;
+  #  };
 
 }

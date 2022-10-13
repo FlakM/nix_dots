@@ -378,16 +378,22 @@ nnoremap <leader>ch :let @+=expand("%:p:h")<CR>
 
 lua << EOF
 require'nvim-treesitter.install'.compilers = { "gcc" }
+-- Defines a read-write directory for treesitters in nvim's cache dir
+local parser_install_dir = vim.fn.stdpath("cache") .. "/treesitters"
+vim.fn.mkdir(parser_install_dir, "p")
 
 require'nvim-treesitter.configs'.setup {
   -- A list of parser names, or "all"
-  ensure_installed = { "scala", "java", "rust", "json", "python", "go" },
+  --ensure_installed = { "scala", "java", "rust", "json", "python", "go" },
+  ensure_installed = {},
 
   -- Install parsers synchronously (only applied to `ensure_installed`)
   sync_install = false,
 
+  parser_install_dir = parser_install_dir,
+
   -- List of parsers to ignore installing (for "all")
-  ignore_install = { "javascript" },
+  ignore_install = {},
 
   highlight = {
     -- `false` will disable the whole extension

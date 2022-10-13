@@ -8,11 +8,11 @@
     openssl
     #libiconv
     pkg-config
-#    cargo
-#    rustc
-#    rust-analyzer-unwrapped
-#    rustfmt
-#    clippy
+    #    cargo
+    #    rustc
+    #    rust-analyzer-unwrapped
+    #    rustfmt
+    #    clippy
     libiconv
   ];
 

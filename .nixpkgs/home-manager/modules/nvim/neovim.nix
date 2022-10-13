@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 {
   home.sessionVariables = {
-     EDITOR = "nvim";
+    EDITOR = "nvim";
   };
 
   home.packages = with pkgs; [
@@ -42,7 +42,6 @@
 
       # LSP support & completion
       plenary-nvim
-      nvim-metals
       nvim-dap
       nvim-lspconfig
 
@@ -55,9 +54,8 @@
       cmp-path
       cmp-cmdline
       nvim-cmp
-  
+
       nvim-bqf
-      nvim-treesitter
       telescope-nvim
       telescope-fzy-native-nvim
 
@@ -66,9 +64,10 @@
 
       vim-gitgutter
 
+      nvim-metals
       nvim-lspconfig
-      rust-tools-nvim 
-      
+      rust-tools-nvim
+
       gruvbox-nvim
       papercolor-theme
 
@@ -79,19 +78,37 @@
 
       # handlebars support
       vim-mustache-handlebars
+
     ] ++ lib.optionals (pkgs.stdenv.system != "aarch64-linux") [
       #vim-go
+    ]
+    ++ [
+      #pnvim-treesitter.withPlugins (plugins: pkgs.tree-sitter.allGrammars)kgs.unstable.vimPlugins.nvim-treesitter
+      (pkgs.unstable.vimPlugins.nvim-treesitter.withPlugins (plugins: [
+        plugins.tree-sitter-c
+        plugins.tree-sitter-rust
+        plugins.tree-sitter-scala
+        plugins.tree-sitter-java
+        plugins.tree-sitter-json
+        plugins.tree-sitter-python
+        plugins.tree-sitter-go
+      ]))
     ];
 
-    extraConfig = (builtins.concatStringsSep "\n" [
-      (builtins.readFile ./config/init.vim)
-      # this is a hack because pyright installed from brew also brings node but in version 18 into scope
-      # and copilot stops working so in this way we tell copilot where the valid version of node is
-      """
+
+    extraConfig =
+      (builtins.concatStringsSep "\n" [
+        (builtins.readFile ./config/init.vim)
+        # this is a hack because pyright installed from brew also brings node but in version 18 into scope
+        # and copilot stops working so in this way we tell copilot where the valid version of node is
+        ""
+        "
       let g:copilot_node_command = '${pkgs.nodejs-16_x}/bin/node'
-      """
-      (builtins.readFile ./config/lsp-config.vim)
-      """
+      "
+        ""
+        (builtins.readFile ./config/lsp-config.vim)
+        ""
+        "
 lua << EOF
       custom = {
         java = '${pkgs.jdk}/bin/java';
@@ -100,14 +117,15 @@ lua << EOF
         home = '${config.home.homeDirectory}/',
 }
 EOF
-      """
-      (builtins.readFile ./config/rust-config.vim)
-      (builtins.readFile ./config/metals-config.vim)
-      (builtins.readFile ./config/python-config.vim)
-      (builtins.readFile ./config/go-config.vim)
-    ]);
+      "
+        ""
+        (builtins.readFile ./config/rust-config.vim)
+        (builtins.readFile ./config/metals-config.vim)
+        (builtins.readFile ./config/python-config.vim)
+        (builtins.readFile ./config/go-config.vim)
+      ]);
   };
-
   home.file."${config.home.homeDirectory}/.config/nvim/ftplugin/java.lua".source = config.lib.file.mkOutOfStoreSymlink ./config/java.lua;
   home.file."${config.home.homeDirectory}/.ideavimrc".source = config.lib.file.mkOutOfStoreSymlink ./config/idea-vim-config.vim;
 }
+
