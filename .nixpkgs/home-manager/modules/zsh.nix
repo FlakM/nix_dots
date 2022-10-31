@@ -1,12 +1,18 @@
 { config, pkgs, pkgsUnstable, libs, ... }:
 {
 
+  home.packages = with pkgs; [
+    zsh
+  ];
+
+
   programs.zsh = {
     enable = true;
     autocd = true;
 
     enableAutosuggestions = true;
     enableCompletion = true;
+    enableSyntaxHighlighting = true;
 
     zplug = {
       enable = true;
@@ -37,7 +43,10 @@
       bindkey  "^[[1;5D" backward-word
       bindkey  "^[[1;3C" forward-word
       bindkey  "^[[1;eD" backward-word
-      export PATH="${config.home.homeDirectory}/.rd/bin:${config.home.homeDirectory}/.cargo/bin:$PATH"
+      # rd is rancher desktop
+      # zsh is in front of path as otherwise on darwin /usr/bin/zsh is picked earlier
+      # cargo is here to allow cargo install $crate
+      export PATH="${pkgs.zsh}/bin/zsh:${config.home.homeDirectory}/.rd/bin:${config.home.homeDirectory}/.cargo/bin:$PATH"
       export JAVA_HOME="${pkgs.jdk.home}/bin/.."
       export PKG_CONFIG_PATH="${pkgs.openssl.dev}/lib/pkgconfig"
       export PKG="/lib/pkgconfig"

@@ -3,7 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.05";
-    nixpkgs-unstable.url = "github:nixos/nixpkgs";
+    nixpkgs-unstable.url = "nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     darwin = {
       url = "github:lnl7/nix-darwin/master";
@@ -36,11 +36,11 @@
             localSystem = "x86_64-darwin";
           };
 
-          pkgs_x86 = mkIntelPackages nixpkgs;
+          pkgs_x86 = mkIntelPackages nixpkgs-unstable;
 
           arm-overrides = final: prev: {
             inherit (pkgs_x86) openconnect; # scala-cli;
-            bloop = pkgs_x86.bloop;
+            unstable.bloop = pkgs_x86.bloop;
             #bloop = pkgs_x86.bloop.override { jre = prev.openjdk11; };
           };
 
@@ -59,8 +59,8 @@
           modules = [
             {
               nixpkgs.overlays = [
-                arm-overrides
                 pkg-sets
+                arm-overrides
               ];
               nix.extraOptions = ''
                 extra-platforms = x86_64-darwin

@@ -26,7 +26,6 @@
   # Create /etc/bashrc that loads the nix-darwin environment.
   programs.zsh.enable = true; # default shell on catalina
   # programs.fish.enable = true;
-
   # Used for backwards compatibility, please read the changelog before changing.
   # $ darwin-rebuild changelog
   system.stateVersion = 4;
@@ -43,6 +42,7 @@
   };
 
 
+
   # Depending on the details of your configuration, this section might be necessary or not;
   # feel free to experiment
   environment.shellInit = ''
@@ -50,6 +50,7 @@
     gpg-connect-agent /bye
     export SSH_AUTH_SOCK="/run/user/$UID/gnupg/S.gpg-agent.ssh"
     export JAVA_HOME="${pkgs.jdk.home}/lib/openjdk"
+    export NIX_PROFILES=${config.home.profileDirectory}
   '';
 
 }

@@ -172,6 +172,9 @@ local opts = {
 		-- standalone file support
 		-- setting it to false may improve startup time
 		standalone = true,
+        diagnostics = {
+              disabled = {"unresolved-proc-macro"},
+        },
 	}, -- rust-analyer options
 
 	-- debugging stuff

@@ -1,25 +1,4 @@
-let mapleader = "\<Space>"
 
-nnoremap <C-n> :NvimTreeToggle<CR>
-nnoremap <leader>r :NvimTreeRefresh<CR>
-nnoremap <leader>n :NvimTreeFindFile<CR>
-
-lua << EOF
-require'nvim-tree'.setup {
-  view = {
-    width = 50,
-    hide_root_folder = true,
-  },
-  hijack_cursor = true,
-  update_focused_file = {
-    enable = true,
-  },
-} 
-EOF
-
-" Find files using Telescope command-line sugar.
-nnoremap <leader>fb <cmd>Telescope buffers<cr>
-nnoremap <leader>fh <cmd>Telescope help_tags<cr>
 
 " use system clipboard to copy and paste
 set clipboard=unnamedplus
@@ -379,18 +358,16 @@ nnoremap <leader>ch :let @+=expand("%:p:h")<CR>
 lua << EOF
 require'nvim-treesitter.install'.compilers = { "gcc" }
 -- Defines a read-write directory for treesitters in nvim's cache dir
-local parser_install_dir = vim.fn.stdpath("cache") .. "/treesitters"
-vim.fn.mkdir(parser_install_dir, "p")
 
 require'nvim-treesitter.configs'.setup {
   -- A list of parser names, or "all"
-  --ensure_installed = { "scala", "java", "rust", "json", "python", "go" },
-  ensure_installed = {},
+  ensure_installed = { "scala", "java", "rust", "json", "python", "go" },
+  --ensure_installed = {},
 
   -- Install parsers synchronously (only applied to `ensure_installed`)
-  sync_install = false,
+  sync_install = true,
 
-  parser_install_dir = parser_install_dir,
+  --parser_install_dir = parser_install_dir,
 
   -- List of parsers to ignore installing (for "all")
   ignore_install = {},

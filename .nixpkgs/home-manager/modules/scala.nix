@@ -2,7 +2,7 @@
 {
 
   home.packages = with pkgs; [
-    bloop
+    unstable.bloop
     scalafix
     scalafmt
     #     sbt
