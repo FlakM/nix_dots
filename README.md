@@ -1,7 +1,14 @@
 # My dotfiles using nix flakes
 
 
-## Installation
+
+## Installation for linux
+
+```
+sudo nixos-rebuild switch --flake ~/programming/flakm/.nixpkgs#dell-xps 
+```
+
+## Installation for darwin
 
 1. Install nix package manaeger in [deamon mode](https://nixos.org/manual/nix/stable/installation/installing-binary.html?highlight=uninstall#multi-user-installation)
 2. Install nix darwin using [instructions](https://github.com/LnL7/nix-darwin)

@@ -4,7 +4,7 @@
   home.packages = with pkgs; [
     rustup
     rust-analyzer
-    #gcc
+    gcc
     openssl
     #libiconv
     pkg-config
@@ -14,6 +14,8 @@
     #    rustfmt
     #    clippy
     libiconv
+    pkg-config
+
   ];
 
   home.sessionVariables = {
