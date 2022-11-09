@@ -2,8 +2,8 @@
 {
 
   home.packages = with pkgs; [
-    rustup
-    rust-analyzer
+    unstable.rustup
+    #unstable.rust-analyzer
     gcc
     openssl
     #libiconv
@@ -16,9 +16,15 @@
     libiconv
     pkg-config
 
+    # used for jupiter search
+    ffmpeg
+    stt
   ];
 
   home.sessionVariables = {
     PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig";
   };
+
+
+
 }

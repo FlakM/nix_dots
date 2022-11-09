@@ -14,6 +14,7 @@
     ./modules/gpg.nix
     ./modules/java.nix
     ./modules/aws.nix
+    ./modules/brother.nix
     #./modules/1password.nix
   ];
 

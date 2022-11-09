@@ -160,17 +160,25 @@
 
 # Depending on the details of your configuration, this section might be necessary or not;
 # feel free to experiment
+  services.pcscd.enable = true;
   environment.shellInit = ''
     export GPG_TTY="$(tty)"
     gpg-connect-agent /bye
     export SSH_AUTH_SOCK="/run/user/$UID/gnupg/S.gpg-agent.ssh"
   '';
   
+  services.printing.enable = true;
+  services.printing.drivers = [ pkgs.brlaser ];
+
   programs = {
     ssh.startAgent = false;
-    gnupg.agent = {
+
+    gnupg = {
+      dirmngr.enable = true;
+      agent = {
       enable = true;
       enableSSHSupport = true;
+      };
     };
     # This adds JAVA_HOME to the global environment, by sourcing the jdk's
     # setup-hook on shell init. It is equivalent to starting a shell through 

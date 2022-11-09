@@ -31,6 +31,7 @@
       config = "git --git-dir=$HOME/.cfg/ --work-tree=$HOME";
       vim = "nvim";
       vi = "vi";
+      #rust-analyzer= "rustup run stable rust-analyzer";
     };
 
     initExtra = ''
@@ -56,6 +57,6 @@
     #  '';
   };
 
-  #home.file."~/.p10k.zsh".source = config.lib.file.mkOutOfStoreSymlink ./home-manager/modules/.p10k.zsh;
+  home.file."${config.home.homeDirectory}/.cargo/bin/rust-analyzer".source = config.lib.file.mkOutOfStoreSymlink ./rust-analyzer-shim;
 
 }

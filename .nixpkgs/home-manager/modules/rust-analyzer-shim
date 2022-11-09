@@ -1,0 +1,2 @@
+rustup run stable rust-analyzer
+
