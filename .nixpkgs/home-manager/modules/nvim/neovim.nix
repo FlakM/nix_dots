@@ -2,6 +2,7 @@
 {
   home.sessionVariables = {
     EDITOR = "nvim";
+    VISUAL = "nvim";
   };
 
   home.packages = with pkgs; [

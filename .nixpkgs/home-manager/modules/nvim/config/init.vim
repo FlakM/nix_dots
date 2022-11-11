@@ -1,8 +1,7 @@
 
 
 " use system clipboard to copy and paste
-set clipboard=unnamedplus
-
+set clipboard^=unnamed,unnamedplus
 
 
 " this must be here to stop router from changing directory

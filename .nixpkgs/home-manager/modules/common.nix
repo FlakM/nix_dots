@@ -12,7 +12,7 @@
     unzip
     zip
 
-    xclip
+    xsel
 
     bat
     fd

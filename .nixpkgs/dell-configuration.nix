@@ -79,7 +79,6 @@
 
 
 
-  environment.variables.EDITOR = "${pkgs.neovim}/bin/nvim";
 
 
   hardware.video.hidpi.enable = true;
