@@ -2,7 +2,7 @@
 {
 
   home.packages = with pkgs; [
-    unstable.rustup
+    rustup
     #unstable.rust-analyzer
     gcc
     openssl
@@ -16,9 +16,6 @@
     libiconv
     pkg-config
 
-    # used for jupiter search
-    ffmpeg
-    stt
   ];
 
   home.sessionVariables = {
