@@ -10,7 +10,7 @@ set clipboard^=unnamed,unnamedplus
 
 set termguicolors " this variable must be enabled for colors to be applied properly
 "set background=dark " or light if you want light mode
-set background=light " or light if you want light mode
+set background=dark " or light if you want light mode
 colorscheme gruvbox
 
 

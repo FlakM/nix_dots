@@ -52,7 +52,6 @@
   i18n.defaultLocale = "en_US.UTF-8";
 
 
-  services.onedrive.enable = true;
   services.dbus.enable = true;
 
   # Enable sound.
@@ -60,14 +59,11 @@
   hardware.pulseaudio.enable = true;
 
   virtualisation.docker.enable = true;
-  # otherwise docker swarm init won't work
-  # https://docs.docker.com/config/containers/live-restore/
-  virtualisation.docker.liveRestore = false;
 
   # enable the tailscale daemon; this will do a variety of tasks:
   # 1. create the TUN network device
   # 2. setup some IP routes to route through the TUN
-  services.tailscale = { enable = true; };
+  #services.tailscale = { enable = true; };
 
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
@@ -82,6 +78,8 @@
 
 
   hardware.video.hidpi.enable = true;
+
+  hardware.bluetooth.enable = true;
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
@@ -197,24 +195,6 @@
   networking.firewall = {
     allowedTCPPorts = [ ];
     allowedUDPPorts = [ 41641 ];
-  };
-
-  systemd.user.services.dropbox = {
-    description = "Dropbox";
-    wantedBy = [ "graphical-session.target" ];
-    environment = {
-      QT_PLUGIN_PATH = "/run/current-system/sw/" + pkgs.qt5.qtbase.qtPluginPrefix;
-      QML2_IMPORT_PATH = "/run/current-system/sw/" + pkgs.qt5.qtbase.qtQmlPrefix;
-    };
-    serviceConfig = {
-      ExecStart = "${pkgs.dropbox.out}/bin/dropbox";
-      ExecReload = "${pkgs.coreutils.out}/bin/kill -HUP $MAINPID";
-      KillMode = "control-group"; # upstream recommends process
-      Restart = "on-failure";
-      PrivateTmp = true;
-      ProtectSystem = "full";
-      Nice = 10;
-    };
   };
 
   # This value determines the NixOS release from which the default
