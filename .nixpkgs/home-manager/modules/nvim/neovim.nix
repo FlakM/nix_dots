@@ -86,7 +86,8 @@
     ]
     ++ [
       # pkgs.unstable.vimPlugins
-      nvim-treesitter
+      nvim-treesitter.withAllGrammars
+      #nvim-treesitter
       #(nvim-treesitter.withPlugins (plugins: [
       #  plugins.tree-sitter-c
       #  plugins.tree-sitter-rust
@@ -105,35 +106,19 @@
         (builtins.readFile ./config/init.lua)
         "EOF"
         (builtins.readFile ./config/init.vim)
-        # this is a hack because pyright installed from brew also brings node but in version 18 into scope
-        # and copilot stops working so in this way we tell copilot where the valid version of node is
-        ""
-        "
-      let g:copilot_node_command = '${pkgs.nodejs-16_x}/bin/node'
-      "
         ""
         (builtins.readFile ./config/lsp-config.vim)
         ""
-        "
-lua << EOF
-      custom = {
-        java = '${pkgs.jdk}/bin/java';
-        jar = '${pkgs.jdt-language-server}/share/java/plugins/org.eclipse.equinox.launcher_1.6.400.v20210924-0641.jar',
-        configuration = '${pkgs.jdt-language-server}/share/config/config.ini', 
-        home = '${config.home.homeDirectory}/',
-}
-EOF
-      "
         ""
         (builtins.readFile ./config/rust-config.vim)
         (builtins.readFile ./config/metals-config.vim)
-        (builtins.readFile ./config/python-config.vim)
-        (builtins.readFile ./config/go-config.vim)
+        #(builtins.readFile ./config/python-config.vim)
+        #(builtins.readFile ./config/go-config.vim)
       ]);
   };
 
 
-  home.file."${config.home.homeDirectory}/.config/nvim/ftplugin/java.lua".source = config.lib.file.mkOutOfStoreSymlink ./config/ftplugin/java.lua;
+  #home.file."${config.home.homeDirectory}/.config/nvim/ftplugin/java.lua".source = config.lib.file.mkOutOfStoreSymlink ./config/ftplugin/java.lua;
   home.file."${config.home.homeDirectory}/.config/nvim/ftplugin/json.lua".source = config.lib.file.mkOutOfStoreSymlink ./config/ftplugin/json.lua;
 
   home.file."${config.home.homeDirectory}/.ideavimrc".source = config.lib.file.mkOutOfStoreSymlink ./config/idea-vim-config.vim;

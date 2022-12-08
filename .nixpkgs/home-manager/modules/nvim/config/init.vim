@@ -360,11 +360,11 @@ require'nvim-treesitter.install'.compilers = { "gcc" }
 
 require'nvim-treesitter.configs'.setup {
   -- A list of parser names, or "all"
-  ensure_installed = { "scala", "java", "rust", "json", "python", "go" },
+  --ensure_installed = { "scala", "java", "rust", "json", "python", "go" },
   --ensure_installed = {},
 
   -- Install parsers synchronously (only applied to `ensure_installed`)
-  sync_install = true,
+  --sync_install = true,
 
   --parser_install_dir = parser_install_dir,
 

@@ -3,7 +3,7 @@
 
   home.packages = with pkgs; [
     rustup
-    #unstable.rust-analyzer
+    rust-analyzer
     gcc
     openssl
     #libiconv
@@ -19,9 +19,9 @@
      libiconv
   ];
 
-  home.sessionVariables = {
-    PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig";
-  };
+  #home.sessionVariables = {
+  #  PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig;${pkgs.libiconv}/lib/";
+  #};
 
 
 
