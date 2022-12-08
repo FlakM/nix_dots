@@ -15,7 +15,8 @@
     #    clippy
     libiconv
     pkg-config
-
+  ] ++ lib.optionals stdenv.isDarwin [
+     libiconv
   ];
 
   home.sessionVariables = {
