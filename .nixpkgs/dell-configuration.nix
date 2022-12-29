@@ -35,11 +35,14 @@
   services.undervolt = {
     enable = true;
     coreOffset = -150;
+    uncoreOffset = -150;
     gpuOffset = -100;
   };
 
   # Enable the X11 windowing system.
   services.xserver.enable = true;
+
+  #hardware.bumblebee.enable = true;
 
   # Enable the Plasma 5 Desktop Environment.
   services.xserver.displayManager.sddm.enable = true;
@@ -137,6 +140,8 @@
 
      pkg-config
      openssl
+     
+     libsForQt5.bismuth
    ];
 
   # Some programs need SUID wrappers, can be configured further or are

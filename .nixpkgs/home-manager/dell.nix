@@ -12,6 +12,8 @@
     ./modules/git.nix
     ./modules/gpg.nix
     ./modules/brother.nix
+    # this is not working with nvidia card...
+    #./modules/sway.nix
   ];
 
   home = {
