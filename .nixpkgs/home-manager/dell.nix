@@ -14,6 +14,8 @@
     ./modules/brother.nix
     # this is not working with nvidia card...
     #./modules/sway.nix
+
+    ./modules/modivo.nix
   ];
 
   home = {
