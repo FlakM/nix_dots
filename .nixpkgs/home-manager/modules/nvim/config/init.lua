@@ -34,6 +34,9 @@ map("n", "<leader>r", [[<cmd>NvimTreeRefresh<CR>]])
 -- this is alt + 1 in my keyboard on mac
 -- you can test it by running cat and pressing alt + 1
 map("n", "Ń", [[<cmd>NvimTreeFindFile<CR>]])
+-- this is on dell
+map("n", "≠", [[<cmd>NvimTreeFindFile<CR>]])
+
 map("n", "<leader>n", [[<cmd>NvimTreeFindFile<CR>]])
 
 
