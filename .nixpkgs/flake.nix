@@ -65,6 +65,38 @@
           ];
       };
 
+      nixosConfigurations.amd-pc = 
+        let
+          # Inject 'unstable' and 'trunk' into the overridden package set, so that
+          # the following overlays may access them (along with any system configs
+          # that wish to do so).
+          pkg-sets = (
+            final: prev: {
+              unstable = import inputs.nixpkgs-unstable { system = final.system; };
+            }
+          );
+
+      in
+      nixpkgs.lib.nixosSystem {
+         system = "x86_64-linux";
+          modules = [
+            ./amd-pc-hardware-configuration.nix
+            ./amd-pc-hardware-zfs-configuration.nix
+            ./amd-pc-configuration.nix
+            {
+              nixpkgs.overlays = [
+                pkg-sets
+              ];
+            }
+            home-manager.nixosModules.home-manager
+            {
+              home-manager.useGlobalPkgs = true;
+              home-manager.useUserPackages = true;
+              home-manager.users.flakm = import ./home-manager/amd-pc.nix;
+            }
+          ];
+      };
+
       darwinConfigurations.m1pro =
         let
           mkIntelPackages = source: import source {
