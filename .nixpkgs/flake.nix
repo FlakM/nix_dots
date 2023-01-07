@@ -50,7 +50,7 @@
           modules = [
             ./dell-hardware-configuration.nix
             ./dell-configuration.nix
-            nixos-hardware.nixosModules.dell-xps-15-9560
+            nixos-hardware.nixosModules.dell-xps-15-9560-intel
             {
               nixpkgs.overlays = [
                 pkg-sets

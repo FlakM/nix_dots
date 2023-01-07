@@ -33,7 +33,8 @@
   #networking.interfaces.eth0.useDHCP = true;
 
   services.undervolt = {
-    enable = true;
+    # it stopped working
+    enable = false;
     coreOffset = -150;
     uncoreOffset = -150;
     gpuOffset = -100;
