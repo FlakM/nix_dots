@@ -16,6 +16,7 @@
     #./modules/sway.nix
 
     ./modules/modivo.nix
+    ./modules/yubikey.nix
   ];
 
   home = {

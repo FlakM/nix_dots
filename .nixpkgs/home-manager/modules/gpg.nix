@@ -8,6 +8,7 @@
     pinentry
     gnupg-pkcs11-scd
     pcsclite
+    gpgme
   ];
 
 
