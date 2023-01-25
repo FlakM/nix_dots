@@ -16,7 +16,7 @@
         bold.family = "RobotoMono Nerd Font";
         italic.family = "RobotoMono Nerd Font";
         # point size od the font
-        size = 11.0;
+        size = 18.0;
         # Offset is the extra space around each character. offset.y can be thought of
         # as modifying the linespacing, and offset.x as modifying the letter spacing.
         offset = {

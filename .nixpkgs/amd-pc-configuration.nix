@@ -24,11 +24,20 @@
   #networking.interfaces.eth0.useDHCP = true;
 
   # Enable the X11 windowing system.
-  services.xserver.enable = true;
+  #services.xserver.enable = true;
 
   # Enable the Plasma 5 Desktop Environment.
-  services.xserver.displayManager.sddm.enable = true;
-  services.xserver.desktopManager.plasma5.enable = true;
+  #services.xserver.displayManager.sddm.enable = true;
+  #services.xserver.desktopManager.plasma5.enable = true;
+
+  # Needed for sway
+  security.polkit.enable = true;
+
+  #services.xserver.displayManager.gdm = {
+  #  enable = true;
+  #  wayland = true;
+  #};
+  #services.xserver.libinput.enable = true;
 
   services.xserver.videoDrivers = [ "amdgpu" ];
   boot.initrd.kernelModules = [ "amdgpu" ];
@@ -38,14 +47,44 @@
   # services.xserver.xkbOptions = "eurosign:e";
   i18n.defaultLocale = "en_US.UTF-8";
 
+
   services.fwupd.enable = true;
 
 
   services.dbus.enable = true;
 
   # Enable sound.
-  sound.enable = true;
-  hardware.pulseaudio.enable = true;
+  #sound.enable = true;
+
+  hardware = {
+    opengl = {
+      enable = true;
+      #driSupport = true;
+    };
+    #video.hidpi.enable = true;
+    bluetooth.enable = true;
+  };
+
+  # https://shen.hong.io/nixos-home-manager-wayland-sway/ 
+  # https://github.com/emersion/xdg-desktop-portal-wlr/wiki/%22It-doesn't-work%22-Troubleshooting-Checklist
+  xdg = {
+    portal = {
+      enable = true;
+      extraPortals = with pkgs; [ 
+        xdg-desktop-portal-wlr 
+        #xdg-desktop-portal-gtk
+      ];
+      wlr.enable = true;
+    };
+  };
+  security.rtkit.enable = true;
+  services.pipewire = {
+    enable = true;
+    alsa.enable = true;
+    alsa.support32Bit = true;
+    pulse.enable = true;
+    #jack.enable = true;
+  };
 
   virtualisation.docker.enable = true;
 
@@ -59,7 +98,7 @@
    users.users.flakm = {
      shell = pkgs.zsh;
      isNormalUser = true;
-     extraGroups = [ "wheel" "docker" ]; # Enable ‘sudo’ for the user.
+     extraGroups = [ "wheel" "docker" "audio" "networkmanager" "input" "video" "rtkit" "users" "dip" "bluetooth" ]; # Enable ‘sudo’ for the user.
     openssh.authorizedKeys.keys = [
       "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDh6bzSNqVZ1Ba0Uyp/EqThvDdbaAjsJ4GvYN40f/p9Wl4LcW/MQP8EYLvBTqTluAwRXqFa6fVpa0Y9Hq4kyNG62HiMoQRjujt6d3b+GU/pq7NN8+Oed9rCF6TxhtLdcvJWHTbcq9qIGs2s3eYDlMy+9koTEJ7Jnux0eGxObUaGteQUS1cOZ5k9PQg+WX5ncWa3QvqJNxx446+OzVoHgzZytvXeJMg91gKN9wAhKgfibJ4SpQYDHYcTrOILm7DLVghrcU2aFqLKVTrHSWSugfLkqeorRadHckRDr2VUzm5eXjcs4ESjrG6viKMKmlF1wxHoBrtfKzJ1nR8TGWWeH9NwXJtQ+qRzAhnQaHZyCZ6q4HvPlxxXOmgE+JuU6BCt6YPXAmNEMdMhkqYis4xSzxwWHvko79NnKY72pOIS2GgS6Xon0OxLOJ0mb66yhhZB4hUBb02CpvCMlKSLtvnS+2IcSGeSQBnwBw/wgp1uhr9ieUO/wY5K78w2kYFhR6Iet55gutbikSqDgxzTmuX3Mkjq0L/MVUIRAdmOysrR2Lxlk692IrNYTtUflQLsSfzrp6VQIKPxjfrdFhHIfbPoUdfMf+H06tfwkGONgcej56/fDjFbaHouZ357wcuwDsuMGNRCdyW7QyBXF/Wi28nPq/KSeOdCy+q9KDuOYsX9n/5Rsw== flakm" # content of authorized_keys file
       # note: ssh-copy-id will add user@clientmachine after the public key
@@ -67,21 +106,30 @@
     ];
    };
 
-
-
-
-
-  hardware.video.hidpi.enable = true;
-
-  hardware.bluetooth.enable = true;
+   security.pam.services.swaylock = {
+     text = "auth include login";
+   };
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
    environment.systemPackages = with pkgs; [
+     wayland
+     swaylock
+     swayidle
+     wl-clipboard
+     mako
+     wofi
+     waybar
+     pipewire-media-session
+     wlroots
+     rtkit
+
+
      wget
      curl
-     firefox
-     google-chrome
+     firefox-wayland
+     #google-chrome
+     chromium
 
      dbeaver
 
@@ -122,7 +170,7 @@
      pkg-config
      openssl
      
-     libsForQt5.bismuth
+     #libsForQt5.bismuth
    ];
 
   # Some programs need SUID wrappers, can be configured further or are

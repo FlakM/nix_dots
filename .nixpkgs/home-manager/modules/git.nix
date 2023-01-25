@@ -32,6 +32,7 @@
       ".scala-build/"
       ".direnv/"
       ".flake_dir/"
+      "result"
     ];
 
     extraConfig = {

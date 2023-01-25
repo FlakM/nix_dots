@@ -10,6 +10,7 @@
     nodejs-16_x
     go
     gopls
+    vscode-extensions.vadimcn.vscode-lldb
   ];
 
   programs.neovim = {
@@ -104,13 +105,18 @@
       (builtins.concatStringsSep "\n" [
         "lua << EOF"
         (builtins.readFile ./config/init.lua)
+
         "EOF"
         (builtins.readFile ./config/init.vim)
         ""
         (builtins.readFile ./config/lsp-config.vim)
         ""
         ""
-        (builtins.readFile ./config/rust-config.vim)
+        "lua << EOF"
+        "local extension_path = \"${pkgs.vscode-extensions.vadimcn.vscode-lldb}/share/vscode/extensions/vadimcn.vscode-lldb\""
+        (builtins.readFile ./config/rust-config.lua)
+        "EOF"
+
         (builtins.readFile ./config/metals-config.vim)
         #(builtins.readFile ./config/python-config.vim)
         #(builtins.readFile ./config/go-config.vim)

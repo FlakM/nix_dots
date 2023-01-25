@@ -3,13 +3,24 @@
 
   wayland.windowManager.sway = {
      enable = true;
-     config = rec {
+     systemdIntegration = true;
+     #wrapperFeatures.gtk = true;
+
+     config = {
        modifier = "Mod4";
-       # Use kitty as default terminal
+       #menu = "wofi --show run";
+       #bars = [
+       #  {
+       #    fonts.size = 15.0;
+       #    position = "bottom";
+       #    command = "waybar";
+       #  }
+       #];
+
        terminal = "alacritty"; 
        startup = [
          # Launch Firefox on start
-         {command = "firefox";}
+         {command = "alacritty";}
        ];
      };
    };

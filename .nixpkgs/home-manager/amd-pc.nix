@@ -8,17 +8,27 @@
     ./modules/rust.nix
     ./modules/zsh.nix
     ./modules/tmux.nix
-    ./modules/alacritty.nix
     ./modules/git.nix
     ./modules/gpg.nix
     ./modules/brother.nix
-    # this is not working with nvidia card...
-    #./modules/sway.nix
+
+    ./modules/kitty.nix
+    ./modules/alacritty.nix
+    ./modules/sway.nix
 
     ./modules/modivo.nix
   ];
 
   home = {
+    pointerCursor = {
+      name = "Adwaita";
+      package = pkgs.gnome.adwaita-icon-theme;
+      size = 24;
+      x11 = {
+        enable = true;
+        defaultCursor = "Adwaita";
+      };
+    };
     stateVersion = "22.11";
   };
 
