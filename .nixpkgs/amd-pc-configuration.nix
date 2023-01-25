@@ -23,21 +23,27 @@
   #networking.interfaces.enp0s9.useDHCP = true;
   #networking.interfaces.eth0.useDHCP = true;
 
-  # Enable the X11 windowing system.
-  #services.xserver.enable = true;
 
-  # Enable the Plasma 5 Desktop Environment.
-  #services.xserver.displayManager.sddm.enable = true;
-  #services.xserver.desktopManager.plasma5.enable = true;
+  nixpkgs.config.pulseaudio = true;
 
-  # Needed for sway
-  security.polkit.enable = true;
+  # Use xfce as desktop manager not DE
+  services.xserver = {
+    enable = true;
+    # left alt should switch to 3rd level
+    # https://nixos.wiki/wiki/Keyboard_Layout_Customization
+    xkbOptions = "lv3:lalt_switch";
+    desktopManager = {
+      xterm.enable = false;
+      xfce = {
+        enable = true;
+        noDesktop = true;
+        enableXfwm = false;
+      };
+    };
+    displayManager.defaultSession = "xfce";
+    windowManager.i3.enable = true;
+  };
 
-  #services.xserver.displayManager.gdm = {
-  #  enable = true;
-  #  wayland = true;
-  #};
-  #services.xserver.libinput.enable = true;
 
   services.xserver.videoDrivers = [ "amdgpu" ];
   boot.initrd.kernelModules = [ "amdgpu" ];
@@ -54,36 +60,17 @@
   services.dbus.enable = true;
 
   # Enable sound.
-  #sound.enable = true;
+  sound.enable = true;
+  services.blueman.enable = true;
 
   hardware = {
+    video.hidpi.enable = true;
+    pulseaudio.enable = true;
     opengl = {
       enable = true;
-      #driSupport = true;
+      driSupport = true;
     };
-    #video.hidpi.enable = true;
     bluetooth.enable = true;
-  };
-
-  # https://shen.hong.io/nixos-home-manager-wayland-sway/ 
-  # https://github.com/emersion/xdg-desktop-portal-wlr/wiki/%22It-doesn't-work%22-Troubleshooting-Checklist
-  xdg = {
-    portal = {
-      enable = true;
-      extraPortals = with pkgs; [ 
-        xdg-desktop-portal-wlr 
-        #xdg-desktop-portal-gtk
-      ];
-      wlr.enable = true;
-    };
-  };
-  security.rtkit.enable = true;
-  services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    alsa.support32Bit = true;
-    pulse.enable = true;
-    #jack.enable = true;
   };
 
   virtualisation.docker.enable = true;
@@ -106,6 +93,7 @@
     ];
    };
 
+
    security.pam.services.swaylock = {
      text = "auth include login";
    };
@@ -113,23 +101,14 @@
   # List packages installed in system profile. To search, run:
   # $ nix search wget
    environment.systemPackages = with pkgs; [
-     wayland
-     swaylock
-     swayidle
-     wl-clipboard
-     mako
-     wofi
-     waybar
-     pipewire-media-session
-     wlroots
-     rtkit
-
+     xfce.xfce4-pulseaudio-plugin
 
      wget
      curl
-     firefox-wayland
-     #google-chrome
-     chromium
+     firefox
+     google-chrome
+     
+     #chromium
 
      dbeaver
 
@@ -194,8 +173,8 @@
 
   services.udev.packages = [ pkgs.yubikey-personalization ];
 
-# Depending on the details of your configuration, this section might be necessary or not;
-# feel free to experiment
+  # Depending on the details of your configuration, this section might be necessary or not;
+  # feel free to experiment
   services.pcscd.enable = true;
   environment.shellInit = ''
     export GPG_TTY="$(tty)"

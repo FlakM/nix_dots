@@ -12,9 +12,9 @@
     ./modules/gpg.nix
     ./modules/brother.nix
 
-    ./modules/kitty.nix
     ./modules/alacritty.nix
-    ./modules/sway.nix
+
+    ./modules/i3.nix
 
     ./modules/modivo.nix
   ];
