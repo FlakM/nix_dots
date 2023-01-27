@@ -5,11 +5,11 @@
     zsh
   ];
 
-
   programs.zsh = {
     enable = true;
     autocd = true;
 
+    
     enableAutosuggestions = true;
     enableCompletion = true;
     enableSyntaxHighlighting = true;
@@ -52,6 +52,10 @@
       export PKG_CONFIG_PATH="${pkgs.openssl.dev}/lib/pkgconfig"
       export PKG="/lib/pkgconfig"
     '';
+
+      initExtraBeforeCompInit = ''
+        fpath+=("${config.home.profileDirectory}"/share/zsh/site-functions "${config.home.profileDirectory}"/share/zsh/$ZSH_VERSION/functions "${config.home.profileDirectory}"/share/zsh/vendor-completions)
+      '';
     #       initExtraBeforeCompInit = ''
     #    fpath+=("${config.home.homeDirectory}"/share/zsh/site-functions "${config.home.homeDirectory}"/share/zsh/$ZSH_VERSION/functions "${config.home.homeDirectory}"/share/zsh/vendor-completions)
     #  '';

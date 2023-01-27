@@ -62,6 +62,7 @@
   sound.enable = true;
   hardware.pulseaudio.enable = true;
 
+  environment.pathsToLink = [ "/share/zsh" ];
   virtualisation.docker.enable = true;
 
   # enable the tailscale daemon; this will do a variety of tasks:
