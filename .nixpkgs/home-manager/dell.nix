@@ -15,6 +15,8 @@
     # this is not working with nvidia card...
     #./modules/sway.nix
 
+    ./modules/i3.nix
+
     ./modules/modivo.nix
     ./modules/yubikey.nix
   ];

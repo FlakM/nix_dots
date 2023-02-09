@@ -103,7 +103,7 @@
   # $ nix search wget
    environment.systemPackages = with pkgs; [
      xfce.xfce4-pulseaudio-plugin
-    docker
+     docker
      wget
      curl
      firefox
