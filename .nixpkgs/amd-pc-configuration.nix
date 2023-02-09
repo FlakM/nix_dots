@@ -192,15 +192,16 @@
     gnupg = {
       dirmngr.enable = true;
       agent = {
-      enable = true;
-      enableSSHSupport = true;
+        enable = true;
+        pinentryFlavor = "tty";
+        enableSSHSupport = true;
       };
     };
     kdeconnect.enable = true;
   };
 
   services.openssh = {
-    enable = false;
+    enable = true;
     # require public key authentication for better security
     passwordAuthentication = false;
     kbdInteractiveAuthentication = false;
