@@ -27,6 +27,7 @@ in {
     #  }; 
     #};
   };
+
   xsession.windowManager.i3 = {
     enable = true;
     config = {
@@ -67,7 +68,7 @@ in {
 
           fonts = {
             names = [ "RobotoMono Nerd Font" ];
-            size = 18.0;
+            size = config.xsession.windowManager.i3.config.fonts.size;
           };
         }
       ];

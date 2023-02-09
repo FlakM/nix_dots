@@ -22,8 +22,8 @@
     ./modules/yubikey.nix
   ];
 
-  xsession.windowManager.i3.config.fonts.size=11.0;
-  programs.alacritty.settings.font.size = 11;
+  xsession.windowManager.i3.config.fonts.size=22.0;
+  programs.alacritty.settings.font.size = 18;
 
   home = {
     pointerCursor = {
