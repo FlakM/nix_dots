@@ -13,11 +13,19 @@
     ./modules/brother.nix
 
     ./modules/alacritty.nix
+    # this is not working with nvidia card...
+    #./modules/sway.nix
 
     ./modules/i3.nix
 
     ./modules/modivo.nix
+    ./modules/yubikey.nix
   ];
+
+  xsession.windowManager.i3.config.fonts.size=18.0;
+
+  # point size od the font
+  programs.alacritty.settings.font.size = 11;
 
   home = {
     pointerCursor = {

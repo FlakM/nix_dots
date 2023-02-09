@@ -27,7 +27,6 @@ in {
     #  }; 
     #};
   };
-
   xsession.windowManager.i3 = {
     enable = true;
     config = {
@@ -37,7 +36,6 @@ in {
 
       fonts = {
         names = [ "RobotoMono Nerd Font" ];
-        size = 18.0;
       };
 
       keybindings = lib.mkOptionDefault {

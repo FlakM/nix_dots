@@ -8,10 +8,11 @@
     ./modules/rust.nix
     ./modules/zsh.nix
     ./modules/tmux.nix
-    ./modules/alacritty.nix
     ./modules/git.nix
     ./modules/gpg.nix
     ./modules/brother.nix
+
+    ./modules/alacritty.nix
     # this is not working with nvidia card...
     #./modules/sway.nix
 
@@ -21,7 +22,19 @@
     ./modules/yubikey.nix
   ];
 
+  xsession.windowManager.i3.config.fonts.size=11.0;
+  programs.alacritty.settings.font.size = 11;
+
   home = {
+    pointerCursor = {
+      name = "Adwaita";
+      package = pkgs.gnome.adwaita-icon-theme;
+      size = 24;
+      x11 = {
+        enable = true;
+        defaultCursor = "Adwaita";
+      };
+    };
     stateVersion = "22.11";
   };
 
