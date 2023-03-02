@@ -18,6 +18,8 @@
     pkg-config
 
     heaptrack
+    gdb
+    lldb
   ] ++ lib.optionals stdenv.isDarwin [
      libiconv
   ];

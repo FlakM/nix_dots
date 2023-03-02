@@ -20,10 +20,13 @@
 
     ./modules/modivo.nix
     ./modules/yubikey.nix
+
+
+    ./modules/communication.nix
   ];
 
   xsession.windowManager.i3.config.fonts.size=18.0;
-  programs.alacritty.settings.font.size = 20;
+  programs.alacritty.settings.font.size = 11;
 
   home = {
     pointerCursor = {

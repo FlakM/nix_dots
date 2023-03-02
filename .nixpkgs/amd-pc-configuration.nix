@@ -102,7 +102,13 @@
   # List packages installed in system profile. To search, run:
   # $ nix search wget
    environment.systemPackages = with pkgs; [
+     qemu_full
+     virt-manager
+     quickemu
+
+
      xfce.xfce4-pulseaudio-plugin
+     pavucontrol
      docker
      wget
      curl
