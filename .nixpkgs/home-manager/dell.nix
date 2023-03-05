@@ -23,7 +23,7 @@
   ];
 
   xsession.windowManager.i3.config.fonts.size=22.0;
-  programs.alacritty.settings.font.size = 18;
+  programs.alacritty.settings.font.size = 14;
 
   home = {
     pointerCursor = {

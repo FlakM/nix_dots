@@ -61,11 +61,9 @@
   };
 
   # Configure keymap in X11
-  # services.xserver.layout = "us";
+  services.xserver.layout = "pl";
   # services.xserver.xkbOptions = "eurosign:e";
-
   i18n.defaultLocale = "en_US.UTF-8";
-
 
   services.dbus.enable = true;
 
