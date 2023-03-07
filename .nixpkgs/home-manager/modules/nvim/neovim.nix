@@ -11,6 +11,7 @@
     go
     gopls
     vscode-extensions.vadimcn.vscode-lldb
+    nil
   ];
 
   programs.neovim = {

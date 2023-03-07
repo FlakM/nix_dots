@@ -113,7 +113,7 @@ map("n", "<leader>dl", function()
   require("dap").run_last()
 end)
 
-
+require'lspconfig'.nil_ls.setup{}
 
 -- completion related settings
 -- This is similiar to what I use
