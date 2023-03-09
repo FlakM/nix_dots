@@ -211,6 +211,8 @@
     # require public key authentication for better security
     passwordAuthentication = false;
     kbdInteractiveAuthentication = false;
+
+    extraConfig = ''StreamLocalBindUnlink yes'';
     #permitRootLogin = "yes";
   };
 

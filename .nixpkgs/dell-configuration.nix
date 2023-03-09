@@ -196,8 +196,10 @@
     gnupg = {
       dirmngr.enable = true;
       agent = {
-      enable = true;
-      enableSSHSupport = true;
+        enable = true;
+
+        enableExtraSocket = true;
+        enableSSHSupport = true;
       };
     };
     # This adds JAVA_HOME to the global environment, by sourcing the jdk's
