@@ -197,8 +197,6 @@
       dirmngr.enable = true;
       agent = {
         enable = true;
-
-        enableExtraSocket = true;
         enableSSHSupport = true;
       };
     };

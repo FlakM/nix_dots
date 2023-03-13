@@ -13,6 +13,7 @@
   networking.networkmanager.wifi.backend = "iwd";
   networking.firewall.checkReversePath = "loose";
 
+  networking.hostName = "amd-pc";
 
   time.timeZone = "Europe/Warsaw";
 
@@ -212,7 +213,7 @@
     passwordAuthentication = false;
     kbdInteractiveAuthentication = false;
 
-    extraConfig = ''StreamLocalBindUnlink yes'';
+    #extraConfig = ''StreamLocalBindUnlink yes'';
     #permitRootLogin = "yes";
   };
 

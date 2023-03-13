@@ -4,8 +4,8 @@
     rustup
     rust-analyzer
     mold
-    #clang
-    gcc
+    clang
+    #gcc
     openssl
     #libiconv
     pkg-config
@@ -37,6 +37,10 @@
 
 
   home.file.".cargo/config.toml".text = ''
+[target.x86_64-unknown-linux-gnu]
+linker = "clang"
+rustflags = ["-C", "link-arg=-fuse-ld=${pkgs.mold}/bin/mold"]
+
 [registries.crates-io]
 protocol = "sparse"
   '';
