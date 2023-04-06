@@ -107,7 +107,6 @@
      virt-manager
      quickemu
 
-
      xfce.xfce4-pulseaudio-plugin
      pavucontrol
      docker

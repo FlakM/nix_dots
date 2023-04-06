@@ -2,31 +2,42 @@ lua << EOF
 local api = vim.api
 local cmd = vim.cmd
 local map = vim.keymap.set
-
+local builtin = require('telescope.builtin')
 
 -- LSP mappings
+-- go to definition
 map("n", "gd", function()
   vim.lsp.buf.definition()
 end)
 
+
+-- print item's docs
 map("n", "K", function()
   vim.lsp.buf.hover()
 end)
 
+-- go to implementation
 map("n", "gi", function()
   vim.lsp.buf.implementation()
+  --builtin.lsp_implementations()
 end)
 
+-- show references using telescope
 map("n", "gr", function()
-  vim.lsp.buf.references()
+  --vim.lsp.buf.references()
+  builtin.lsp_references()
 end)
 
+-- show document symbols using telescope
 map("n", "gds", function()
-  vim.lsp.buf.document_symbol()
+  --vim.lsp.buf.document_symbol()
+  builtin.lsp_document_symbols()
 end)
 
+-- show workspace symbols using telescope
 map("n", "gws", function()
-  vim.lsp.buf.workspace_symbol()
+  --vim.lsp.buf.workspace_symbol()
+  builtin.lsp_workspace_symbols()
 end)
 
 map("n", "<leader>cl", function()
@@ -120,8 +131,12 @@ require'lspconfig'.nil_ls.setup{}
 local cmp = require("cmp")
 cmp.setup({
   sources = {
-    { name = "nvim_lsp" },
-    { name = "vsnip" },
+    { name = 'path' },                              -- file paths
+    { name = 'nvim_lsp', keyword_length = 3 },      -- from language server
+    { name = 'nvim_lsp_signature_help'},            -- display function signatures with current parameter emphasized
+    { name = 'nvim_lua', keyword_length = 2},       -- complete neovim's Lua runtime API such vim.lsp.*
+    { name = 'buffer', keyword_length = 2 },        -- source current buffer
+    { name = 'vsnip', keyword_length = 2 },         -- nvim-cmp source for vim-vsnip 
   },
   snippet = {
     expand = function(args)
@@ -130,27 +145,19 @@ cmp.setup({
     end,
   },
   mapping = cmp.mapping.preset.insert({
-    -- None of this made sense to me when first looking into this since there
-    -- is no vim docs, but you can't have select = true here _unless_ you are
-    -- also using the snippet stuff. So keep in mind that if you remove
-    -- snippets you need to remove this select
-    ["<CR>"] = cmp.mapping.confirm({ select = true }),
-    -- I use tabs... some say you should stick to ins-completion but this is just here as an example
-    ["<Tab>"] = function(fallback)
-      if cmp.visible() then
-        cmp.select_next_item()
-      else
-        fallback()
-      end
-    end,
-    ["<S-Tab>"] = function(fallback)
-      if cmp.visible() then
-        cmp.select_prev_item()
-      else
-        fallback()
-      end
-    end,
-  }),
+    ['<C-p>'] = cmp.mapping.select_prev_item(),
+    ['<C-n>'] = cmp.mapping.select_next_item(),
+    -- Add tab support
+    ['<S-Tab>'] = cmp.mapping.select_prev_item(),
+    ['<Tab>'] = cmp.mapping.select_next_item(),
+    ['<C-S-f>'] = cmp.mapping.scroll_docs(-4),
+    ['<C-f>'] = cmp.mapping.scroll_docs(4),
+    ['<C-Space>'] = cmp.mapping.complete(),
+    ['<C-e>'] = cmp.mapping.close(),
+    ['<CR>'] = cmp.mapping.confirm({
+      behavior = cmp.ConfirmBehavior.Insert,
+      select = true,
+    })  }),
 })
 
 
