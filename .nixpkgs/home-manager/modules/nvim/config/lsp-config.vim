@@ -62,10 +62,6 @@ map("n", "<leader>ca", function()
   vim.lsp.buf.code_action()
 end)
 
-map("n", "<leader>ws", function()
-  require("metals").hover_worksheet()
-end)
-
 -- all workspace diagnostics
 map("n", "<leader>aa", function()
   vim.diagnostic.setqflist()
@@ -96,20 +92,12 @@ end)
 
 -- Example mappings for usage with nvim-dap. If you don't use that, you can
 -- skip these
-map("n", "<leader>dc", function()
-  require("dap").continue()
-end)
-
-map("n", "<leader>dr", function()
-  require("dap").repl.toggle()
-end)
-
-map("n", "<leader>dK", function()
-  require("dap.ui.widgets").hover()
-end)
-
 map("n", "<leader>dt", function()
   require("dap").toggle_breakpoint()
+end)
+
+map("n", "<leader>dc", function()
+  require("dap").continue()
 end)
 
 map("n", "<leader>dso", function()
@@ -123,6 +111,16 @@ end)
 map("n", "<leader>dl", function()
   require("dap").run_last()
 end)
+
+-- repl/ui
+map("n", "<leader>duo", function()
+  require("dapui").open()
+end)
+
+map("n", "<leader>duc", function()
+  require("dapui").close()
+end)
+
 
 require'lspconfig'.nil_ls.setup{}
 

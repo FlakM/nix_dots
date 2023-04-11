@@ -47,6 +47,9 @@
       # LSP support & completion
       plenary-nvim
       nvim-dap
+      nvim-dap-ui
+
+
       nvim-lspconfig
 
       # for vsnip users
