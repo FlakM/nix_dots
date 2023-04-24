@@ -80,6 +80,7 @@
       nixpkgs.lib.nixosSystem {
          system = "x86_64-linux";
           modules = [
+            #./wireguard.nix
             ./amd-pc-hardware-configuration.nix
             ./amd-pc-hardware-zfs-configuration.nix
             ./amd-pc-configuration.nix

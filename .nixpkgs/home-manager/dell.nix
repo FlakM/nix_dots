@@ -20,6 +20,8 @@
 
     ./modules/modivo.nix
     ./modules/yubikey.nix
+
+    ./modules/sql.nix
   ];
 
   xsession.windowManager.i3.config.fonts.size=20.0;

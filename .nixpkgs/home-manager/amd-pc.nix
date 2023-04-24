@@ -23,6 +23,8 @@
 
 
     ./modules/communication.nix
+
+    ./modules/sql.nix
   ];
 
   xsession.windowManager.i3.config.fonts.size=18.0;

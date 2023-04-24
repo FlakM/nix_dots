@@ -3,6 +3,7 @@
 
   home.packages = with pkgs; [
     git
+    git-crypt
   ];
 
   programs.git = {

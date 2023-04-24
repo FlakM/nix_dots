@@ -220,9 +220,11 @@
 
   # Let's open the UDP port with which the network is tunneled through
   networking.firewall = {
-    #allowedTCPPorts = [ 22 ];
-    allowedUDPPorts = [ 41641 ];
+    allowedUDPPorts = [ 41641  ]; # tailscale
   };
+
+
+
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions

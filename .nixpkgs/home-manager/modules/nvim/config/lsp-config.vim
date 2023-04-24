@@ -90,33 +90,44 @@ map("n", "]c", function()
   vim.diagnostic.goto_next({ wrap = false })
 end)
 
--- Example mappings for usage with nvim-dap. If you don't use that, you can
--- skip these
+-- Example mappings for usage with nvim-dap. If you don't use that, you can skip these
+
+-- Toggle breakpoint
 map("n", "<leader>dt", function()
   require("dap").toggle_breakpoint()
 end)
 
+-- Continue execution
 map("n", "<leader>dc", function()
   require("dap").continue()
 end)
 
+-- Step over
 map("n", "<leader>dso", function()
   require("dap").step_over()
 end)
 
+-- Step into
 map("n", "<leader>dsi", function()
   require("dap").step_into()
 end)
 
+-- Step out
+map("n", "<leader>dsO", function()
+  require("dap").step_out()
+end)
+
+-- Run last configuration
 map("n", "<leader>dl", function()
   require("dap").run_last()
 end)
 
--- repl/ui
+-- Open dapui
 map("n", "<leader>duo", function()
   require("dapui").open()
 end)
 
+-- Close dapui
 map("n", "<leader>duc", function()
   require("dapui").close()
 end)
