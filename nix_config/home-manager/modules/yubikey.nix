@@ -13,7 +13,7 @@
         yubikey-personalization
         yubikey-personalization-gui
         yubico-piv-tool
-        yubioath-desktop
+        yubioath-flutter
   ];
 
 

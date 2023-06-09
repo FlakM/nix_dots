@@ -16,7 +16,7 @@ sudo nixos-rebuild switch --flake ~/programming/flakm/.nixpkgs#dell-xps
 
 ```bash
 git clone https://github.com/FlakM/nix_dots.git
-cd nix_dots/.nixpkgs
+cd nix_dots/nix_config
 # install nix flakes
 nix-env -iA nixpkgs.nixFlakes
 
@@ -35,7 +35,7 @@ experimental-features = nix-command flakes
 1. Modify `*.nix` files and execute following command:
 
 ```bash
-darwin-rebuild switch --flake ~/nix_dots/.nixpkgs#m1pro
+darwin-rebuild switch --flake ~/nix_dots/nix_config#m1pro
 ```
 
 ### Add custom dir flake

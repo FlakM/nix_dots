@@ -51,6 +51,12 @@
       export JAVA_HOME="${pkgs.jdk.home}/bin/.."
       export PKG_CONFIG_PATH="${pkgs.openssl.dev}/lib/pkgconfig"
       export PKG="/lib/pkgconfig"
+
+      changelog() {
+        latest_tag=$(git tag --sort=taggerdate | tail -1)
+        new_version=$(echo $latest_tag | awk -F. '{$NF = $NF + 1;} 1' OFS=.)
+        git-cliff "$latest_tag..HEAD" --tag "$new_version"
+      }
     '';
 
       initExtraBeforeCompInit = ''

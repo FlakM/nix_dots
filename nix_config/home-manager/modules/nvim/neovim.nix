@@ -7,7 +7,7 @@
 
   home.packages = with pkgs; [
     # for copilot
-    nodejs-16_x
+    nodejs
     go
     gopls
     vscode-extensions.vadimcn.vscode-lldb
