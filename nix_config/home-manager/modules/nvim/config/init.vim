@@ -77,9 +77,6 @@ set noshowmode
 set hidden
 set nowrap
 set nojoinspaces
-set printfont=:h10
-set printencoding=utf-8
-set printoptions=paper:letter
 
 " Settings needed for .lvimrc
 set exrc
