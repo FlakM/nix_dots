@@ -5,7 +5,8 @@
 
 {
   imports =
-    [ (modulesPath + "/installer/scan/not-detected.nix")
+    [
+      (modulesPath + "/installer/scan/not-detected.nix")
     ];
 
   boot.initrd.availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod" ];
@@ -18,42 +19,55 @@
   boot.extraModulePackages = [ ];
 
   fileSystems."/" =
-    { device = "rpool/nixos/root";
-      fsType = "zfs"; options = [ "zfsutil" "X-mount.mkdir" ];
+    {
+      device = "rpool/nixos/root";
+      fsType = "zfs";
+      options = [ "zfsutil" "X-mount.mkdir" ];
     };
 
   fileSystems."/home" =
-    { device = "rpool/nixos/home";
-      fsType = "zfs"; options = [ "zfsutil" "X-mount.mkdir" ];
+    {
+      device = "rpool/nixos/home";
+      fsType = "zfs";
+      options = [ "zfsutil" "X-mount.mkdir" ];
     };
 
   fileSystems."/var/lib" =
-    { device = "rpool/nixos/var/lib";
-      fsType = "zfs"; options = [ "zfsutil" "X-mount.mkdir" ];
+    {
+      device = "rpool/nixos/var/lib";
+      fsType = "zfs";
+      options = [ "zfsutil" "X-mount.mkdir" ];
     };
 
   fileSystems."/var/log" =
-    { device = "rpool/nixos/var/log";
-      fsType = "zfs"; options = [ "zfsutil" "X-mount.mkdir" ];
+    {
+      device = "rpool/nixos/var/log";
+      fsType = "zfs";
+      options = [ "zfsutil" "X-mount.mkdir" ];
     };
 
   fileSystems."/boot" =
-    { device = "bpool/nixos/root";
-      fsType = "zfs"; options = [ "zfsutil" "X-mount.mkdir" ];
+    {
+      device = "bpool/nixos/root";
+      fsType = "zfs";
+      options = [ "zfsutil" "X-mount.mkdir" ];
     };
 
   fileSystems."/boot/efis/nvme-Samsung_SSD_990_PRO_2TB_S6Z2NJ0TB26329Y-part1" =
-    { device = "/dev/disk/by-uuid/B9E8-9976";
+    {
+      device = "/dev/disk/by-uuid/B9E8-9976";
       fsType = "vfat";
     };
 
   fileSystems."/boot/efis/nvme-Samsung_SSD_990_PRO_2TB_S6Z2NJ0TB26332W-part1" =
-    { device = "/dev/disk/by-uuid/B9E9-0A04";
+    {
+      device = "/dev/disk/by-uuid/B9E9-0A04";
       fsType = "vfat";
     };
 
   fileSystems."/boot/efi" =
-    { device = "/boot/efis/nvme-Samsung_SSD_990_PRO_2TB_S6Z2NJ0TB26329Y-part1";
+    {
+      device = "/boot/efis/nvme-Samsung_SSD_990_PRO_2TB_S6Z2NJ0TB26329Y-part1";
       fsType = "none";
       options = [ "bind" ];
     };

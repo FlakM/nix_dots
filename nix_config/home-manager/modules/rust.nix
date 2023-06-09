@@ -21,15 +21,15 @@
     lldb
     openssl
   ] ++ lib.optionals stdenv.isDarwin [
-     libiconv
+    libiconv
   ];
 
 
- # home.file.".cargo/config.toml".text = ''
- #   [target.x86_64-unknown-linux-gnu]
- #   linker = "clang"
- #   rustflags = ["-C", "link-arg=-fuse-ld=${pkgs.mold}/bin/mold"]
- # '';
+  # home.file.".cargo/config.toml".text = ''
+  #   [target.x86_64-unknown-linux-gnu]
+  #   linker = "clang"
+  #   rustflags = ["-C", "link-arg=-fuse-ld=${pkgs.mold}/bin/mold"]
+  # '';
 
   #home.sessionVariables = {
   #  PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig;${pkgs.libiconv}/lib/";
@@ -37,12 +37,12 @@
 
 
   home.file.".cargo/config.toml".text = ''
-#[target.x86_64-unknown-linux-gnu]
-#linker = "clang"
-#rustflags = ["-C", "link-arg=-fuse-ld=${pkgs.mold}/bin/mold"]
+    #[target.x86_64-unknown-linux-gnu]
+    #linker = "clang"
+    #rustflags = ["-C", "link-arg=-fuse-ld=${pkgs.mold}/bin/mold"]
 
-[registries.crates-io]
-protocol = "sparse"
+    [registries.crates-io]
+    protocol = "sparse"
   '';
 
 }

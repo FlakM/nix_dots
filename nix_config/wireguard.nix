@@ -13,7 +13,7 @@
       address = [ "fdf3:e1c5:2572:6::29/128" ];
       #dns = [ "fdf3:e1c5:2572::2:0" ];
       privateKeyFile = "/home/flakm/wireguard-keys/private";
-      
+
       peers = [
         {
           publicKey = "iRVcBTyDgqYOtabwnmKD2QHCVik1ZVeHjys0yW4qgmc=";

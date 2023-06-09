@@ -1,12 +1,13 @@
 { config, lib, pkgs, ... }:
 
-let 
+let
   mod = "Mod4";
-in {
+in
+{
   home.packages = with pkgs; [
     pamixer
   ];
-  
+
   programs.i3status-rust = {
     enable = true;
     bars.bottom = {

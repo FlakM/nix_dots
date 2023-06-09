@@ -9,7 +9,7 @@
     enable = true;
     autocd = true;
 
-    
+
     enableAutosuggestions = true;
     enableCompletion = true;
     enableSyntaxHighlighting = true;
@@ -59,9 +59,9 @@
       }
     '';
 
-      initExtraBeforeCompInit = ''
-        fpath+=("${config.home.profileDirectory}"/share/zsh/site-functions "${config.home.profileDirectory}"/share/zsh/$ZSH_VERSION/functions "${config.home.profileDirectory}"/share/zsh/vendor-completions)
-      '';
+    initExtraBeforeCompInit = ''
+      fpath+=("${config.home.profileDirectory}"/share/zsh/site-functions "${config.home.profileDirectory}"/share/zsh/$ZSH_VERSION/functions "${config.home.profileDirectory}"/share/zsh/vendor-completions)
+    '';
     #       initExtraBeforeCompInit = ''
     #    fpath+=("${config.home.homeDirectory}"/share/zsh/site-functions "${config.home.homeDirectory}"/share/zsh/$ZSH_VERSION/functions "${config.home.homeDirectory}"/share/zsh/vendor-completions)
     #  '';

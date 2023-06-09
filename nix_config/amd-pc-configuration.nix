@@ -85,91 +85,80 @@
 
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
-   users.users.flakm = {
-     shell = pkgs.zsh;
-     isNormalUser = true;
-     extraGroups = [ "wheel" "docker" "audio" "networkmanager" "input" "video" "rtkit" "users" "dip" "bluetooth" ]; # Enable ‘sudo’ for the user.
+  users.users.flakm = {
+    shell = pkgs.zsh;
+    isNormalUser = true;
+    extraGroups = [ "wheel" "docker" "audio" "networkmanager" "input" "video" "rtkit" "users" "dip" "bluetooth" ]; # Enable ‘sudo’ for the user.
     openssh.authorizedKeys.keys = [
       "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDh6bzSNqVZ1Ba0Uyp/EqThvDdbaAjsJ4GvYN40f/p9Wl4LcW/MQP8EYLvBTqTluAwRXqFa6fVpa0Y9Hq4kyNG62HiMoQRjujt6d3b+GU/pq7NN8+Oed9rCF6TxhtLdcvJWHTbcq9qIGs2s3eYDlMy+9koTEJ7Jnux0eGxObUaGteQUS1cOZ5k9PQg+WX5ncWa3QvqJNxx446+OzVoHgzZytvXeJMg91gKN9wAhKgfibJ4SpQYDHYcTrOILm7DLVghrcU2aFqLKVTrHSWSugfLkqeorRadHckRDr2VUzm5eXjcs4ESjrG6viKMKmlF1wxHoBrtfKzJ1nR8TGWWeH9NwXJtQ+qRzAhnQaHZyCZ6q4HvPlxxXOmgE+JuU6BCt6YPXAmNEMdMhkqYis4xSzxwWHvko79NnKY72pOIS2GgS6Xon0OxLOJ0mb66yhhZB4hUBb02CpvCMlKSLtvnS+2IcSGeSQBnwBw/wgp1uhr9ieUO/wY5K78w2kYFhR6Iet55gutbikSqDgxzTmuX3Mkjq0L/MVUIRAdmOysrR2Lxlk692IrNYTtUflQLsSfzrp6VQIKPxjfrdFhHIfbPoUdfMf+H06tfwkGONgcej56/fDjFbaHouZ357wcuwDsuMGNRCdyW7QyBXF/Wi28nPq/KSeOdCy+q9KDuOYsX9n/5Rsw== flakm" # content of authorized_keys file
       # note: ssh-copy-id will add user@clientmachine after the public key
       # but we can remove the "@clientmachine" part
     ];
-   };
+  };
 
-   environment.pathsToLink = [ "/share/zsh" ];
+  environment.pathsToLink = [ "/share/zsh" ];
 
-   security.pam.services.swaylock = {
-     text = "auth include login";
-   };
+  security.pam.services.swaylock = {
+    text = "auth include login";
+  };
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
-   environment.systemPackages = with pkgs; [
-     qemu_full
-     virt-manager
-     quickemu
+  environment.systemPackages = with pkgs; [
+    qemu_full
+    virt-manager
+    quickemu
 
-     xfce.xfce4-pulseaudio-plugin
-     pavucontrol
-     docker
-     wget
-     curl
-     firefox
-     google-chrome
-     
-     #chromium
+    xfce.xfce4-pulseaudio-plugin
+    pavucontrol
+    docker
+    wget
+    curl
+    firefox
+    google-chrome
 
-     dbeaver
+    #chromium
 
-     binutils 
-     inotify-tools
-     lm_sensors
+    dbeaver
 
-     # vpn/rdp
-     jq
-     openconnect
-     freerdp
-     openvpn
+    binutils
+    inotify-tools
+    lm_sensors
+
+    # vpn/rdp
+    jq
+    openconnect
+    freerdp
+    openvpn
 
 
-     # media
-     spotify
-     gimp
-     vlc
-     signal-desktop
+    # media
+    spotify
+    gimp
+    vlc
+    signal-desktop
 
-     # office
-     thunderbird
-     gpgme
-     teams
-     libreoffice
-     bitwarden
-     bitwarden-cli
+    # office
+    thunderbird
+    gpgme
+    teams
+    libreoffice
+    bitwarden
+    bitwarden-cli
 
-     # spelling
-     aspell
-     aspellDicts.pl
-     aspellDicts.en
-     aspellDicts.en-computers
+    # spelling
+    aspell
+    aspellDicts.pl
+    aspellDicts.en
+    aspellDicts.en-computers
 
-     tailscale
-     element-desktop
+    tailscale
+    element-desktop
 
-     pkg-config
-     openssl
-     
-     #libsForQt5.bismuth
-   ];
+    pkg-config
+    openssl
+  ];
 
-  # Some programs need SUID wrappers, can be configured further or are
-  # started in user sessions.
-  # programs.mtr.enable = true;
-  # programs.gnupg.agent = {
-  #   enable = true;
-  #   enableSSHSupport = true;
-  # };
-
-  # List services that you want to enable:
 
   # Enable the OpenSSH daemon.
   # services.openssh.enable = true;
@@ -180,17 +169,16 @@
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
 
-  services.udev.packages = [ pkgs.yubikey-personalization ];
 
   # Depending on the details of your configuration, this section might be necessary or not;
   # feel free to experiment
-  services.pcscd.enable = true;
-  environment.shellInit = ''
-    export GPG_TTY="$(tty)"
-    gpg-connect-agent /bye
-    export SSH_AUTH_SOCK="/run/user/$UID/gnupg/S.gpg-agent.ssh"
-  '';
-  
+  #services.pcscd.enable = true;
+  #environment.shellInit = ''
+  #  export GPG_TTY="$(tty)"
+  #  gpg-connect-agent /bye
+  #  export SSH_AUTH_SOCK="/run/user/$UID/gnupg/S.gpg-agent.ssh"
+  #'';
+
   services.printing.enable = true;
   services.printing.drivers = [ pkgs.brlaser ];
 
@@ -219,7 +207,7 @@
 
   # Let's open the UDP port with which the network is tunneled through
   networking.firewall = {
-    allowedUDPPorts = [ 41641  ]; # tailscale
+    allowedUDPPorts = [ 41641 ]; # tailscale
   };
 
 

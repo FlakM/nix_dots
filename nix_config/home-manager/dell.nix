@@ -9,7 +9,7 @@
     ./modules/zsh.nix
     ./modules/tmux.nix
     ./modules/git.nix
-    ./modules/gpg.nix
+    ./modules/gpg_home.nix
     ./modules/brother.nix
 
     ./modules/alacritty.nix
@@ -24,7 +24,7 @@
     ./modules/sql.nix
   ];
 
-  xsession.windowManager.i3.config.fonts.size=20.0;
+  xsession.windowManager.i3.config.fonts.size = 20.0;
   programs.alacritty.settings.font.size = 11;
 
   home = {

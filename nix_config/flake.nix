@@ -33,7 +33,7 @@
       ];
 
 
-      nixosConfigurations.dell-xps = 
+      nixosConfigurations.dell-xps =
         let
           # Inject 'unstable' and 'trunk' into the overridden package set, so that
           # the following overlays may access them (along with any system configs
@@ -44,12 +44,13 @@
             }
           );
 
-      in
-      nixpkgs.lib.nixosSystem {
-         system = "x86_64-linux";
+        in
+        nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
           modules = [
             ./dell-hardware-configuration.nix
             ./dell-configuration.nix
+            ./gpg.nix
             nixos-hardware.nixosModules.dell-xps-15-9560-intel
             {
               nixpkgs.overlays = [
@@ -63,9 +64,9 @@
               home-manager.users.flakm = import ./home-manager/dell.nix;
             }
           ];
-      };
+        };
 
-      nixosConfigurations.amd-pc = 
+      nixosConfigurations.amd-pc =
         let
           # Inject 'unstable' and 'trunk' into the overridden package set, so that
           # the following overlays may access them (along with any system configs
@@ -76,11 +77,12 @@
             }
           );
 
-      in
-      nixpkgs.lib.nixosSystem {
-         system = "x86_64-linux";
+        in
+        nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
           modules = [
             ./wireguard.nix
+            ./gpg.nix
             ./amd-pc-hardware-configuration.nix
             ./amd-pc-hardware-zfs-configuration.nix
             ./amd-pc-configuration.nix
@@ -96,7 +98,7 @@
               home-manager.users.flakm = import ./home-manager/amd-pc.nix;
             }
           ];
-      };
+        };
 
       darwinConfigurations.m1pro =
         let

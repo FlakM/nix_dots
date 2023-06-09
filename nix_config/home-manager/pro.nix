@@ -11,7 +11,7 @@
     ./modules/alacritty.nix
     ./modules/git.nix
     ./modules/scala.nix
-    ./modules/gpg.nix
+    ./modules/gpg_home.nix
     ./modules/java.nix
     ./modules/aws.nix
     #./modules/1password.nix
