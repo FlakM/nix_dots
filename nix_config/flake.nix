@@ -83,6 +83,7 @@
           modules = [
             ./wireguard.nix
             ./gpg.nix
+            ./k3s.nix
             ./amd-pc-hardware-configuration.nix
             ./amd-pc-hardware-zfs-configuration.nix
             ./amd-pc-configuration.nix

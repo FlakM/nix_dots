@@ -8,7 +8,7 @@ set clipboard^=unnamed,unnamedplus
 " it seems that ie rust analyzer needs it to provide errors to coc
 "let g:rooter_patterns = ['.git', 'Makefile', '*.sln', 'build/env.sh', "settings.gradle", "Cargo.toml", "package.json"]
 
-set termguicolors " this variable must be enabled for colors to be applied properly
+"set termguicolors " this variable must be enabled for colors to be applied properly
 "set background=dark " or light if you want light mode
 set background=dark " or light if you want light mode
 colorscheme gruvbox
