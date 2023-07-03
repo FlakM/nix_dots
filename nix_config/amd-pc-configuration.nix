@@ -7,8 +7,8 @@
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
 
-  boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
-  boot.kernel.sysctl."net.ipv6.conf.all.forwarding" = 1;
+  #boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
+  #boot.kernel.sysctl."net.ipv6.conf.all.forwarding" = 1;
 
   # networking.hostName = "nixos"; # Define your hostname.
   networking.networkmanager.enable = true;
@@ -24,8 +24,9 @@
   # Per-interface useDHCP will be mandatory in the future, so this generated config
   # replicates the default behaviour.
   #networking.useDHCP = false;
-  #networking.interfaces.enp0s9.useDHCP = true;
+  #networking.interfaces.enp14s0.useDHCP = false;
   #networking.interfaces.eth0.useDHCP = true;
+
 
 
   nixpkgs.config.pulseaudio = true;
@@ -81,7 +82,7 @@
   # enable the tailscale daemon; this will do a variety of tasks:
   # 1. create the TUN network device
   # 2. setup some IP routes to route through the TUN
-  services.tailscale.enable = true;
+  services.tailscale.enable = false;
 
 
   # Define a user account. Don't forget to set a password with ‘passwd’.

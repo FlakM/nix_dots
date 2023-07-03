@@ -49,7 +49,7 @@ map("n", "<leader>sh", function()
 end)
 
 map("n", "<leader>FF", function()
-  vim.lsp.buf.formatting()
+  vim.lsp.buf.format { async = true }
 end)
 
 

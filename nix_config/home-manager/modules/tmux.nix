@@ -13,11 +13,12 @@
       # Start windows and pane numbering with index 1 instead of 0
       set -g base-index 1
       setw -g pane-base-index 1
-      # {n}vim compability
-      # https://stackoverflow.com/questions/60309665/neovim-colorscheme-does-not-look-right-when-using-nvim-inside-tmux
-      set-option -ga terminal-overrides ",xterm-256color:Tc"
 
-      set -g default-terminal "screen-256color"
+      set -g default-terminal "tmux-256color"
+      #set -ag terminal-overrides ",xterm-256color:RGB"
+
+      set-option -a terminal-overrides ",alacritty:RGB"
+
       set-option -g status-style bg=default
 
       # to enter press prefix + [

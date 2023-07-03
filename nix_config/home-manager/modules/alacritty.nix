@@ -9,7 +9,12 @@
 
   programs.alacritty = {
     enable = true;
+
     settings = {
+
+      env = {
+        TERM = "xterm-256color";
+      };
       hide_cursor_when_typing = true;
       font = {
         normal.family = "RobotoMono Nerd Font";
