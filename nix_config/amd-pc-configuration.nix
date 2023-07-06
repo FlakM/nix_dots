@@ -82,7 +82,7 @@
   # enable the tailscale daemon; this will do a variety of tasks:
   # 1. create the TUN network device
   # 2. setup some IP routes to route through the TUN
-  services.tailscale.enable = false;
+  services.tailscale.enable = true;
 
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
@@ -200,8 +200,10 @@
 
   services.openssh = {
     enable = true;
-    #extraConfig = ''StreamLocalBindUnlink yes'';
-    #permitRootLogin = "yes";
+    settings = {
+      PasswordAuthentication = false;
+      KbdInteractiveAuthentication = false;
+    };
   };
 
 
