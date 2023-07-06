@@ -91,12 +91,10 @@
     ];
   };
 
-
+  programs.zsh.enable = true;
 
 
   environment.pathsToLink = [ "/share/zsh" ];
-
-  hardware.video.hidpi.enable = true;
 
   hardware.bluetooth.enable = true;
 
