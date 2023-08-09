@@ -31,30 +31,42 @@
 
   nixpkgs.config.pulseaudio = true;
 
+
+
+
+
   # Use xfce as desktop manager not DE
+  #services.xserver = {
+  #  enable = true;
+  #  # left alt should switch to 3rd level
+  #  # https://nixos.wiki/wiki/Keyboard_Layout_Customization
+  #  xkbOptions = "lv3:lalt_switch";
+  # #   windowManager.i3.enable = true;
+  #  
+  #  desktopManager.plasma5.enable = true;
+  #  displayManager.sddm.enable = true;
+  #};
+
   services.xserver = {
     enable = true;
+    videoDrivers = [ "amdgpu" ];
+    displayManager.gdm = {
+      enable = true;
+      wayland = true;
+    };
+
     # left alt should switch to 3rd level
     # https://nixos.wiki/wiki/Keyboard_Layout_Customization
     xkbOptions = "lv3:lalt_switch";
-    desktopManager = {
-      xterm.enable = false;
-      xfce = {
-        enable = true;
-        noDesktop = true;
-        enableXfwm = false;
-      };
-    };
-    displayManager.defaultSession = "xfce";
-    windowManager.i3.enable = true;
+
   };
 
-
-  services.xserver.videoDrivers = [ "amdgpu" ];
+  #services.xserver.videoDrivers = [ "amdgpu" ];
   boot.initrd.kernelModules = [ "amdgpu" ];
+  boot.kernelParams = [ "amdgpu.sg_display=0" ];
 
   # Configure keymap in X11
-  services.xserver.layout = "pl";
+  #services.xserver.layout = "pl";
   # services.xserver.xkbOptions = "eurosign:e";
   i18n.defaultLocale = "en_US.UTF-8";
 

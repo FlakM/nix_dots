@@ -14,6 +14,8 @@
       url = "github:nix-community/home-manager/release-23.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    hyprland.url = "github:hyprwm/Hyprland";
   };
 
   outputs =
@@ -23,6 +25,7 @@
     , nixpkgs
     , nixpkgs-unstable
     , nixos-hardware
+    , hyprland
     , ...
     }@inputs:
     {
@@ -66,6 +69,26 @@
           ];
         };
 
+
+      homeConfigurations.amd-pc = home-manager.lib.homeManagerConfiguration {
+        pkgs = nixpkgs.legacyPackages.x86_64-linux;
+
+        modules = [
+          hyprland.homeManagerModules.default
+          {
+            wayland.windowManager.hyprland = {
+              enable = true;
+              xwayland = {
+                enable = true;
+                hidpi = true;
+              };
+            };
+          }
+          ./home-manager/modules/hyprland.nix
+        ];
+      };
+
+
       nixosConfigurations.amd-pc =
         let
           # Inject 'unstable' and 'trunk' into the overridden package set, so that
@@ -80,13 +103,23 @@
         in
         nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
+          specialArgs = { inherit inputs; }; # this is the important part
           modules = [
+
             ./wireguard.nix
             ./gpg.nix
             ./k3s.nix
             ./amd-pc-hardware-configuration.nix
             ./amd-pc-hardware-zfs-configuration.nix
             ./amd-pc-configuration.nix
+            # hyprland.nixosModules.default
+            # {
+            #   programs.hyprland = {
+            #     enable = true;
+            #     package = inputs.hyprland.packages.x86_64-linux.hyprland;
+            #     xwayland.enable = true;
+            #   };
+            # }
             {
               nixpkgs.overlays = [
                 pkg-sets
