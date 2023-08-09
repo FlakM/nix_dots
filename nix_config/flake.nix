@@ -28,59 +28,49 @@
     , hyprland
     , ...
     }@inputs:
+    let
+      inherit (self) outputs;
+      pkg-sets = (
+        final: prev: {
+          unstable = import inputs.nixpkgs-unstable { system = final.system; };
+        }
+      );
+    in
     {
+
       formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixpkgs-fmt;
       formatter.aarch64-darwin = nixpkgs.legacyPackages.aarch64-darwin.nixpkgs-fmt;
       fonts.fonts = with nixpkgs; [
         (nerdfonts.override { fonts = [ "Roboto Mono" ]; })
       ];
 
-
-      nixosConfigurations.dell-xps =
-        let
-          # Inject 'unstable' and 'trunk' into the overridden package set, so that
-          # the following overlays may access them (along with any system configs
-          # that wish to do so).
-          pkg-sets = (
-            final: prev: {
-              unstable = import inputs.nixpkgs-unstable { system = final.system; };
-            }
-          );
-
-        in
-        nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
-          modules = [
-            ./dell-hardware-configuration.nix
-            ./dell-configuration.nix
-            ./gpg.nix
-            nixos-hardware.nixosModules.dell-xps-15-9560-intel
-            {
-              nixpkgs.overlays = [
-                pkg-sets
-              ];
-            }
-            home-manager.nixosModules.home-manager
-            {
-              home-manager.useGlobalPkgs = true;
-              home-manager.useUserPackages = true;
-              home-manager.users.flakm = import ./home-manager/dell.nix;
-            }
-          ];
-        };
-
-
-      homeConfigurations.amd-pc = home-manager.lib.homeManagerConfiguration {
+      # Standalone home-manager configuration entrypoint
+      # Available through 'home-manager --flake .#your-username@your-hostname'
+      homeConfigurations."flakm@amd-pc" = home-manager.lib.homeManagerConfiguration {
         pkgs = nixpkgs.legacyPackages.x86_64-linux;
 
+        extraSpecialArgs = { inherit inputs outputs; }; # this is the important part
+
         modules = [
+          {
+            nixpkgs.overlays = [
+              pkg-sets
+            ];
+          }
+          #home-manager.nixosModules.home-manager
+          ./home-manager/amd-pc.nix
+          #{
+          #  #useGlobalPkgs = true;
+          #  #useUserPackages = true;
+          #  users.flakm = import ./home-manager/amd-pc.nix;
+          #}
           hyprland.homeManagerModules.default
           {
             wayland.windowManager.hyprland = {
               enable = true;
               xwayland = {
                 enable = true;
-                hidpi = true;
+                #hidpi = true;
               };
             };
           }
@@ -88,51 +78,67 @@
         ];
       };
 
+      # NixOS configuration entrypoint
+      # Available through 'nixos-rebuild --flake .#your-hostname'
+      nixosConfigurations = {
+        dell-xps =
+          let
+            # Inject 'unstable' and 'trunk' into the overridden package set, so that
+            # the following overlays may access them (along with any system configs
+            # that wish to do so).
+            pkg-sets = (
+              final: prev: {
+                unstable = import inputs.nixpkgs-unstable { system = final.system; };
+              }
+            );
 
-      nixosConfigurations.amd-pc =
-        let
-          # Inject 'unstable' and 'trunk' into the overridden package set, so that
-          # the following overlays may access them (along with any system configs
-          # that wish to do so).
-          pkg-sets = (
-            final: prev: {
-              unstable = import inputs.nixpkgs-unstable { system = final.system; };
-            }
-          );
+          in
+          nixpkgs.lib.nixosSystem {
+            system = "x86_64-linux";
+            modules = [
+              ./dell-hardware-configuration.nix
+              ./dell-configuration.nix
+              ./gpg.nix
+              nixos-hardware.nixosModules.dell-xps-15-9560-intel
+              {
+                nixpkgs.overlays = [
+                  pkg-sets
+                ];
+              }
+            ];
+          };
 
-        in
-        nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
-          specialArgs = { inherit inputs; }; # this is the important part
-          modules = [
+        amd-pc =
+          let
+            # Inject 'unstable' and 'trunk' into the overridden package set, so that
+            # the following overlays may access them (along with any system configs
+            # that wish to do so).
+            pkg-sets = (
+              final: prev: {
+                unstable = import inputs.nixpkgs-unstable { system = final.system; };
+              }
+            );
 
-            ./wireguard.nix
-            ./gpg.nix
-            ./k3s.nix
-            ./amd-pc-hardware-configuration.nix
-            ./amd-pc-hardware-zfs-configuration.nix
-            ./amd-pc-configuration.nix
-            # hyprland.nixosModules.default
-            # {
-            #   programs.hyprland = {
-            #     enable = true;
-            #     package = inputs.hyprland.packages.x86_64-linux.hyprland;
-            #     xwayland.enable = true;
-            #   };
-            # }
-            {
-              nixpkgs.overlays = [
-                pkg-sets
-              ];
-            }
-            home-manager.nixosModules.home-manager
-            {
-              home-manager.useGlobalPkgs = true;
-              home-manager.useUserPackages = true;
-              home-manager.users.flakm = import ./home-manager/amd-pc.nix;
-            }
-          ];
-        };
+          in
+          nixpkgs.lib.nixosSystem {
+            system = "x86_64-linux";
+            specialArgs = { inherit inputs outputs; }; # this is the important part
+            modules = [
+
+              ./wireguard.nix
+              ./gpg.nix
+              ./k3s.nix
+              ./amd-pc-hardware-configuration.nix
+              ./amd-pc-hardware-zfs-configuration.nix
+              ./amd-pc-configuration.nix
+              {
+                nixpkgs.overlays = [
+                  pkg-sets
+                ];
+              }
+            ];
+          };
+      };
 
       darwinConfigurations.m1pro =
         let
@@ -189,9 +195,6 @@
             }
           ];
         };
-
-
-
-
     };
+
 }

@@ -19,7 +19,6 @@ vim.g.mapleader = " "
 require'nvim-tree'.setup {
   view = {
     width = 50,
-    hide_root_folder = true,
   },
   hijack_cursor = true,
   update_focused_file = {

@@ -13,10 +13,6 @@
     ./modules/brother.nix
 
     ./modules/alacritty.nix
-    # this is not working with nvidia card...
-    #./modules/sway.nix
-
-    ./modules/i3.nix
 
     ./modules/modivo.nix
     ./modules/yubikey.nix
@@ -27,10 +23,14 @@
     ./modules/sql.nix
   ];
 
+
+
   xsession.windowManager.i3.config.fonts.size = 18.0;
   programs.alacritty.settings.font.size = 11;
 
   home = {
+    username = "flakm";
+    homeDirectory = "/home/flakm";
     pointerCursor = {
       name = "Adwaita";
       package = pkgs.gnome.adwaita-icon-theme;
@@ -40,7 +40,7 @@
         defaultCursor = "Adwaita";
       };
     };
-    stateVersion = "22.11";
+    stateVersion = "23.05";
   };
 
 

@@ -29,7 +29,28 @@
 
 
 
-  nixpkgs.config.pulseaudio = true;
+
+  xdg = {
+    portal = {
+      enable = true;
+      extraPortals = with pkgs; [
+        xdg-desktop-portal-hyprland
+        #xdg-desktop-portal-gtk
+      ];
+      gtkUsePortal = true;
+    };
+  };
+
+  security.rtkit.enable = true;
+  services.pipewire = {
+    enable = true;
+    alsa.enable = true;
+    alsa.support32Bit = true;
+    pulse.enable = true;
+    wireplumber.enable = true;
+    # If you want to use JACK applications, uncomment this
+    #jack.enable = true;
+  };
 
 
 
@@ -46,7 +67,6 @@
   #  desktopManager.plasma5.enable = true;
   #  displayManager.sddm.enable = true;
   #};
-
   services.xserver = {
     enable = true;
     videoDrivers = [ "amdgpu" ];
@@ -58,7 +78,6 @@
     # left alt should switch to 3rd level
     # https://nixos.wiki/wiki/Keyboard_Layout_Customization
     xkbOptions = "lv3:lalt_switch";
-
   };
 
   #services.xserver.videoDrivers = [ "amdgpu" ];
@@ -81,7 +100,6 @@
   services.blueman.enable = true;
 
   hardware = {
-    pulseaudio.enable = true;
     opengl = {
       enable = true;
       driSupport = true;
@@ -154,7 +172,6 @@
     # office
     thunderbird
     gpgme
-    teams
     libreoffice
     bitwarden
     bitwarden-cli
