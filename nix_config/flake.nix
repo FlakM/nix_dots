@@ -16,6 +16,9 @@
     };
 
     hyprland.url = "github:hyprwm/Hyprland";
+    nur.url = "github:nix-community/NUR";
+    
+    alacritty-theme.url = "github:alexghr/alacritty-theme.nix";
   };
 
   outputs =
@@ -26,6 +29,8 @@
     , nixpkgs-unstable
     , nixos-hardware
     , hyprland
+    , nur
+    , alacritty-theme
     , ...
     }@inputs:
     let
@@ -52,6 +57,7 @@
         extraSpecialArgs = { inherit inputs outputs; }; # this is the important part
 
         modules = [
+          nur.nixosModules.nur
           {
             nixpkgs.overlays = [
               pkg-sets
@@ -124,7 +130,7 @@
             system = "x86_64-linux";
             specialArgs = { inherit inputs outputs; }; # this is the important part
             modules = [
-
+              nur.nixosModules.nur
               ./wireguard.nix
               ./gpg.nix
               ./k3s.nix

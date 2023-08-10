@@ -21,6 +21,9 @@
     ./modules/communication.nix
 
     ./modules/sql.nix
+
+    ./modules/firefox.nix
+    ./modules/kitty.nix
   ];
 
 

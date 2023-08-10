@@ -10,13 +10,13 @@ set clipboard^=unnamed,unnamedplus
 
 "set termguicolors " this variable must be enabled for colors to be applied properly
 "set background=dark " or light if you want light mode
-set background=dark " or light if you want light mode
-colorscheme gruvbox
+"set material_style=' " or light if you want light mode
+"colorscheme material
 
 
 lua << EOF
 require('lualine').setup({
-    options = {theme = 'gruvbox'},
+    options = {theme = 'material'},
     sections = {
        lualine_a = {'mode'},
        --lualine_a = {'buffers'},

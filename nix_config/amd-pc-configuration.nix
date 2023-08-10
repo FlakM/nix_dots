@@ -145,7 +145,6 @@
     docker
     wget
     curl
-    firefox
     google-chrome
 
     #chromium

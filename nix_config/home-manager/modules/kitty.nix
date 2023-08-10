@@ -1,9 +1,9 @@
 { config, pkgs, pkgsUnstable, libs, ... }:
 {
 
-
-  home.packages = with pkgs; [
-    kitty
-  ];
+  programs.kitty = {
+    enable = true;
+    shellIntegration.enableZshIntegration = true;
+  };
 }
 

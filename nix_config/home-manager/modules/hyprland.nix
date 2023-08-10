@@ -34,7 +34,7 @@
       position = "top"; # Waybar at the bottom of your screen
       height = 24; # Waybar height
       # width = 1366; // Waybar width
-      modules-left = [  "custom/spotify" ];
+      modules-left = [ "custom/spotify" ];
       modules-center = [ "hyprland/window" ];
       modules-right = [ "pulseaudio" "network" "cpu" "memory" "battery" "tray" "clock" ];
 
@@ -106,7 +106,7 @@
         max-length = 40;
         interval = 30; # Remove this if your script is endless and write in loop
         exec = "$HOME/.config/waybar/mediaplayer.sh 2> /dev/null"; # Script in resources folder
-        exec-if = "pgrep spotify";
+        #exec-if = "pgrep spotify";
       };
     };
 
@@ -310,11 +310,12 @@
     # windowrulev2 = float,class:^(kitty)$,title:^(kitty)$
     # See https://wiki.hyprland.org/Configuring/Window-Rules/ for more
     
+    exec-once=[workspace 1 silent] alacritty
+    exec-once=[workspace 2 silent] firefox
+    exec-once=[workspace 3 silent] obsidian
+    exec-once=[workspace 4 silent] spotify
+    exec-once=[workspace 10 silent] slack
 
-    # waybar
-    exec-once=waybar
-
-    
     # See https://wiki.hyprland.org/Configuring/Keywords/ for more
     $mainMod = SUPER
 

@@ -77,6 +77,7 @@
 
       gruvbox-nvim
       papercolor-theme
+      one-nvim
 
       copilot-vim
 

@@ -1,16 +1,23 @@
-{ config, pkgs, pkgsUnstable, libs, ... }:
+{ inputs, config, pkgs, pkgsUnstable, libs, ... }:
 {
 
 
-  home.packages = with pkgs; [
-    alacritty
-  ];
+  #home.packages = with pkgs; [
+  #  alacritty
+  #];
 
 
   programs.alacritty = {
     enable = true;
 
     settings = {
+
+      # copied from:
+      # https://github.com/alexghr/alacritty-theme.nix
+      # themes are from:
+      # https://github.com/alacritty/alacritty-theme
+      import = [ inputs.alacritty-theme.packages.${pkgs.system}.night_owlish_light ];
+      #import = [ inputs.alacritty-theme.packages.${pkgs.system}.hyper ];
 
       env = {
         TERM = "xterm-256color";
@@ -46,7 +53,7 @@
 
       # copied from:
       # https://github.com/eendroroy/alacritty-theme/blob/master/themes/argonaut.yaml
-      colors = {
+      old_colors = {
         primary = {
           background = "0x292C3E";
           foreground = "0xEBEBEB";

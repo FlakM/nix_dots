@@ -9,6 +9,17 @@ local function map(mode, lhs, rhs, opts)
   api.nvim_set_keymap(mode, lhs, rhs, options)
 end
 
+require('material').setup({
+    high_visibility = {
+        lighter = true, -- Enable higher contrast text for lighter style
+        darker = false -- Enable higher contrast text for darker style
+    },
+})
+
+
+--Lua:
+vim.cmd 'colorscheme material'
+vim.g.material_style = "lighter"
 
 vim.g.mapleader = " "
 
@@ -52,3 +63,18 @@ map("n", "<leader>fh", [[<cmd>Telescope help_tags<CR>]])
 -- Replace visually selected text with contents of register without yanking 
 -- https://superuser.com/questions/321547/how-do-i-replace-paste-yanked-text-in-vim-without-yanking-the-deleted-lines
 map("v", "<leader>p", [["_dP]])
+
+
+function switch_theme()
+  if vim.g.material_style == "lighter" then
+    vim.g.material_style = "oceanic"
+    vim.cmd('set background=dark')
+  else
+    vim.g.material_style = "lighter"
+    vim.cmd('set background=light')
+  end
+  cmd('colorscheme material')
+end
+
+
+map("n", "<leader>l", [[<cmd>lua switch_theme()<CR>]])
