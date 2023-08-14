@@ -31,6 +31,29 @@
   xsession.windowManager.i3.config.fonts.size = 18.0;
   programs.alacritty.settings.font.size = 11;
 
+  #gtk = {
+  #  enable = true;
+  #  theme = {
+  #    package = pkgs.gnome.gnome-themes-extra;
+  #    name = "Adwaita-dark";
+  #  };
+
+  #  gtk3.extraConfig = {
+  #    Settings = ''
+  #      gtk-application-prefer-dark-theme=1
+  #    '';
+  #  };
+
+
+  #  gtk4.extraConfig = {
+  #    Settings = ''
+  #      gtk-application-prefer-dark-theme=1
+  #    '';
+  #  };
+  #};
+
+
+
   home = {
     username = "flakm";
     homeDirectory = "/home/flakm";
@@ -40,7 +63,7 @@
       size = 24;
       x11 = {
         enable = true;
-        defaultCursor = "Adwaita";
+        defaultCursor = "Adwaita-dark";
       };
     };
     stateVersion = "23.05";

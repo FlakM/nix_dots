@@ -1,7 +1,6 @@
 { config, pkgs, inputs, ... }:
 let
   path = "${config.home.homeDirectory}/.config/current-color_scheme";
-  wal-theme = "base16-google";
   apply-theme-script = pkgs.writeScript "apply-theme" ''
     curr=$(cat ${path})
     
@@ -20,7 +19,6 @@ let
       switch_theme "prefer-dark"
       ~/.config/alacritty/switch.sh dark ${path}
       dconf write /org/gnome/desktop/interface/color-scheme "'prefer-dark'"
-      wal --theme ${wal-theme}
 
       for server in $(nvr --serverlist); do
         nvr --servername "$server" -cc 'set background=dark'
@@ -29,7 +27,6 @@ let
       switch_theme "prefer-light"
       ~/.config/alacritty/switch.sh light ${path}
       dconf write /org/gnome/desktop/interface/color-scheme "'prefer-light'"
-      wal --theme ${wal-theme} -l
 
       for server in $(nvr --serverlist); do
         nvr --servername "$server" -cc 'set background=light'

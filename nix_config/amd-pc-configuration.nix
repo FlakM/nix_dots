@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 {
   # allow apps like teams etc...
   nixpkgs.config.allowUnfree = true;
@@ -30,19 +30,10 @@
   programs.dconf.enable = true;
 
   environment.sessionVariables = {
-    POLKIT_AUTH_AGENT = "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
-    #GSETTINGS_SCHEMA_DIR = "${pkgs.gsettings-desktop-schemas}/share/gsettings-schemas/${pkgs.gsettings-desktop-schemas.name}/glib-2.0/schemas";
-    LIBVA_DRIVER_NAME = "nvidia";
     XDG_SESSION_TYPE = "wayland";
-    WLR_NO_HARDWARE_CURSORS = "1";
     NIXOS_OZONE_WL = "1";
     MOZ_ENABLE_WAYLAND = "1";
-    SDL_VIDEODRIVER = "wayland";
     _JAVA_AWT_WM_NONREPARENTING = "1";
-    CLUTTER_BACKEND = "wayland";
-    WLR_RENDERER = "vulkan";
-    XDG_CURRENT_DESKTOP = "Hyprland";
-    XDG_SESSION_DESKTOP = "Hyprland";
     GTK_USE_PORTAL = "1";
     NIXOS_XDG_OPEN_USE_PORTAL = "1";
   };
@@ -87,17 +78,14 @@
   #  displayManager.sddm.enable = true;
   #};
   services.xserver = {
-    enable = true;
-    videoDrivers = [ "amdgpu" ];
-    displayManager.sddm = {
-      enable = true;
-    };
-
-    # left alt should switch to 3rd level
-    # https://nixos.wiki/wiki/Keyboard_Layout_Customization
+    enable = false;
+    #displayManager.gdm.enable = true;
+    #displayManager.gdm.wayland = true;
+    #displayManager.sessionPackages = [ inputs.hyprland.hyprland ];
+    libinput.enable = true;
     xkbOptions = "lv3:lalt_switch";
-
   };
+
 
   #services.xserver.videoDrivers = [ "amdgpu" ];
   boot.initrd.kernelModules = [ "amdgpu" ];
@@ -165,10 +153,10 @@
     xfce.xfce4-pulseaudio-plugin
 
 
-    polkit_gnome
-    gnome.adwaita-icon-theme
-    gnome.gnome-themes-extra
-    gsettings-desktop-schemas
+#    polkit_gnome
+    #gnome.adwaita-icon-theme
+#    gnome.gnome-themes-extra
+#    gsettings-desktop-schemas
 
     pavucontrol
     docker
@@ -216,12 +204,19 @@
     pkg-config
     openssl
 
-
-    qt5.qtwayland
-    qt6.qmake
-    qt6.qtwayland
-    adwaita-qt
-    adwaita-qt6
+#    qt6.full
+#    libsForQt5.qtstyleplugins
+#    adwaita-qt
+#    adwaita-qt6
+#
+#
+#
+#    qt5.qtwayland
+#    qt6.qmake
+#    qt6.qtwayland
+#    adwaita-qt
+#    libsForQt5.qtstyleplugin-kvantum
+    #adwaita-qt6
   ];
 
 
