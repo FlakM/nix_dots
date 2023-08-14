@@ -9,19 +9,14 @@ local function map(mode, lhs, rhs, opts)
   api.nvim_set_keymap(mode, lhs, rhs, options)
 end
 
-require('material').setup({
-    high_visibility = {
-        lighter = true, -- Enable higher contrast text for lighter style
-        darker = false -- Enable higher contrast text for darker style
-    },
-})
-
 
 --Lua:
-vim.cmd 'colorscheme material'
-vim.g.material_style = "lighter"
+vim.cmd 'colorscheme edge'
+vim.g.edge_style = "default"
+vim.g.edge_transparent_background = 2
 
 vim.g.mapleader = " "
+
 
 
 --
@@ -66,14 +61,12 @@ map("v", "<leader>p", [["_dP]])
 
 
 function switch_theme()
-  if vim.g.material_style == "lighter" then
-    vim.g.material_style = "oceanic"
-    vim.cmd('set background=dark')
+  -- toggle background if dark or not set
+  if vim.g.background == "dark" or vim.g.background == nil then
+      vim.g.background = "light"
   else
-    vim.g.material_style = "lighter"
-    vim.cmd('set background=light')
+    vim.g.background = "dark"
   end
-  cmd('colorscheme material')
 end
 
 

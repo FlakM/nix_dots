@@ -1,10 +1,59 @@
-{ config, pkgs, inputs, ... }: {
+{ config, pkgs, inputs, ... }: let
+    path = "${config.home.homeDirectory}/.config/current-color_scheme";
+    apply-theme-script = pkgs.writeScript "apply-theme" ''
+    curr=$(cat ${path})
+    
+    function switch_theme() {
+      echo $1 > ${path}
+      echo "Current theme: `cat ${path}`"
+    }
+
+    if [ ! -f ${path} ]; then
+      touch ${path}
+      echo "prefer-light" > ${path}
+    fi
+
+
+    if [ "$curr" = "prefer-light" ]; then
+      switch_theme "prefer-dark"
+      ~/.config/alacritty/switch.sh dark ${path}
+      dconf write /org/gnome/desktop/interface/color-scheme "'prefer-dark'"
+
+      for server in $(nvr --serverlist); do
+        nvr --servername "$server" -cc 'set background=dark'
+      done
+    else
+      switch_theme "prefer-light"
+      ~/.config/alacritty/switch.sh light ${path}
+      dconf write /org/gnome/desktop/interface/color-scheme "'prefer-light'"
+
+      for server in $(nvr --serverlist); do
+        nvr --servername "$server" -cc 'set background=light'
+      done
+    fi
+    '';
+in
+{
 
   # define session variables
-
   home.sessionVariables = {
     MOZ_ENABLE_WAYLAND = 1; # Firefox Wayland
     NIXOS_OZONE_WL = "1"; # hint electron apps to use wayland
+
+    POLKIT_AUTH_AGENT = "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
+    GSETTINGS_SCHEMA_DIR = "${pkgs.gsettings-desktop-schemas}/share/gsettings-schemas/${pkgs.gsettings-desktop-schemas.name}/glib-2.0/schemas";
+    XDG_SESSION_TYPE = "wayland";
+    __GLX_VENDOR_LIBRARY_NAME = "nvidia";
+    WLR_NO_HARDWARE_CURSORS = "1";
+    SDL_VIDEODRIVER = "wayland";
+    _JAVA_AWT_WM_NONREPARENTING = "1";
+    CLUTTER_BACKEND = "wayland";
+    XDG_CURRENT_DESKTOP = "Hyprland";
+    XDG_SESSION_DESKTOP = "Hyprland";
+    GTK_USE_PORTAL = "1";
+    GDK_BACKEND = "wayland";
+    NIXOS_XDG_OPEN_USE_PORTAL = "1";
+    #XDG_DATA_DIRS = "${pkgs.gsettings-desktop-schemas}/share/gsettings-schemas/${pkgs.gsettings-desktop-schemas.name}";
   };
 
 
@@ -13,6 +62,13 @@
     dunst # notifications
     playerctl # media status for waybar
     shotman # screenshot
+
+    hyprland-share-picker
+    wl-clipboard
+    hyprland-protocols
+    hyprpicker
+    hyprpaper
+
   ];
 
   # https://github.com/hyprland-community/awesome-hyprland#runners-menus-and-application-launchers
@@ -20,7 +76,26 @@
   xdg.configFile."waybar/mediaplayer.sh" = {
     source = ./mediaplayer.sh;
     executable = true;
+
   };
+
+  gtk = {
+    enable = true;
+  };
+
+  programs.pywal = {
+    enable = true;
+  };
+
+
+  xdg.configFile."theme-switch.sh" = {
+    text = ''
+      #!/usr/bin/env sh
+      ${apply-theme-script}
+    '';
+    executable = true;
+  };
+
 
   # status bar
   programs.waybar = {
@@ -28,13 +103,13 @@
     package = inputs.hyprland.packages.${pkgs.system}.waybar-hyprland;
 
     enable = true;
-    systemd.enable = true;
+    systemd.enable = false;
     settings.mainBar = {
       layer = "top"; # Waybar at top layer
       position = "top"; # Waybar at the bottom of your screen
       height = 24; # Waybar height
       # width = 1366; // Waybar width
-      modules-left = [ "custom/spotify" ];
+      modules-left = [ "hyprland/workspaces" "custom/spotify" ];
       modules-center = [ "hyprland/window" ];
       modules-right = [ "pulseaudio" "network" "cpu" "memory" "battery" "tray" "clock" ];
 
@@ -44,6 +119,23 @@
           "(.*) — Mozilla Firefox" = "$1";
         };
         separate-outputs = true;
+      };
+
+      #https://github.com/Alexays/Waybar/wiki/Module:-Hyprland
+      "hyprland/workspaces" = {
+        format = "{icon}";
+        active-only = false;
+        on-click = "activate";
+        format-icons = {
+          active = "";
+          default = "";
+          "1" = "1";
+          "2" = "2";
+          "3" = "3";
+          "4" = "4";
+          "5" = "5";
+          "6" = "6";
+        };
       };
 
       tray = {
@@ -105,8 +197,8 @@
         format = "  {}";
         max-length = 40;
         interval = 30; # Remove this if your script is endless and write in loop
-        exec = "$HOME/.config/waybar/mediaplayer.sh 2> /dev/null"; # Script in resources folder
-        #exec-if = "pgrep spotify";
+        exec = "/home/flakm/.config/waybar/mediaplayer.sh 2> /dev/null"; # Script in resources folder
+        exec-if = "pgrep spotify";
       };
     };
 
@@ -206,7 +298,7 @@
         }
 
         #custom-spotify {
-            color: rgb(102, 220, 105);
+            /*color: rgb(102, 220, 105); */
         }
 
         #tray {
@@ -218,6 +310,7 @@
     env=_JAVA_AWT_WM_NONREPARENTING,1
     env=MOZ_ENABLE_WAYLAND,1
     env=NIXOS_OZONE_WL,1
+    env=GDK_BACKEND,wayland
 
     # See https://wiki.hyprland.org/Configuring/Monitors/
     monitor=,preferred,auto,1.5
@@ -243,7 +336,7 @@
         # See https://wiki.hyprland.org/Configuring/Variables/ for more
         gaps_in = 5
         gaps_out = 5
-        border_size = 2
+        border_size = 4
         col.active_border = rgba(33ccffee) rgba(00ff99ee) 45deg
         col.inactive_border = rgba(595959aa)
     
@@ -315,28 +408,17 @@
     exec-once=[workspace 3 silent] obsidian
     exec-once=[workspace 4 silent] spotify
     exec-once=[workspace 10 silent] slack
+    exec-once=waybar
 
     # See https://wiki.hyprland.org/Configuring/Keywords/ for more
     $mainMod = SUPER
 
-    # Execute your favorite apps at launch
-    exec-once = alacritty & firefox
-
     bind=SUPER_SHIFT,Q,killactive,
+    
+    bind=SUPER,F,fullscreen 
 
-    bind = SUPER, F, exec, firefox
-    bind = , Print, exec, grimblast copy area
-
-    # Rofi
-    bind = SUPER, D, exec, rofi -show drun
-    bind = SUPER, Tab, exec, hyprwin
-    bind = SUPER, N, exec, network_menu
-    bind = SUPER, X, exec, powermenu
-    bind = SUPER, M, exec, music
-    bind = SUPER, S, exec, screenshot rofi
-    bind = SUPER, T, exec, themes
-    bind = SUPER, R, exec, asroot
-    bind = SUPER, Print, exec, recording rofi
+    bind = SUPER, D, exec, rofi -show run
+    bind = SUPER, N, exec, ${config.home.homeDirectory}/.config/theme-switch.sh 
 
     # workspaces
     # binds $mainMod + [shift +] {1..10} to [move to] workspace {1..10}
@@ -360,6 +442,18 @@
     bindr=SUPER,l,movefocus,r
     bindr=SUPER,k,movefocus,u
     bindr=SUPER,j,movefocus,d
+
+    bind = SUPER CTRL, H, movewindow, l
+    bind = SUPER CTRL, L, movewindow, r
+    bind = SUPER CTRL, K, movewindow, u
+    bind = SUPER CTRL, J, movewindow, d
+
+    bind = $mainMod CTRL SHIFT, l, resizeactive, 50 0
+    bind = $mainMod CTRL SHIFT, h, resizeactive, -50 0
+    bind = $mainMod CTRL SHIFT, k, resizeactive, 0 -50
+    bind = $mainMod CTRL SHIFT, j, resizeactive, 0 50
+
+
   '';
 
 

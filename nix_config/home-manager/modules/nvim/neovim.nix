@@ -3,6 +3,7 @@
   home.sessionVariables = {
     EDITOR = "nvim";
     VISUAL = "nvim";
+    NVIM_LISTEN_ADDRESS = "/tmp/nvimsocket";
   };
 
   home.packages = with pkgs; [
@@ -12,6 +13,12 @@
     gopls
     vscode-extensions.vadimcn.vscode-lldb
     nil
+
+    # for copy
+    wl-clipboard
+
+    # for toggling dark mode
+    neovim-remote
   ];
 
   programs.neovim = {
@@ -40,6 +47,9 @@
 
       #Theme
       material-nvim
+      edge
+
+
       #vim-nightfly-guicolors
       lualine-nvim
       nvim-web-devicons
@@ -126,6 +136,8 @@
         #(builtins.readFile ./config/python-config.vim)
         #(builtins.readFile ./config/go-config.vim)
       ]);
+
+
   };
 
 

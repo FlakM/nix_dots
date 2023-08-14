@@ -16,7 +16,7 @@ set clipboard^=unnamed,unnamedplus
 
 lua << EOF
 require('lualine').setup({
-    options = {theme = 'material'},
+    options = {theme = 'edge'},
     sections = {
        lualine_a = {'mode'},
        --lualine_a = {'buffers'},
