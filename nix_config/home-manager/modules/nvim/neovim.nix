@@ -14,9 +14,6 @@
     vscode-extensions.vadimcn.vscode-lldb
     nil
 
-    # for copy
-    wl-clipboard
-
     # for toggling dark mode
     neovim-remote
   ];

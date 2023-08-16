@@ -18,7 +18,6 @@
     hyprland.url = "github:hyprwm/Hyprland";
     nur.url = "github:nix-community/NUR";
 
-    alacritty-theme.url = "github:alexghr/alacritty-theme.nix";
   };
 
   outputs =
@@ -30,7 +29,6 @@
     , nixos-hardware
     , hyprland
     , nur
-    , alacritty-theme
     , ...
     }@inputs:
     let

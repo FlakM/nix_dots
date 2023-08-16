@@ -153,10 +153,10 @@
     xfce.xfce4-pulseaudio-plugin
 
 
-#    polkit_gnome
+    #    polkit_gnome
     #gnome.adwaita-icon-theme
-#    gnome.gnome-themes-extra
-#    gsettings-desktop-schemas
+    #    gnome.gnome-themes-extra
+    #    gsettings-desktop-schemas
 
     pavucontrol
     docker
@@ -199,24 +199,19 @@
     aspellDicts.en-computers
 
     tailscale
-    element-desktop
+    fractal
 
     pkg-config
     openssl
 
-#    qt6.full
-#    libsForQt5.qtstyleplugins
-#    adwaita-qt
-#    adwaita-qt6
-#
-#
-#
-#    qt5.qtwayland
-#    qt6.qmake
-#    qt6.qtwayland
-#    adwaita-qt
-#    libsForQt5.qtstyleplugin-kvantum
-    #adwaita-qt6
+    qt6.full
+    libsForQt5.qtstyleplugins
+    adwaita-qt
+    adwaita-qt6
+
+    qt5.qtwayland
+    qt6.qmake
+    qt6.qtwayland
   ];
 
 

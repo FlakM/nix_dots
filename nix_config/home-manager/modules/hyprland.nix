@@ -20,7 +20,7 @@ let
       switch_theme "prefer-dark"
       ~/.config/alacritty/switch.sh dark ${path}
       dconf write /org/gnome/desktop/interface/color-scheme "'prefer-dark'"
-      wal --theme ${wal-theme}
+      #wal --theme ${wal-theme}
 
       for server in $(nvr --serverlist); do
         nvr --servername "$server" -cc 'set background=dark'
@@ -29,7 +29,7 @@ let
       switch_theme "prefer-light"
       ~/.config/alacritty/switch.sh light ${path}
       dconf write /org/gnome/desktop/interface/color-scheme "'prefer-light'"
-      wal --theme ${wal-theme} -l
+      #wal --theme ${wal-theme} -l
 
       for server in $(nvr --serverlist); do
         nvr --servername "$server" -cc 'set background=light'
@@ -50,18 +50,32 @@ in
     _JAVA_AWT_WM_NONREPARENTING = "1";
     NIXOS_XDG_OPEN_USE_PORTAL = "1";
     #XDG_DATA_DIRS = "${pkgs.gsettings-desktop-schemas}/share/gsettings-schemas/${pkgs.gsettings-desktop-schemas.name}";
+    XDG_CURRENT_DESKTOP="Hyprland";
+    XDG_SESSION_TYPE="wayland";
+    XDG_SESSION_DESKTOP="Hyprland";
   };
 
 
   home.packages = with pkgs; [
-    rofi # launcher
+    tofi # launcher
     dunst # notifications
     playerctl # media status for waybar
     shotman # screenshot
 
-    wl-clipboard
+    unstable.wl-clipboard
+    xdg-utils
+    cliphist # clipboard history
+
+
     hyprland-protocols
+
+
+    grim swappy slurp 
   ];
+
+
+  # print screen
+  services.flameshot.enable = true;
 
   # https://github.com/hyprland-community/awesome-hyprland#runners-menus-and-application-launchers
   # https://github.com/Egosummiki/dotfiles/blob/master/waybar/mediaplayer.sh
@@ -75,9 +89,9 @@ in
     enable = true;
   };
 
-  programs.pywal = {
-    enable = true;
-  };
+  #programs.pywal = {
+  #  enable = true;
+  #};
 
 
   xdg.configFile."theme-switch.sh" = {
@@ -302,6 +316,7 @@ in
     env=_JAVA_AWT_WM_NONREPARENTING,1
     env=MOZ_ENABLE_WAYLAND,1
     env=NIXOS_OZONE_WL,1
+    env=XDG_CURRENT_DESKTOP=Hyprland
 
     # See https://wiki.hyprland.org/Configuring/Monitors/
     monitor=,preferred,auto,1.5
@@ -393,6 +408,13 @@ in
     # Example windowrule v2
     # windowrulev2 = float,class:^(kitty)$,title:^(kitty)$
     # See https://wiki.hyprland.org/Configuring/Window-Rules/ for more
+
+
+    # https://wiki.hyprland.org/Useful-Utilities/Clipboard-Managers/#cliphist
+    exec-once = wl-paste --type text --watch cliphist store #Stores only text data
+    exec-once = wl-paste --type image --watch cliphist store #Stores only image data
+
+
     
     exec-once=[workspace 1 silent] alacritty
     exec-once=[workspace 2 silent] firefox
@@ -408,7 +430,7 @@ in
     
     bind=SUPER,F,fullscreen 
 
-    bind = SUPER, D, exec, rofi -show run
+    bind = SUPER, D, exec, tofi-drun --drun-launch=true
     bind = SUPER, N, exec, ${config.home.homeDirectory}/.config/theme-switch.sh 
 
     # workspaces
@@ -439,11 +461,19 @@ in
     bind = SUPER CTRL, K, movewindow, u
     bind = SUPER CTRL, J, movewindow, d
 
+    bind = CTRL SHIFT, V, exec, cliphist list | tofi | cliphist decode | wl-copy
+    bind = CTRL SHIFT, P, exec, wl-paste
+
     bind = $mainMod CTRL SHIFT, l, resizeactive, 50 0
     bind = $mainMod CTRL SHIFT, h, resizeactive, -50 0
     bind = $mainMod CTRL SHIFT, k, resizeactive, 0 -50
     bind = $mainMod CTRL SHIFT, j, resizeactive, 0 50
 
+
+    # print screen full screen
+    bind=,Print,exec,grim - | swappy -f -
+    # print screen selection range
+    bind=SHIFT,Print,exec,grim -g "$(slurp)" - | swappy -f -
 
   '';
 
