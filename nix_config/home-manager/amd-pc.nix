@@ -53,7 +53,6 @@
   #};
 
 
-
   home = {
     username = "flakm";
     homeDirectory = "/home/flakm";
@@ -67,6 +66,9 @@
       };
     };
     stateVersion = "23.05";
+
+
+
   };
 
 

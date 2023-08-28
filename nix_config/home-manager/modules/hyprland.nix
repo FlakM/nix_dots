@@ -1,7 +1,6 @@
 { config, pkgs, inputs, ... }:
 let
   path = "${config.home.homeDirectory}/.config/current-color_scheme";
-  wal-theme = "base16-google";
   apply-theme-script = pkgs.writeScript "apply-theme" ''
     curr=$(cat ${path})
     
@@ -20,7 +19,6 @@ let
       switch_theme "prefer-dark"
       ~/.config/alacritty/switch.sh dark ${path}
       dconf write /org/gnome/desktop/interface/color-scheme "'prefer-dark'"
-      #wal --theme ${wal-theme}
 
       for server in $(nvr --serverlist); do
         nvr --servername "$server" -cc 'set background=dark'
@@ -29,30 +27,45 @@ let
       switch_theme "prefer-light"
       ~/.config/alacritty/switch.sh light ${path}
       dconf write /org/gnome/desktop/interface/color-scheme "'prefer-light'"
-      #wal --theme ${wal-theme} -l
 
       for server in $(nvr --serverlist); do
         nvr --servername "$server" -cc 'set background=light'
       done
     fi
   '';
+  ## xdg-open shim that proxies to handlr
+  xdg-open = pkgs.writeScriptBin "xdg-open" ''
+    #!/usr/bin/env bash
+    handlr open "$@"
+  '';
 in
 {
 
   # define session variables
   home.sessionVariables = {
+    # https://wiki.hyprland.org/Configuring/Environment-variables/
     MOZ_ENABLE_WAYLAND = 1; # Firefox Wayland
+    MOZ_DBUS_REMOTE = 1; # Firefox wayland
+    GDK_BACKEND = "wayland";
+
     NIXOS_OZONE_WL = "1"; # hint electron apps to use wayland
 
     POLKIT_AUTH_AGENT = "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
-    #GSETTINGS_SCHEMA_DIR = "${pkgs.gsettings-desktop-schemas}/share/gsettings-schemas/${pkgs.gsettings-desktop-schemas.name}/glib-2.0/schemas";
     SDL_VIDEODRIVER = "wayland";
     _JAVA_AWT_WM_NONREPARENTING = "1";
     NIXOS_XDG_OPEN_USE_PORTAL = "1";
-    #XDG_DATA_DIRS = "${pkgs.gsettings-desktop-schemas}/share/gsettings-schemas/${pkgs.gsettings-desktop-schemas.name}";
-    XDG_CURRENT_DESKTOP="Hyprland";
-    XDG_SESSION_TYPE="wayland";
-    XDG_SESSION_DESKTOP="Hyprland";
+
+    XDG_CURRENT_DESKTOP = "Hyprland";
+    XDG_SESSION_TYPE = "wayland";
+    XDG_SESSION_DESKTOP = "Hyprland";
+
+    GTK_USE_PORTAL = "1";
+
+    CLUTTER_BACKEND = "wayland";
+    QT_QPA_PLATFORM = "wayland;xcb";
+
+    DEFAULT_BROWSER = "${pkgs.firefox}/bin/firefox";
+    BROWSER = "${pkgs.firefox}/bin/firefox";
   };
 
 
@@ -63,36 +76,32 @@ in
     shotman # screenshot
 
     unstable.wl-clipboard
-    xdg-utils
+    #unstable.xdg-utils
+    handlr
     cliphist # clipboard history
+
+    xdg-open
 
 
     hyprland-protocols
 
 
-    grim swappy slurp 
+    grim
+    swappy
+    slurp
   ];
 
-
-  # print screen
-  services.flameshot.enable = true;
 
   # https://github.com/hyprland-community/awesome-hyprland#runners-menus-and-application-launchers
   # https://github.com/Egosummiki/dotfiles/blob/master/waybar/mediaplayer.sh
   xdg.configFile."waybar/mediaplayer.sh" = {
     source = ./mediaplayer.sh;
     executable = true;
-
   };
 
   gtk = {
     enable = true;
   };
-
-  #programs.pywal = {
-  #  enable = true;
-  #};
-
 
   xdg.configFile."theme-switch.sh" = {
     text = ''
@@ -102,11 +111,22 @@ in
     executable = true;
   };
 
+  programs.swaylock = {
+    enable = true;
+    settings = {
+      color = "808080";
+      font-size = 24;
+      indicator-idle-visible = false;
+      indicator-radius = 100;
+      line-color = "ffffff";
+      show-failed-attempts = true;
+    };
+  };
 
   # status bar
   programs.waybar = {
     # https://github.com/hyprwm/Hyprland/discussions/1729
-    package = inputs.hyprland.packages.${pkgs.system}.waybar-hyprland;
+    #package = inputs.hyprland.packages.${pkgs.system}.waybar;
 
     enable = true;
     systemd.enable = false;
@@ -313,11 +333,6 @@ in
   };
 
   wayland.windowManager.hyprland.extraConfig = ''
-    env=_JAVA_AWT_WM_NONREPARENTING,1
-    env=MOZ_ENABLE_WAYLAND,1
-    env=NIXOS_OZONE_WL,1
-    env=XDG_CURRENT_DESKTOP=Hyprland
-
     # See https://wiki.hyprland.org/Configuring/Monitors/
     monitor=,preferred,auto,1.5
 
@@ -474,6 +489,8 @@ in
     bind=,Print,exec,grim - | swappy -f -
     # print screen selection range
     bind=SHIFT,Print,exec,grim -g "$(slurp)" - | swappy -f -
+
+    bind=SUPER, L, exec, swaylock
 
   '';
 

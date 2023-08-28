@@ -4,7 +4,11 @@
   nixpkgs.config.allowUnfree = true;
 
 
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings = {
+    experimental-features = [ "nix-command" "flakes" ];
+    substituters = [ "https://hyprland.cachix.org" ];
+    trusted-public-keys = [ "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc=" ];
+  };
 
 
   #boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
@@ -29,24 +33,27 @@
 
   programs.dconf.enable = true;
 
-  environment.sessionVariables = {
-    XDG_SESSION_TYPE = "wayland";
-    NIXOS_OZONE_WL = "1";
-    MOZ_ENABLE_WAYLAND = "1";
-    _JAVA_AWT_WM_NONREPARENTING = "1";
-    GTK_USE_PORTAL = "1";
-    NIXOS_XDG_OPEN_USE_PORTAL = "1";
-  };
-
-
   xdg = {
+    #mime.defaultApplications = {
+    #  "text/html" = "firefox.desktop";
+    #  "scheme-handler/http" = "firefox.desktop";
+    #  "scheme-handler/https" = "firefox.desktop";
+    #  "x-scheme-handler/http" = "firefox.desktop";
+    #  "x-scheme-handler/https" = "firefox.desktop";
+    #  "x-scheme-handler/about" = "firefox.desktop";
+    #  "x-scheme-handler/unknown" = "firefox.desktop";
+    #  "x-scheme-handler/mailto" = "thunderbird.desktop";
+    #  "default-url-scheme-handler" = "firefox.desktop";
+    #  "default-url-scheme-handler/http" = "firefox.desktop";
+    #  "default-url-scheme-handler/https" = "firefox.desktop";
+    #};
+
     portal = {
       enable = true;
+      xdgOpenUsePortal = true;
       extraPortals = with pkgs; [
         xdg-desktop-portal-hyprland
-        #        xdg-desktop-portal-gnome
         xdg-desktop-portal-gtk
-        #libsForQt5.xdg-desktop-portal-kde
       ];
     };
   };
@@ -61,7 +68,6 @@
     # If you want to use JACK applications, uncomment this
     #jack.enable = true;
   };
-
 
 
 
@@ -142,6 +148,10 @@
     text = "auth include login";
   };
 
+
+
+
+
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
@@ -162,7 +172,9 @@
     docker
     wget
     curl
-    google-chrome
+    #google-chrome
+    #firefox
+    firefox-wayland
 
     #chromium
 
