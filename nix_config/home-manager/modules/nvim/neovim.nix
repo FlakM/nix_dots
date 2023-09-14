@@ -16,6 +16,9 @@
 
     # for toggling dark mode
     neovim-remote
+
+    # for debugging
+    python3
   ];
 
   programs.neovim = {
@@ -78,21 +81,13 @@
 
       vim-gitgutter
 
-      nvim-metals
-      nvim-lspconfig
       rust-tools-nvim
 
-      gruvbox-nvim
-      papercolor-theme
       one-nvim
 
       copilot-vim
 
-      # java tols
-      nvim-jdtls
-
-      # handlebars support
-      vim-mustache-handlebars
+      telescope-ui-select-nvim
 
     ] ++ lib.optionals (pkgs.stdenv.system != "aarch64-linux") [
       #vim-go
@@ -125,11 +120,11 @@
         ""
         ""
         "lua << EOF"
-        "local extension_path = \"${pkgs.vscode-extensions.vadimcn.vscode-lldb}/share/vscode/extensions/vadimcn.vscode-lldb\""
+        "local extension_path = \"${pkgs.unstable.vscode-extensions.vadimcn.vscode-lldb}/share/vscode/extensions/vadimcn.vscode-lldb\""
         (builtins.readFile ./config/rust-config.lua)
         "EOF"
 
-        (builtins.readFile ./config/metals-config.vim)
+        #(builtins.readFile ./config/metals-config.vim)
         #(builtins.readFile ./config/python-config.vim)
         #(builtins.readFile ./config/go-config.vim)
       ]);

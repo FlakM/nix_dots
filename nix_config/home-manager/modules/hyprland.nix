@@ -33,11 +33,6 @@ let
       done
     fi
   '';
-  ## xdg-open shim that proxies to handlr
-  xdg-open = pkgs.writeScriptBin "xdg-open" ''
-    #!/usr/bin/env bash
-    handlr open "$@"
-  '';
 in
 {
 
@@ -53,8 +48,8 @@ in
     POLKIT_AUTH_AGENT = "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
     SDL_VIDEODRIVER = "wayland";
     _JAVA_AWT_WM_NONREPARENTING = "1";
-    NIXOS_XDG_OPEN_USE_PORTAL = "1";
 
+    #NIXOS_XDG_OPEN_USE_PORTAL = "0";
     XDG_CURRENT_DESKTOP = "Hyprland";
     XDG_SESSION_TYPE = "wayland";
     XDG_SESSION_DESKTOP = "Hyprland";
@@ -79,9 +74,6 @@ in
     #unstable.xdg-utils
     handlr
     cliphist # clipboard history
-
-    xdg-open
-
 
     hyprland-protocols
 
@@ -126,7 +118,7 @@ in
   # status bar
   programs.waybar = {
     # https://github.com/hyprwm/Hyprland/discussions/1729
-    #package = inputs.hyprland.packages.${pkgs.system}.waybar;
+    #package = pkgs.unstable.waybar;
 
     enable = true;
     systemd.enable = false;
@@ -174,11 +166,11 @@ in
       };
 
       cpu = {
-        format = "{usage}% ";
+        format = "{usage}%   ";
       };
 
       memory = {
-        format = "{}% ";
+        format = "{}%   ";
       };
 
       battery = {
@@ -196,14 +188,14 @@ in
 
       network = {
         # interface = "wlp2s0"; // (Optional) To force the use of this interface
-        format-wifi = "{essid} ({signalStrength}%) ";
+        format-wifi = "{essid} ({signalStrength}%)   ";
         format-ethernet = "{ifname} ";
         format-disconnected = "Disconnected ⚠";
       };
 
       pulseaudio = {
         # scroll-step = 1;
-        format = "{volume}% {icon}";
+        format = "{volume}% {icon} ";
         format-bluetooth = "{volume}% {icon}";
         format-muted = "";
         format-icons = {
@@ -220,9 +212,9 @@ in
 
 
       "custom/spotify" = {
-        format = "  {}";
-        max-length = 40;
-        interval = 30; # Remove this if your script is endless and write in loop
+        format = "   {}";
+        max-length = 50;
+        interval = 10; # Remove this if your script is endless and write in loop
         exec = "/home/flakm/.config/waybar/mediaplayer.sh 2> /dev/null"; # Script in resources folder
         exec-if = "pgrep spotify";
       };
@@ -429,12 +421,12 @@ in
     exec-once = wl-paste --type text --watch cliphist store #Stores only text data
     exec-once = wl-paste --type image --watch cliphist store #Stores only image data
 
-
-    
+    exec-once=dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
     exec-once=[workspace 1 silent] alacritty
     exec-once=[workspace 2 silent] firefox
     exec-once=[workspace 3 silent] obsidian
     exec-once=[workspace 4 silent] spotify
+    exec-once=[workspace 9 silent] thunderbird
     exec-once=[workspace 10 silent] slack
     exec-once=waybar
 
@@ -466,10 +458,10 @@ in
     # ...
 
 
-    bindr=SUPER,h,movefocus,l
-    bindr=SUPER,l,movefocus,r
-    bindr=SUPER,k,movefocus,u
-    bindr=SUPER,j,movefocus,d
+    bind=SUPER,h,movefocus,l
+    bind=SUPER,l,movefocus,r
+    bind=SUPER,k,movefocus,u
+    bind=SUPER,j,movefocus,d
 
     bind = SUPER CTRL, H, movewindow, l
     bind = SUPER CTRL, L, movewindow, r
@@ -490,7 +482,13 @@ in
     # print screen selection range
     bind=SHIFT,Print,exec,grim -g "$(slurp)" - | swappy -f -
 
-    bind=SUPER, L, exec, swaylock
+    bind=SUPER SHIFT, L, exec, swaylock
+
+
+    # volume button that allows press and hold, volume limited to 150%
+    binde=, XF86AudioRaiseVolume, exec, wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+
+    binde=, XF86AudioLowerVolume, exec, wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%-
+    bind=, XF86AudioMute, exec, wpctl set-mute @DEFAULT_SINK@ toggle
 
   '';
 

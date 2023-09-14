@@ -1,5 +1,17 @@
-{ inputs, config, pkgs, pkgsUnstable, libs, ... }:
+{ inputs, config, pkgs, pkgsUnstable, libs, lib, ... }:
 let
+
+  ## xdg-open shim that proxies to handlr
+  xdg-open = pkgs.writeScriptBin "xdg-open" ''
+    #!/usr/bin/env bash
+    handlr open "$@"
+  '';
+  alacritty-wrapped = pkgs.alacritty.overrideAttrs (old: {
+    postPatch = ''
+      substituteInPlace alacritty/src/config/ui_config.rs \
+        --replace xdg-open ${xdg-open}/bin/xdg-open
+    '';
+  });
   settings = {
     # copied from:
     # https://github.com/alexghr/alacritty-theme.nix
@@ -152,8 +164,8 @@ in
 
 
 
-  home.packages = with pkgs; [
-    alacritty
+  home.packages = [
+    alacritty-wrapped
   ];
 
 

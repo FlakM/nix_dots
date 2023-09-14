@@ -35,7 +35,14 @@
       inherit (self) outputs;
       pkg-sets = (
         final: prev: {
-          unstable = import inputs.nixpkgs-unstable { system = final.system; };
+          unstable = import inputs.nixpkgs-unstable {
+            system = final.system;
+            allowUnfree = true;
+            config = {
+              allowUnfree = true;
+              allowUnfreePredicate = (_: true);
+            };
+          };
         }
       );
     in
@@ -122,6 +129,13 @@
                 unstable = import inputs.nixpkgs-unstable { system = final.system; };
               }
             );
+            # vpn = pkgs.openfortivpn.overrideAttrs (old: {
+            #   src = builtins.fetchGit {
+            #     url = "https://github.com/adrienverge/openfortivpn";
+            #     ref = "master";
+            #     rev = "1ccb8ee682af255ae85fecd5fcbab6497ccb6b38";
+            #   };
+            # });
 
           in
           nixpkgs.lib.nixosSystem {
@@ -139,6 +153,30 @@
               {
                 nixpkgs.overlays = [
                   pkg-sets
+                  (self: super: {
+                    openfortivpn = super.openfortivpn.overrideAttrs (old: {
+                      #src = super.fetchFromGitHub {
+                      #  owner = "adrienverge";
+                      #  repo = "openfortivpn";
+                      #  rev = "master";
+                      #  hash = "sha256-jbgxhCQWDw1ZUOAeLhOG+b6JYgvpr5TnNDIO/4k+e7k=";
+                      #};
+                      src = builtins.fetchTarball {
+                        url = "https://github.com/adrienverge/openfortivpn/archive/master.tar.gz";
+                        sha256 = "sha256:1fgx1vhj714n4ihjg4gm79iahlnxpnh7igvrlzmkwransikfj4r8";
+                      };
+
+                    });
+                  })
+                  #(final: prev: {
+                  #  # very expensive since this invalidates the cache for a lot of (almost all) graphical apps.
+                  #  xdg-utils = prev.xdg-utils.overrideAttrs (oldAttrs: {
+                  #    postInstall = oldAttrs.postInstall + ''
+                  #      # "overwrite" xdg-open with handlr
+                  #      cp ${prev.writeShellScriptBin "xdg-open" "${prev.handlr}/bin/handlr open \"$@\""}/bin/xdg-open $out/bin/xdg-open
+                  #    '';
+                  #  });
+                  #})
                 ];
               }
             ];

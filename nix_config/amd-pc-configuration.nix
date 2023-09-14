@@ -1,8 +1,7 @@
-{ config, pkgs, inputs, ... }:
+{ config, pkgs, inputs, lib, ... }:
 {
   # allow apps like teams etc...
   nixpkgs.config.allowUnfree = true;
-
 
   nix.settings = {
     experimental-features = [ "nix-command" "flakes" ];
@@ -13,6 +12,10 @@
 
   #boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
   #boot.kernel.sysctl."net.ipv6.conf.all.forwarding" = 1;
+  programs.hyprland = {
+    enable = true;
+    package = inputs.hyprland.packages.${pkgs.system}.hyprland;
+  };
 
   # networking.hostName = "nixos"; # Define your hostname.
   networking.networkmanager.enable = true;
@@ -34,23 +37,8 @@
   programs.dconf.enable = true;
 
   xdg = {
-    #mime.defaultApplications = {
-    #  "text/html" = "firefox.desktop";
-    #  "scheme-handler/http" = "firefox.desktop";
-    #  "scheme-handler/https" = "firefox.desktop";
-    #  "x-scheme-handler/http" = "firefox.desktop";
-    #  "x-scheme-handler/https" = "firefox.desktop";
-    #  "x-scheme-handler/about" = "firefox.desktop";
-    #  "x-scheme-handler/unknown" = "firefox.desktop";
-    #  "x-scheme-handler/mailto" = "thunderbird.desktop";
-    #  "default-url-scheme-handler" = "firefox.desktop";
-    #  "default-url-scheme-handler/http" = "firefox.desktop";
-    #  "default-url-scheme-handler/https" = "firefox.desktop";
-    #};
-
     portal = {
       enable = true;
-      xdgOpenUsePortal = true;
       extraPortals = with pkgs; [
         xdg-desktop-portal-hyprland
         xdg-desktop-portal-gtk
@@ -93,7 +81,6 @@
   };
 
 
-  #services.xserver.videoDrivers = [ "amdgpu" ];
   boot.initrd.kernelModules = [ "amdgpu" ];
   boot.kernelParams = [ "amdgpu.sg_display=0" ];
 
@@ -175,6 +162,7 @@
     #google-chrome
     #firefox
     firefox-wayland
+    xdg-utils
 
     #chromium
 
@@ -198,7 +186,7 @@
     signal-desktop
 
     # office
-    thunderbird
+    unstable.thunderbird
     gpgme
     libreoffice
     bitwarden
@@ -217,6 +205,7 @@
     openssl
 
     qt6.full
+
     libsForQt5.qtstyleplugins
     adwaita-qt
     adwaita-qt6
@@ -296,6 +285,13 @@
   fonts.fonts = with pkgs; [
     (nerdfonts.override { fonts = [ "RobotoMono" ]; })
   ];
+
+
+
+  services.minio = {
+    enable = true;
+    region = "us-east-1";
+  };
 
 }
 

@@ -19,6 +19,7 @@ vim.g.mapleader = " "
 
 
 
+
 --
 -- nvim-tree section
 --
@@ -60,14 +61,50 @@ map("n", "<leader>fh", [[<cmd>Telescope help_tags<CR>]])
 map("v", "<leader>p", [["_dP]])
 
 
+if vim.fn.filereadable(vim.fn.expand("~/.config/current-color_scheme")) == 1 then
+  local file = io.open(vim.fn.expand("~/.config/current-color_scheme"), "r")
+  local theme = file:read()
+  if theme == "prefer-light" then
+      vim.g.background = "light"
+      vim.cmd("set background=light")
+  else
+      vim.g.background = "dark"
+      vim.cmd("set background=dark")
+  end
+  file:close()
+end
+
+
 function switch_theme()
   -- toggle background if dark or not set
   if vim.g.background == "dark" or vim.g.background == nil then
-      vim.g.background = "light"
+    vim.g.background = "light"
+    vim.cmd("set background=light")
   else
     vim.g.background = "dark"
+    vim.cmd("set background=dark")
   end
 end
 
 
 map("n", "<leader>l", [[<cmd>lua switch_theme()<CR>]])
+
+
+
+function openUrl()
+    local file = vim.fn.expand("<cWORD>")
+    local result = "silent! xdg-open " .. file
+    if
+        string.match(file, "https") == "https"
+        or string.match(file, "http") == "http"
+    then
+        vim.cmd(result)
+    else
+        return print("💁 Woops is not url gais 🙅")
+    end
+end
+
+vim.keymap.set("n", '<leader><CR>', ':lua openUrl()<CR>', {noremap = true, desc = "OpenUrl Undercurword", silent = true })
+vim.keymap.set("i", '<leader><CR>', '<Esc>:lua openUrl()<CR>', {noremap = true, desc = "OpenUrl Undercurword", silent = true })
+
+
