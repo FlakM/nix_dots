@@ -132,9 +132,7 @@
     # office
     thunderbird
     gpgme
-    teams
     libreoffice
-    keepassxc
     bitwarden
     bitwarden-cli
     dropbox-cli

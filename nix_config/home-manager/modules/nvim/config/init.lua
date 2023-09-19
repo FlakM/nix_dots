@@ -10,7 +10,14 @@ local function map(mode, lhs, rhs, opts)
 end
 
 
+--Lua:
+vim.cmd 'colorscheme edge'
+vim.g.edge_style = "default"
+vim.g.edge_transparent_background = 2
+
 vim.g.mapleader = " "
+
+
 
 
 --
@@ -19,7 +26,6 @@ vim.g.mapleader = " "
 require'nvim-tree'.setup {
   view = {
     width = 50,
-    hide_root_folder = true,
   },
   hijack_cursor = true,
   update_focused_file = {
@@ -53,3 +59,52 @@ map("n", "<leader>fh", [[<cmd>Telescope help_tags<CR>]])
 -- Replace visually selected text with contents of register without yanking 
 -- https://superuser.com/questions/321547/how-do-i-replace-paste-yanked-text-in-vim-without-yanking-the-deleted-lines
 map("v", "<leader>p", [["_dP]])
+
+
+if vim.fn.filereadable(vim.fn.expand("~/.config/current-color_scheme")) == 1 then
+  local file = io.open(vim.fn.expand("~/.config/current-color_scheme"), "r")
+  local theme = file:read()
+  if theme == "prefer-light" then
+      vim.g.background = "light"
+      vim.cmd("set background=light")
+  else
+      vim.g.background = "dark"
+      vim.cmd("set background=dark")
+  end
+  file:close()
+end
+
+
+function switch_theme()
+  -- toggle background if dark or not set
+  if vim.g.background == "dark" or vim.g.background == nil then
+    vim.g.background = "light"
+    vim.cmd("set background=light")
+  else
+    vim.g.background = "dark"
+    vim.cmd("set background=dark")
+  end
+end
+
+
+map("n", "<leader>l", [[<cmd>lua switch_theme()<CR>]])
+
+
+
+function openUrl()
+    local file = vim.fn.expand("<cWORD>")
+    local result = "silent! xdg-open " .. file
+    if
+        string.match(file, "https") == "https"
+        or string.match(file, "http") == "http"
+    then
+        vim.cmd(result)
+    else
+        return print("💁 Woops is not url gais 🙅")
+    end
+end
+
+vim.keymap.set("n", '<leader><CR>', ':lua openUrl()<CR>', {noremap = true, desc = "OpenUrl Undercurword", silent = true })
+vim.keymap.set("i", '<leader><CR>', '<Esc>:lua openUrl()<CR>', {noremap = true, desc = "OpenUrl Undercurword", silent = true })
+
+

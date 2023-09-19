@@ -92,6 +92,17 @@ end)
 
 -- Example mappings for usage with nvim-dap. If you don't use that, you can skip these
 
+
+-- Toggle runnables
+map("n", "<leader>dr", function()
+    require('rust-tools').runnables.runnables()
+end)
+
+-- Toggle debuggables
+map("n", "<leader>dd", function()
+    require('rust-tools').debuggables.debuggables()
+end)
+
 -- Toggle breakpoint
 map("n", "<leader>dt", function()
   require("dap").toggle_breakpoint()

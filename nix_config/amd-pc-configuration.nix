@@ -1,14 +1,21 @@
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, lib, ... }:
 {
   # allow apps like teams etc...
   nixpkgs.config.allowUnfree = true;
 
-
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings = {
+    experimental-features = [ "nix-command" "flakes" ];
+    substituters = [ "https://hyprland.cachix.org" ];
+    trusted-public-keys = [ "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc=" ];
+  };
 
 
   #boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
   #boot.kernel.sysctl."net.ipv6.conf.all.forwarding" = 1;
+  programs.hyprland = {
+    enable = true;
+    package = inputs.hyprland.packages.${pkgs.system}.hyprland;
+  };
 
   # networking.hostName = "nixos"; # Define your hostname.
   networking.networkmanager.enable = true;
@@ -27,34 +34,58 @@
   #networking.interfaces.enp14s0.useDHCP = false;
   #networking.interfaces.eth0.useDHCP = true;
 
+  programs.dconf.enable = true;
 
-
-  nixpkgs.config.pulseaudio = true;
-
-  # Use xfce as desktop manager not DE
-  services.xserver = {
-    enable = true;
-    # left alt should switch to 3rd level
-    # https://nixos.wiki/wiki/Keyboard_Layout_Customization
-    xkbOptions = "lv3:lalt_switch";
-    desktopManager = {
-      xterm.enable = false;
-      xfce = {
-        enable = true;
-        noDesktop = true;
-        enableXfwm = false;
-      };
+  xdg = {
+    portal = {
+      enable = true;
+      extraPortals = with pkgs; [
+        xdg-desktop-portal-hyprland
+        xdg-desktop-portal-gtk
+      ];
     };
-    displayManager.defaultSession = "xfce";
-    windowManager.i3.enable = true;
+  };
+
+  security.rtkit.enable = true;
+  services.pipewire = {
+    enable = true;
+    alsa.enable = true;
+    alsa.support32Bit = true;
+    pulse.enable = true;
+    wireplumber.enable = true;
+    # If you want to use JACK applications, uncomment this
+    #jack.enable = true;
   };
 
 
-  services.xserver.videoDrivers = [ "amdgpu" ];
+
+
+  # Use xfce as desktop manager not DE
+  #services.xserver = {
+  #  enable = true;
+  #  # left alt should switch to 3rd level
+  #  # https://nixos.wiki/wiki/Keyboard_Layout_Customization
+  #  xkbOptions = "lv3:lalt_switch";
+  # #   windowManager.i3.enable = true;
+  #  
+  #  desktopManager.plasma5.enable = true;
+  #  displayManager.sddm.enable = true;
+  #};
+  services.xserver = {
+    enable = false;
+    #displayManager.gdm.enable = true;
+    #displayManager.gdm.wayland = true;
+    #displayManager.sessionPackages = [ inputs.hyprland.hyprland ];
+    libinput.enable = true;
+    xkbOptions = "lv3:lalt_switch";
+  };
+
+
   boot.initrd.kernelModules = [ "amdgpu" ];
+  boot.kernelParams = [ "amdgpu.sg_display=0" ];
 
   # Configure keymap in X11
-  services.xserver.layout = "pl";
+  #services.xserver.layout = "pl";
   # services.xserver.xkbOptions = "eurosign:e";
   i18n.defaultLocale = "en_US.UTF-8";
 
@@ -69,7 +100,6 @@
   services.blueman.enable = true;
 
   hardware = {
-    pulseaudio.enable = true;
     opengl = {
       enable = true;
       driSupport = true;
@@ -99,9 +129,15 @@
 
   environment.pathsToLink = [ "/share/zsh" ];
 
+  security.polkit.enable = true;
+
   security.pam.services.swaylock = {
     text = "auth include login";
   };
+
+
+
+
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
@@ -109,14 +145,24 @@
     qemu_full
     virt-manager
     quickemu
+    glib
 
     xfce.xfce4-pulseaudio-plugin
+
+
+    #    polkit_gnome
+    #gnome.adwaita-icon-theme
+    #    gnome.gnome-themes-extra
+    #    gsettings-desktop-schemas
+
     pavucontrol
     docker
     wget
     curl
-    firefox
-    google-chrome
+    #google-chrome
+    #firefox
+    firefox-wayland
+    xdg-utils
 
     #chromium
 
@@ -140,9 +186,8 @@
     signal-desktop
 
     # office
-    thunderbird
+    unstable.thunderbird
     gpgme
-    teams
     libreoffice
     bitwarden
     bitwarden-cli
@@ -154,10 +199,20 @@
     aspellDicts.en-computers
 
     tailscale
-    element-desktop
+    fractal
 
     pkg-config
     openssl
+
+    qt6.full
+
+    libsForQt5.qtstyleplugins
+    adwaita-qt
+    adwaita-qt6
+
+    qt5.qtwayland
+    qt6.qmake
+    qt6.qtwayland
   ];
 
 
@@ -230,6 +285,13 @@
   fonts.fonts = with pkgs; [
     (nerdfonts.override { fonts = [ "RobotoMono" ]; })
   ];
+
+
+
+  services.minio = {
+    enable = true;
+    region = "us-east-1";
+  };
 
 }
 

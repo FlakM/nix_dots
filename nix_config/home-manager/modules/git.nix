@@ -34,6 +34,7 @@
       ".direnv/"
       ".flake_dir/"
       "result"
+      ".local_ignore"
     ];
 
     extraConfig = {
