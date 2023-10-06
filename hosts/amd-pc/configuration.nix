@@ -3,9 +3,9 @@
 { pkgs, inputs, lib, ... }: {
 
   imports = [
-    ../../wireguard.nix
-    ../../gpg.nix
-    ../../k3s.nix
+    ../../shared/wireguard.nix
+    ../../shared/gpg.nix
+    ../../shared/k3s.nix
   ];
 
 

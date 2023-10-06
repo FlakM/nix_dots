@@ -2,7 +2,7 @@
 { pkgs, ... }: {
 
   imports = [
-    ../../gpg.nix
+    ../../shared/gpg.nix
   ];
 
   programs.tmux = {
@@ -11,4 +11,8 @@
     terminal = "tmux-direct";
   };
   services.emacs.enable = false;
+
+  environment.systemPackages = with pkgs; [
+    home-manager
+  ];
 }
