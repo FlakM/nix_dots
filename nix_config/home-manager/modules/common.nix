@@ -24,7 +24,9 @@
     timewarrior
     dnsutils
 
-    obsidian
+    unstable.obsidian
+
+    unstable.yt-dlp
   ] ++ lib.optionals stdenv.isDarwin [
     coreutils # provides `dd` with --status=progress
   ] ++ lib.optionals stdenv.isLinux [

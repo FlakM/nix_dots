@@ -23,7 +23,6 @@
       ".metals"
       ".bloop"
       "out"
-      ".envrc"
       ".history/"
       "**/project/metals.sbt"
       ".idea/"
