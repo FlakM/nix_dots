@@ -1,6 +1,21 @@
 # My dotfiles using nix flakes
 
+## How to use
 
+### On local machine
+
+1. Clone repo into local dir `git clone git@github.com:FlakM/nix_dots.git` 
+2. Develop ie on `amd-pc` host
+3. Switch nixos `sudo nixos-rebuild switch --flake ~/programming/flakm/nix_dots#amd-pc`
+4. Switch home manager `home-manager --flake ~/programming/flakm/nix_dots#flakm@amd-pc switch`
+
+
+### On remote machine ie odroid
+
+1. Build locally and send paths over ssh and switch `nixos-rebuild switch --target-host flakm@192.168.0.102  --use-remote-sudo --flake ~/programming/flakm/nix_dots#odroid`
+2. Build locally home manager: `home-manager --flake ~/programming/flakm/nix_dots#flakm@odroid build`
+3. Ship over ssh: `nix copy --to ssh://flakm@192.168.0.102 ./result`
+4. Apply changes: `home-manager --flake github:flakm/nix_dots#flakm@odroid switch`
 
 ## Installation for linux
 
