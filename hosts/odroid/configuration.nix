@@ -11,4 +11,8 @@
     terminal = "tmux-direct";
   };
   services.emacs.enable = false;
+
+  environment.systemPackages = with pkgs; [
+    home-manager
+  ];
 }
