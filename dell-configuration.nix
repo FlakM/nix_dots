@@ -138,6 +138,8 @@
     dropbox-cli
 
     # spelling
+    hunspell
+    hunspellDicts.pl_PL
     aspell
     aspellDicts.pl
     aspellDicts.en

@@ -33,6 +33,9 @@
     }@inputs:
     let
       inherit (self) outputs;
+      # Inject 'unstable' and 'trunk' into the overridden package set, so that
+      # the following overlays may access them (along with any system configs
+      # that wish to do so).
       pkg-sets = (
         final: prev: {
           unstable = import inputs.nixpkgs-unstable {
@@ -45,6 +48,69 @@
           };
         }
       );
+
+      mkHost = hostName: system:
+        (({ zfs-root, pkgs, system, ... }:
+          nixpkgs.lib.nixosSystem {
+            inherit system;
+            specialArgs = { inherit inputs outputs; }; # this is the important part
+            modules = [
+              nur.nixosModules.nur
+              {
+                nixpkgs.overlays = [
+                  pkg-sets
+                ];
+              }
+
+              # Module 0: zfs-root
+              ./modules
+
+              # Module 1: host-specific config, if exist
+              (if (builtins.pathExists
+                ./hosts/${hostName}/configuration.nix) then
+                (import ./hosts/${hostName}/configuration.nix {
+                  inherit pkgs inputs;
+                  lib = pkgs.lib;
+                })
+              else
+                { })
+
+              # Module 2: entry point
+              (({ zfs-root, pkgs, lib, ... }: {
+                inherit zfs-root;
+                system.configurationRevision =
+                  if (self ? rev) then
+                    self.rev
+                  else
+                    throw "refuse to build: git tree is dirty";
+                system.stateVersion = "23.05";
+                imports = [
+                  "${nixpkgs}/nixos/modules/installer/scan/not-detected.nix"
+                  # "${nixpkgs}/nixos/modules/profiles/hardened.nix"
+                  # "${nixpkgs}/nixos/modules/profiles/qemu-guest.nix"
+                ];
+              }) {
+                inherit zfs-root pkgs;
+                lib = nixpkgs.lib;
+              })
+
+              # Module 3: home-manager
+              home-manager.nixosModules.home-manager
+              {
+                home-manager.useGlobalPkgs = true;
+                home-manager.useUserPackages = true;
+              }
+
+              # Module 4: config shared by all hosts
+              (import ./configuration.nix { inherit pkgs; })
+            ];
+          })
+
+          # configuration input
+          (import ./hosts/${hostName} {
+            system = system;
+            pkgs = import inputs.nixpkgs { system = "x86_64-linux"; allowUnfree = true; config = { allowUnfree = true; allowUnfreePredicate = (_: true); }; };
+          }));
     in
     {
 
@@ -89,6 +155,23 @@
         ];
       };
 
+      homeConfigurations."flakm@odroid" = home-manager.lib.homeManagerConfiguration {
+        pkgs = nixpkgs.legacyPackages.x86_64-linux;
+
+        extraSpecialArgs = { inherit inputs outputs; }; # this is the important part
+
+        modules = [
+          nur.nixosModules.nur
+          {
+            nixpkgs.overlays = [
+              pkg-sets
+            ];
+          }
+          ./home-manager/odroid.nix
+        ];
+      };
+
+
       # NixOS configuration entrypoint
       # Available through 'nixos-rebuild --flake .#your-hostname'
       nixosConfigurations = {
@@ -119,7 +202,7 @@
             ];
           };
 
-        amd-pc =
+        amd-pc2 =
           let
             # Inject 'unstable' and 'trunk' into the overridden package set, so that
             # the following overlays may access them (along with any system configs
@@ -129,13 +212,6 @@
                 unstable = import inputs.nixpkgs-unstable { system = final.system; };
               }
             );
-            # vpn = pkgs.openfortivpn.overrideAttrs (old: {
-            #   src = builtins.fetchGit {
-            #     url = "https://github.com/adrienverge/openfortivpn";
-            #     ref = "master";
-            #     rev = "1ccb8ee682af255ae85fecd5fcbab6497ccb6b38";
-            #   };
-            # });
 
           in
           nixpkgs.lib.nixosSystem {
@@ -181,7 +257,11 @@
               }
             ];
           };
+        odroid = mkHost "odroid" "x86_64-linux";
+        amd-pc = mkHost "amd-pc" "x86_64-linux";
       };
+
+
 
       darwinConfigurations.m1pro =
         let

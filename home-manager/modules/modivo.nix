@@ -5,5 +5,7 @@
     google-cloud-sdk
     openfortivpn
     minio-client
+    redis
   ];
+
 }

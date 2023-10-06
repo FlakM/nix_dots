@@ -1,12 +1,28 @@
-{ config, pkgs, inputs, lib, ... }:
-{
-  # allow apps like teams etc...
-  nixpkgs.config.allowUnfree = true;
+# configuration in this file only applies to amd-pc host.
+
+{ pkgs, inputs, lib, ... }: {
+
+  imports = [
+    ../../wireguard.nix
+    ../../gpg.nix
+    ../../k3s.nix
+  ];
+
+
+  nixpkgs.config = {
+    allowUnfree = true;
+    allowUnfreePredicate = (_: true);
+  };
+
 
   nix.settings = {
     experimental-features = [ "nix-command" "flakes" ];
     substituters = [ "https://hyprland.cachix.org" ];
     trusted-public-keys = [ "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc=" ];
+    trusted-users = [
+      "root"
+      "flakm"
+    ];
   };
 
 
@@ -17,8 +33,13 @@
     package = inputs.hyprland.packages.${pkgs.system}.hyprland;
   };
 
+  services.redis.servers."".enable = true;
+
+
+  services.jellyfin.enable = true;
+
   # networking.hostName = "nixos"; # Define your hostname.
-  networking.networkmanager.enable = true;
+  networking.networkmanager.enable = lib.mkForce true;
   networking.wireless.iwd.enable = true;
   networking.networkmanager.wifi.backend = "iwd";
   networking.firewall.checkReversePath = "loose";
@@ -84,6 +105,8 @@
   boot.initrd.kernelModules = [ "amdgpu" ];
   boot.kernelParams = [ "amdgpu.sg_display=0" ];
 
+  boot.kernelModules = [ "kvm-amd" "tun" "virtio" ];
+
   # Configure keymap in X11
   #services.xserver.layout = "pl";
   # services.xserver.xkbOptions = "eurosign:e";
@@ -119,7 +142,7 @@
   users.users.flakm = {
     shell = pkgs.zsh;
     isNormalUser = true;
-    extraGroups = [ "wheel" "docker" "audio" "networkmanager" "input" "video" "rtkit" "users" "dip" "bluetooth" ]; # Enable ‘sudo’ for the user.
+    extraGroups = [ "wheel" "docker" "audio" "networkmanager" "input" "video" "rtkit" "users" "dip" "bluetooth" "jellyfin" ]; # Enable ‘sudo’ for the user.
     openssh.authorizedKeys.keys = [
       "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDh6bzSNqVZ1Ba0Uyp/EqThvDdbaAjsJ4GvYN40f/p9Wl4LcW/MQP8EYLvBTqTluAwRXqFa6fVpa0Y9Hq4kyNG62HiMoQRjujt6d3b+GU/pq7NN8+Oed9rCF6TxhtLdcvJWHTbcq9qIGs2s3eYDlMy+9koTEJ7Jnux0eGxObUaGteQUS1cOZ5k9PQg+WX5ncWa3QvqJNxx446+OzVoHgzZytvXeJMg91gKN9wAhKgfibJ4SpQYDHYcTrOILm7DLVghrcU2aFqLKVTrHSWSugfLkqeorRadHckRDr2VUzm5eXjcs4ESjrG6viKMKmlF1wxHoBrtfKzJ1nR8TGWWeH9NwXJtQ+qRzAhnQaHZyCZ6q4HvPlxxXOmgE+JuU6BCt6YPXAmNEMdMhkqYis4xSzxwWHvko79NnKY72pOIS2GgS6Xon0OxLOJ0mb66yhhZB4hUBb02CpvCMlKSLtvnS+2IcSGeSQBnwBw/wgp1uhr9ieUO/wY5K78w2kYFhR6Iet55gutbikSqDgxzTmuX3Mkjq0L/MVUIRAdmOysrR2Lxlk692IrNYTtUflQLsSfzrp6VQIKPxjfrdFhHIfbPoUdfMf+H06tfwkGONgcej56/fDjFbaHouZ357wcuwDsuMGNRCdyW7QyBXF/Wi28nPq/KSeOdCy+q9KDuOYsX9n/5Rsw== flakm" # content of authorized_keys file
       # note: ssh-copy-id will add user@clientmachine after the public key
@@ -134,6 +157,8 @@
   security.pam.services.swaylock = {
     text = "auth include login";
   };
+
+
 
 
 
@@ -186,7 +211,8 @@
     signal-desktop
 
     # office
-    unstable.thunderbird
+    inputs.nixpkgs-unstable.legacyPackages.${pkgs.system}.thunderbird
+    #unstable.thunderbird
     gpgme
     libreoffice
     bitwarden
@@ -220,7 +246,7 @@
   # services.openssh.enable = true;
 
   # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
+  networking.firewall.allowedTCPPorts = [ 8096 ];
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
@@ -292,7 +318,4 @@
     enable = true;
     region = "us-east-1";
   };
-
 }
-
-

@@ -3,7 +3,10 @@
 
   home.packages = with pkgs; [
     mumble
-    teams-for-linux
+    unstable.teams-for-linux
+    google-chrome
   ];
 
 }
+
+
