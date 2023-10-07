@@ -7,8 +7,8 @@
     ./modules/nvim/neovim.nix
     ./modules/zsh.nix
     ./modules/tmux.nix
+    ./modules/atuin.nix
   ];
-
 
   home = {
     username = "flakm";

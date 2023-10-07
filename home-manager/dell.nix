@@ -23,6 +23,7 @@
 
     ./modules/sql.nix
     ./modules/productivity.nix
+    ./modules/atuin.nix
   ];
 
   xsession.windowManager.i3.config.fonts.size = 20.0;
