@@ -265,8 +265,6 @@
   services.printing.drivers = [ pkgs.brlaser ];
 
   programs = {
-    zsh.enable = true;
-    ssh.startAgent = false;
 
     gnupg = {
       dirmngr.enable = true;
@@ -279,13 +277,6 @@
     kdeconnect.enable = true;
   };
 
-  services.openssh = {
-    enable = true;
-    settings = {
-      PasswordAuthentication = false;
-      KbdInteractiveAuthentication = false;
-    };
-  };
 
 
 

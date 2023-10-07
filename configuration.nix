@@ -53,14 +53,10 @@
     vimAlias = true;
   };
 
-  services.openssh = {
-    enable = true;
-    # require public key authentication for better security
-    #settings.PermitRootLogin = "yes";
-  };
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.flakm = {
+    shell = pkgs.zsh;
     isNormalUser = true;
     extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
     openssh.authorizedKeys.keys = [
@@ -69,14 +65,32 @@
   };
 
 
+  programs = {
+    zsh.enable = true;
+
+    gnupg = {
+      dirmngr.enable = true;
+      agent = {
+        enable = true;
+        pinentryFlavor = "tty";
+        enableSSHSupport = true;
+      };
+    };
+    kdeconnect.enable = true;
+  };
+
+  services.openssh = {
+    enable = true;
+    settings = {
+      PasswordAuthentication = false;
+      KbdInteractiveAuthentication = false;
+    };
+  };
 
   boot.zfs.forceImportRoot = false;
-
-
   programs.git.enable = true;
 
   security = {
-    doas.enable = false;
     sudo.enable = true;
   };
 
