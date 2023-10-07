@@ -2,7 +2,6 @@
 { pkgs, ... }: {
 
   imports = [
-    ../../shared/gpg.nix
   ];
 
   programs.tmux = {
