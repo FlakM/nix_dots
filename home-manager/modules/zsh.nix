@@ -44,6 +44,7 @@
       bindkey  "^[[1;5D" backward-word
       bindkey  "^[[1;3C" forward-word
       bindkey  "^[[1;eD" backward-word
+
       # rd is rancher desktop
       # zsh is in front of path as otherwise on darwin /usr/bin/zsh is picked earlier
       # cargo is here to allow cargo install $crate
