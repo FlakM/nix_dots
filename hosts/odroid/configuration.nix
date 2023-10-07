@@ -2,6 +2,7 @@
 { pkgs, ... }: {
 
   imports = [
+    ./nextcloud.nix
   ];
 
   programs.tmux = {
@@ -27,4 +28,5 @@
   # 1. create the TUN network device
   # 2. setup some IP routes to route through the TUN
   services.tailscale.enable = true;
+
 }
