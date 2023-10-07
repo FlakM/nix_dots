@@ -30,18 +30,6 @@
 
         sslCertificate = "/var/secrets/certs/odroid.tailecbd4.ts.net.crt";
         sslCertificateKey = "/var/secrets/certs/odroid.tailecbd4.ts.net.key";
-
-        locations = {
-          "/" = {
-            proxyPass = "http://127.0.0.1:45854"; 
-            proxySetHeaders = {
-              Host = "$host";
-              X-Real-IP = "$remote_addr";
-              X-Forwarded-For = "$proxy_add_x_forwarded_for";
-              X-Forwarded-Proto = "$scheme";
-            };
-          };
-        };
       };
     };
   };
