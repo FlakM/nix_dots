@@ -22,6 +22,7 @@
     ./modules/yubikey.nix
 
     ./modules/sql.nix
+    ./modules/productivity.nix
   ];
 
   xsession.windowManager.i3.config.fonts.size = 20.0;

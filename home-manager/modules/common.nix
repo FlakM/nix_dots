@@ -21,10 +21,7 @@
     fzf
     delta
     htop
-    timewarrior
     dnsutils
-
-    unstable.obsidian
 
     unstable.yt-dlp
   ] ++ lib.optionals stdenv.isDarwin [
