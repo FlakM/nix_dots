@@ -3,7 +3,7 @@
   services.nextcloud = {
     enable = true;
     package = pkgs.nextcloud27;
-    hostName = "odroid";
+    hostName = "odroid.tailecbd4.ts.net";
     config.adminpassFile = "/etc/nextcloud-admin-pass";
 
     extraApps = with config.services.nextcloud.package.packages.apps; {
@@ -33,11 +33,5 @@
       };
     };
   };
-
-  # You might also want to ensure that the certificates are readable by the nginx process:
-  systemd.tmpfiles.rules = [
-    "a /var/secrets/certs/odroid.tailecbd4.ts.net.crt 0644 root root"
-    "a /var/secrets/certs/odroid.tailecbd4.ts.net.key 0640 root root"
-  ];
 
 }
