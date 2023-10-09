@@ -5,7 +5,7 @@
     package = pkgs.unstable.atuin;
     enableZshIntegration = true;
     settings = {
-      filter_mode_shell_up_key_binding = "session";
+      filter_mode_shell_up_key_binding = "host";
       auto_sync = true;
       sync_frequency = "5m";
       style = "compact";
