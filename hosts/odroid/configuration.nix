@@ -3,6 +3,7 @@
 
   imports = [
     ./nextcloud.nix
+    ./tandoor.nix
   ];
 
   programs.tmux = {

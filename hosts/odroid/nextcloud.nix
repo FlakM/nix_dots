@@ -3,7 +3,7 @@
   services.nextcloud = {
     enable = true;
     package = pkgs.nextcloud27;
-    hostName = "odroid.tailecbd4.ts.net";
+    hostName = "nextcloud.house.flakm.com";
     config.adminpassFile = "/etc/nextcloud-admin-pass";
 
     extraApps = with config.services.nextcloud.package.packages.apps; {
@@ -36,8 +36,8 @@
         enableACME = false; # Since you're providing your own certs
         forceSSL = true;
 
-        sslCertificate = "/var/secrets/certs/odroid.tailecbd4.ts.net.crt";
-        sslCertificateKey = "/var/secrets/certs/odroid.tailecbd4.ts.net.key";
+        sslCertificate = "/var/secrets/certs/house.crt";
+        sslCertificateKey = "/var/secrets/certs/house.key";
         # redirect http to https
       };
     };

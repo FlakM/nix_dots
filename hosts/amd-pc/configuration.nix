@@ -6,6 +6,7 @@
     ../../shared/wireguard.nix
     ../../shared/gpg.nix
     ../../shared/k3s.nix
+    ./wildcard_cert.nix
   ];
 
 

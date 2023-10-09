@@ -54,8 +54,8 @@
       export PKG="/lib/pkgconfig"
 
 
-      bindkey -M vimcmd '^R' _atuin_search_widget
-      bindkey -M vimcmd '^[OA' _atuin_up_search_widget
+      bindkey -M vicmd '^R' _atuin_search_widget
+      bindkey -M vicmd '^[OA' _atuin_up_search_widget
 
       changelog() {
         latest_tag=$(git tag --sort=taggerdate | tail -1)

@@ -4,6 +4,7 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.05";
     nixpkgs-unstable.url = "nixpkgs/nixos-unstable";
+    nixpgs-master.url = "github:NixOS/nixpkgs/master";
     flake-utils.url = "github:numtide/flake-utils";
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
     darwin = {
@@ -26,6 +27,7 @@
     , home-manager
     , nixpkgs
     , nixpkgs-unstable
+    , nixpgs-master
     , nixos-hardware
     , hyprland
     , nur
@@ -39,6 +41,14 @@
       pkg-sets = (
         final: prev: {
           unstable = import inputs.nixpkgs-unstable {
+            system = final.system;
+            allowUnfree = true;
+            config = {
+              allowUnfree = true;
+              allowUnfreePredicate = (_: true);
+            };
+          };
+          master = import inputs.nixpkgs-master {
             system = final.system;
             allowUnfree = true;
             config = {
