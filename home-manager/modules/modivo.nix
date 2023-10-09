@@ -1,7 +1,7 @@
 { pkgs, ... }:
 {
   home.packages = with pkgs; [
-    slack
+    unstable.slack
     google-cloud-sdk
     openfortivpn
     minio-client
