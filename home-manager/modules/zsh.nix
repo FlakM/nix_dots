@@ -20,7 +20,7 @@
         { name = "agkozak/zsh-z"; } # smart CD
         { name = "jeffreytse/zsh-vi-mode"; } # vi mode <3
         { name = "zsh-users/zsh-autosuggestions"; } # Simple plugin installation
-        { name = "unixorn/fzf-zsh-plugin"; }
+        #{ name = "unixorn/fzf-zsh-plugin"; }
         { name = "romkatv/powerlevel10k"; tags = [ as:theme depth:1 ]; } # Installations with additional options. For the list of options, please refer to Zplug README.
       ];
     };
@@ -53,8 +53,9 @@
       export PKG_CONFIG_PATH="${pkgs.openssl.dev}/lib/pkgconfig"
       export PKG="/lib/pkgconfig"
 
-      # Atuin
-      zvm_after_init_commands+=(eval "$(atuin init zsh)")
+
+      bindkey -M vimcmd '^R' _atuin_search_widget
+      bindkey -M vimcmd '^[OA' _atuin_up_search_widget
 
       changelog() {
         latest_tag=$(git tag --sort=taggerdate | tail -1)
