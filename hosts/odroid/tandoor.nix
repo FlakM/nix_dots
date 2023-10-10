@@ -4,16 +4,7 @@
     package = pkgs.unstable.tandoor-recipes;
     enable = true;
     port = 3030;
-    extraConfig = {
-      #STATIC_URL = "/gotowanie/static/";
-      #MEDIA_URL = "https://odroid.tailecbd4.ts.net/gotowanie/media/";
-      #BASE_PATH = "https://odroid.tailecbd4.ts.net/gotowanie/";
-      #SCRIPT_NAME = "/gotowanie";
-      #STATIC_URL = "/gotowanie/static/";
-      #MEDIA_URL = "/gotowanie/static/";
-    };
     address = "127.0.0.1";
-
   };
 
   networking.firewall.allowedTCPPorts = [ 443 3030 ];
@@ -36,7 +27,6 @@
             proxy_redirect http://127.0.0.1:3030 https://recipes.domain.tld; # replace port and domain
           '';
         };
-
       };
     };
   };

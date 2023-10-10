@@ -4,6 +4,7 @@
   imports = [
     ./nextcloud.nix
     ./tandoor.nix
+    ./postgres.nix
   ];
 
   programs.tmux = {
