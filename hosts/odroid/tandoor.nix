@@ -5,6 +5,12 @@
     enable = true;
     port = 3030;
     address = "127.0.0.1";
+    extraConfig = {
+      DB_ENGINE= "django.db.backends.postgresql";
+      POSTGRES_HOST="/run/postgresql";
+      POSTGRES_USER="tandoor";
+      POSTGRES_DB="tandoor";
+    };
   };
 
   networking.firewall.allowedTCPPorts = [ 443 3030 ];
