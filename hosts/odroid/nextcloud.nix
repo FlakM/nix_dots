@@ -23,6 +23,14 @@
     };
 
     https = true;
+
+    database.createLocally = true;
+    config = { 
+      dbtype = "pgsql";
+      dbuser = "nextcloud";
+      dbname = "nextcloud";
+    };
+    
   };
 
   networking.firewall.allowedTCPPorts = [ 80 443 ];
