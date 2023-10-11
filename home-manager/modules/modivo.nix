@@ -1,4 +1,4 @@
-{pkgs, lib, ...}:
+{ pkgs, lib, ... }:
 let
   slack-wrapped = pkgs.master.slack.overrideAttrs (old: {
     installPhase = old.installPhase + ''
@@ -10,7 +10,8 @@ let
         --add-flags "--ozone-platform=wayland --enable-features=UseOzonePlatform,WebRTCPipeWireCapturer"
     '';
   });
-in {
+in
+{
 
   home.packages = with pkgs; [
     #slack-wrapped
