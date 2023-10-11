@@ -51,4 +51,8 @@
     };
   };
 
+  services.sendmail = {
+    enable = true;
+  };
+
 }
