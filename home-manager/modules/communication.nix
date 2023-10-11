@@ -5,6 +5,7 @@
     mumble
     unstable.teams-for-linux
     google-chrome
+    element-desktop
   ];
 
 }
