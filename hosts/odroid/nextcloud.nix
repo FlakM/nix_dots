@@ -51,8 +51,5 @@
     };
   };
 
-  services.sendmail = {
-    enable = true;
-  };
 
 }

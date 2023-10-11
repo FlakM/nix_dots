@@ -31,4 +31,7 @@
   # 2. setup some IP routes to route through the TUN
   services.tailscale.enable = true;
 
+
+  boot.zfs.extraPools = [ "tank" ];
+
 }
