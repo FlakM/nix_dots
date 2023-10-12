@@ -18,6 +18,9 @@
   environment.systemPackages = with pkgs; [
     home-manager
     tailscale
+
+    wgnord
+    transmission
   ];
 
   # Let's open the UDP port with which the network is tunneled through
