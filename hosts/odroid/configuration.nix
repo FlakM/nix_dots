@@ -5,6 +5,7 @@
     ./nextcloud.nix
     ./tandoor.nix
     ./postgres.nix
+    ./jellyfin.nix
   ];
 
   programs.tmux = {
