@@ -241,7 +241,7 @@
 
 
     wgnord
-    transmission
+    deluged
   ];
 
 

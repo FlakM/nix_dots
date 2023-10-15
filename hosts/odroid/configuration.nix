@@ -6,6 +6,7 @@
     ./tandoor.nix
     ./postgres.nix
     ./jellyfin.nix
+    ./deluged.nix
   ];
 
   programs.tmux = {
