@@ -20,6 +20,7 @@
     tailscale
 
     wgnord
+    wireguard-tools
     transmission
   ];
 
