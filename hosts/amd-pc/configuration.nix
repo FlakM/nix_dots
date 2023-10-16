@@ -241,7 +241,7 @@
 
 
     wgnord
-    deluged
+    deluge-gtk
   ];
 
 

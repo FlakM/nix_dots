@@ -5,20 +5,23 @@
     web = {
       enable = true;
       openFirewall = true;
+      port = 8112;
     };
     declarative = true;
     config = {
       download_location = "/var/lib/deluge/downloads";
-      max_upload_speed = "1000.0";
       #share_ratio_limit = "2.0";
       allow_remote = true;
-      daemon_port = 58846;
-      listen_ports = [ 6881 6889 ];
     };
     authFile = "/var/secrets/deluge/auth";
+    openFirewall = true;
   };
 
   systemd.services.deluged.serviceConfig = {
+    NetworkNamespacePath = "/var/run/netns/nordvpn_ns";
+  };
+
+  systemd.services.delugeweb.serviceConfig = {
     NetworkNamespacePath = "/var/run/netns/nordvpn_ns";
   };
 
