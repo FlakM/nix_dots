@@ -19,13 +19,13 @@
     '';
 
 
-  initialScript = pkgs.writeText "backend-initScript" ''
-    CREATE ROLE tandoor WITH LOGIN;
-    GRANT ALL PRIVILEGES ON DATABASE tandoor TO tandoor;
+    initialScript = pkgs.writeText "backend-initScript" ''
+      CREATE ROLE tandoor WITH LOGIN;
+      GRANT ALL PRIVILEGES ON DATABASE tandoor TO tandoor;
 
-    CREATE ROLE nextcloud WITH LOGIN;
-    GRANT ALL PRIVILEGES ON DATABASE nextcloud TO nextcloud;
-  '';
+      CREATE ROLE nextcloud WITH LOGIN;
+      GRANT ALL PRIVILEGES ON DATABASE nextcloud TO nextcloud;
+    '';
   };
 
 }
