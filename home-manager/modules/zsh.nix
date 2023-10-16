@@ -20,7 +20,7 @@
         { name = "agkozak/zsh-z"; } # smart CD
         { name = "jeffreytse/zsh-vi-mode"; } # vi mode <3
         { name = "zsh-users/zsh-autosuggestions"; } # Simple plugin installation
-        #{ name = "unixorn/fzf-zsh-plugin"; }
+        { name = "unixorn/fzf-zsh-plugin"; }
         { name = "romkatv/powerlevel10k"; tags = [ as:theme depth:1 ]; } # Installations with additional options. For the list of options, please refer to Zplug README.
       ];
     };
