@@ -19,7 +19,7 @@
   };
 
   systemd.services.deluged.serviceConfig = {
-    NetworkNamespacePath = "/var/run/netns/wgvpn";
+    NetworkNamespacePath = "/var/run/netns/nordvpn_ns";
   };
 
 }
