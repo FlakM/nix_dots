@@ -78,7 +78,7 @@ in
     enable = true;
     web = {
       enable = true;
-      openFirewall = true;
+      openFirewall = false;
       port = 8112;
     };
     declarative = true;
@@ -97,6 +97,28 @@ in
 
   systemd.services.delugeweb.serviceConfig = {
     NetworkNamespacePath = "/var/run/netns/nordvpn_ns";
+  };
+
+
+
+  services.nginx = {
+    enable = true;
+    virtualHosts = {
+      "delugeweb.house.flakm.com" = {
+        enableACME = false; # Since you're providing your own certs
+        forceSSL = true;
+        sslCertificate = "/var/secrets/certs/house.crt";
+        sslCertificateKey = "/var/secrets/certs/house.key";
+
+        locations."/" = {
+          extraConfig = ''
+            proxy_set_header Host $host; # try $host instead if this doesn't work
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_pass http://10.200.2.2:8112; # replace port
+            proxy_redirect http://10.200.2.2:8112 https://delugeweb.house.flakm.com;'';
+        };
+      };
+    };
   };
 
 }
