@@ -83,7 +83,7 @@ in
     };
     declarative = true;
     config = {
-      download_location = "/var/lib/deluge/downloads";
+      download_location = "/var/media/grownups/seriale/";
       #share_ratio_limit = "2.0";
       allow_remote = true;
     };
