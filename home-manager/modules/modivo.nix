@@ -20,6 +20,8 @@ in
     openfortivpn
     minio-client
     redis
+
   ];
+  
 
 }

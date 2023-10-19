@@ -312,4 +312,9 @@
     enable = true;
     region = "us-east-1";
   };
+
+
+
+  # workaround for openforify client
+  environment.etc."ppp/options".text = "ipcp-accept-remote";
 }
