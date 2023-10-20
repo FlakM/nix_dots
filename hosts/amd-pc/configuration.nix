@@ -207,7 +207,6 @@
     spotify
     gimp
     vlc
-    signal-desktop
 
     # office
     inputs.nixpkgs-unstable.legacyPackages.${pkgs.system}.thunderbird

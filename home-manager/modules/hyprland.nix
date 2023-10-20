@@ -342,6 +342,11 @@ in
     # See https://wiki.hyprland.org/Configuring/Monitors/
     monitor=,preferred,auto,1.5
 
+    # unscale XWayland
+    xwayland {
+      force_zero_scaling = true
+    }
+
     # For all categories, see https://wiki.hyprland.org/Configuring/Variables/
     input {
         kb_layout = pl

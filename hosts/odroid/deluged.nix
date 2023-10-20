@@ -86,6 +86,14 @@ in
       download_location = "/var/media/grownups/seriale/";
       #share_ratio_limit = "2.0";
       allow_remote = true;
+      dht = false;
+      peer_exchange = false;
+      dht_torrents = false;
+      lsd = false;
+      enable_utp = false;
+      enable_udp_trackers = true;
+      announce_to_all_trackers = true;
+      allow_incoming_legacy = true;
     };
     authFile = "/var/secrets/deluge/auth";
     openFirewall = true;
