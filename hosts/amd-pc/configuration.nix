@@ -240,7 +240,7 @@
 
 
     wgnord
-    deluge-gtk
+    qbittorrent
   ];
 
 
