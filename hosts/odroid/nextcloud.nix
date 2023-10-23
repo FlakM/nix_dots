@@ -51,5 +51,24 @@
     };
   };
 
+  programs.msmtp = {
+    enable = true;
+    setSendmail = true;
+    extraConfig = ''
+      defaults
+      auth on
+      tls on
+      tls_trust_file /etc/ssl/certs/ca-certificates.crt
+      logfile ~/.msmtp.log
+
+      account default
+      host smtp.fastmail.com
+      port 587
+      from nextcloud@flakm.com
+      user nextcloud@flakm.com
+      passwordeval "cat /var/secrets/fastmail-password" 
+    '';
+  };
+
 
 }
