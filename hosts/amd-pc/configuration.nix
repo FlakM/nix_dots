@@ -241,7 +241,7 @@
 
     wgnord
     qbittorrent
-    bpftrace
+    inputs.nixpkgs-unstable.legacyPackages.${pkgs.system}.bpftrace
   ];
 
 
