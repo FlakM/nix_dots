@@ -244,9 +244,8 @@
 
     glibc
 
-    libsForQt5.dolphin
-
-
+    xfce.thunar
+    lxqt.lxqt-policykit
   ];
 
 
@@ -324,5 +323,8 @@
   environment.etc."ppp/options".text = "ipcp-accept-remote";
 
   # enable browsing samba shares
-  services.gvfs.enable = true;
+  services.gvfs = {
+    enable = true;
+    package = lib.mkForce pkgs.gnome3.gvfs;
+  };
 }
