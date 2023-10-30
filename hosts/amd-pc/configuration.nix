@@ -244,6 +244,8 @@
 
     glibc
 
+    libsForQt5.dolphin
+
 
   ];
 
@@ -320,4 +322,7 @@
 
   # workaround for openforify client
   environment.etc."ppp/options".text = "ipcp-accept-remote";
+
+  # enable browsing samba shares
+  services.gvfs.enable = true;
 }
