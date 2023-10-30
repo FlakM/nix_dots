@@ -211,7 +211,7 @@
     #unstable.thunderbird
     gpgme
     libreoffice
-    
+
 
     inputs.nixpkgs-unstable.legacyPackages.${pkgs.system}.bitwarden
     bitwarden-cli

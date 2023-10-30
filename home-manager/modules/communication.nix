@@ -1,12 +1,12 @@
 { config, pkgs, pkgsUnstable, libs, ... }:
 let
   signal-wrapped = pkgs.master.signal-desktop.overrideAttrs (old: {
-  preFixup = old.preFixup + ''
-          gappsWrapperArgs+=(
-            --add-flags "--enable-features=UseOzonePlatform"
-            --add-flags "--ozone-platform=wayland"
-          )
-        '';
+    preFixup = old.preFixup + ''
+      gappsWrapperArgs+=(
+        --add-flags "--enable-features=UseOzonePlatform"
+        --add-flags "--ozone-platform=wayland"
+      )
+    '';
   });
 in
 {

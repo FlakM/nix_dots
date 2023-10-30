@@ -7,6 +7,7 @@
     ./postgres.nix
     ./jellyfin.nix
     ./deluged.nix
+    ./samba.nix
   ];
 
   programs.tmux = {

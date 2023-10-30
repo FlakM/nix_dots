@@ -101,13 +101,13 @@ in
       enable_udp_trackers = true;
       announce_to_all_trackers = true;
       allow_incoming_legacy = true;
-      listen_ports = [ 6881 6891 ];  # This sets the incoming port range
+      listen_ports = [ 6881 6891 ]; # This sets the incoming port range
     };
     authFile = "/var/secrets/deluge/auth";
     openFirewall = true;
   };
 
-  
+
 
   #systemd.services.deluged.serviceConfig = {
   #  NetworkNamespacePath = "/var/run/netns/nordvpn_ns";
