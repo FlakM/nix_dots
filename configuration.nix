@@ -108,8 +108,7 @@
 
   environment.systemPackages = builtins.attrValues {
     inherit (pkgs)
-      mg# emacs-like editor
-      jq# other programs
+      jq
       lsof
       ;
   };

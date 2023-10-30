@@ -173,7 +173,6 @@
 
     xfce.xfce4-pulseaudio-plugin
 
-
     #    polkit_gnome
     #gnome.adwaita-icon-theme
     #    gnome.gnome-themes-extra
@@ -204,7 +203,6 @@
 
 
     # media
-    spotify
     gimp
     vlc
 
@@ -213,7 +211,9 @@
     #unstable.thunderbird
     gpgme
     libreoffice
-    bitwarden
+    
+
+    inputs.nixpkgs-unstable.legacyPackages.${pkgs.system}.bitwarden
     bitwarden-cli
 
     # spelling
@@ -223,7 +223,6 @@
     aspellDicts.en-computers
 
     tailscale
-    fractal
 
     pkg-config
     openssl
