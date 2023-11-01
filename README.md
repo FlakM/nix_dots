@@ -1,5 +1,16 @@
 # My dotfiles using nix flakes
 
+![Screenshot of two appliactions open terminal on the left and firefox on the right](./screen.png)
+
+Higlights:
+
+- hyprland for eye candy
+- direnv integration for per project goodness
+- custom neovim configuration for rust/nix development
+- multiple hosts from same flake (x86 and arm m1 mac)
+- zfs on root
+
+
 ## How to use
 
 ### On local machine
