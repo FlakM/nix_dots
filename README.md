@@ -17,76 +17,41 @@
 3. Ship over ssh: `nix copy --to ssh://flakm@192.168.0.102 ./result`
 4. Apply changes: `home-manager --flake github:flakm/nix_dots#flakm@odroid switch`
 
-## Installation for linux
+### Add custom project with dev-shell and direnv integration
 
-```
-sudo nixos-rebuild switch --flake ~/programming/flakm/.nixpkgs#dell-xps 
-```
-
-## Installation for darwin
-
-1. Install nix package manaeger in [deamon mode](https://nixos.org/manual/nix/stable/installation/installing-binary.html?highlight=uninstall#multi-user-installation)
-2. Install nix darwin using [instructions](https://github.com/LnL7/nix-darwin)
-3. Download dotfiles:
-
-```bash
-git clone https://github.com/FlakM/nix_dots.git
-cd nix_dots/nix_config
-# install nix flakes
-nix-env -iA nixpkgs.nixFlakes
-
-```
-4. Enable flakes. Edit `/etc/nix/nix.conf` by adding line:
-
-```
-experimental-features = nix-command flakes
-```
-
-
-## Usage
-
-### Apply changes
-
-1. Modify `*.nix` files and execute following command:
-
-```bash
-darwin-rebuild switch --flake ~/nix_dots/nix_config#m1pro
-```
-
-### Add custom dir flake
-
-#### Scala project
+#### Example project
 
 Add `flake.nix` to current directory:
 
 ```nix
 {
-  description = "my project description";
+  description = "A simple devshell with cowsay";
 
+  # Flake inputs
   inputs = {
-    typelevel-nix.url = "github:typelevel/typelevel-nix";
-    nixpkgs.follows = "typelevel-nix/nixpkgs";
-    flake-utils.follows = "typelevel-nix/flake-utils";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, flake-utils, typelevel-nix }:
+  # Outputs of our flake
+  outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {
           inherit system;
-          overlays = [ typelevel-nix.overlay ];
         };
-      in
-      {
-        devShell = pkgs.devshell.mkShell {
-          imports = [ typelevel-nix.typelevelShell ];
-          name = "my-project-shell";
-          typelevelShell = {
-		    jdk.package = pkgs.jdk8;
-          };
+      in {
+        devShell = pkgs.mkShell {
+          buildInputs = [
+            pkgs.cowsay
+          ];
+
+          shellHook = ''
+            echo "Welcome to the devshell!"
+            cowsay "Moo! I'm here to help you with your coding tasks!"
+          '';
         };
-      }
-    );
+      });
 }
 ```
 
@@ -98,18 +63,24 @@ echo "use flake" >> .envrc && direnv allow
 
 If you dont want to commit the flake files you might:
 
-```
+```bash
 git add --intent-to-add flake.* -f
 git update-index --assume-unchanged flake.*
 ```
 
-TODO this one uses correct java version but unfortunately the bloop is not included... 
+#### Example rust project
+
+Just crane it!
+
+```bash
+# Start with a comprehensive suite of tests
+nix flake init -t github:ipetkov/crane#quick-start
+```
 
 
-## Additional things to install on macs
+## Additional things to install (todo check if still required)
 
-1. rancher docs: https://rancherdesktop.io/ 
-2. import key
+1. import gpg key
 
 ```bash
 cat > ~/.ssh/id_rsa_yubikey.pub <<EOF
@@ -138,13 +109,4 @@ gpg --edit-key $KEYID
 gpg --output public.pgp --armor --export maciej.jan.flak@gmail.com
 
 ```
-
-
-## TODO
-
-1. alacritty does not keep enough long buffer? only 70 lines
-2. some gpg ssh configuration should be managed by home manager
-- id_rsa_yubikey.pub
-- ~/.ssh/config
-- public gpg key for trust
 
