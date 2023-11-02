@@ -165,7 +165,8 @@ in
 
 
   home.packages = [
-    alacritty-wrapped
+    #alacritty-wrapped
+    pkgs.master.alacritty
   ];
 
 

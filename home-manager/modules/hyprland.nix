@@ -18,7 +18,7 @@ let
     if [ "$curr" = "prefer-light" ]; then
       switch_theme "prefer-dark"
       ~/.config/alacritty/switch.sh dark ${path}
-      dconf write /org/gnome/desktop/interface/color-scheme "'prefer-dark'"
+      ${configure-gtk-dark}/bin/configure-gtk-dark
 
       for server in $(nvr --serverlist); do
         nvr --servername "$server" -cc 'set background=dark'
@@ -26,13 +26,46 @@ let
     else
       switch_theme "prefer-light"
       ~/.config/alacritty/switch.sh light ${path}
-      dconf write /org/gnome/desktop/interface/color-scheme "'prefer-light'"
+      ${configure-gtk-light}/bin/configure-gtk-light
 
       for server in $(nvr --serverlist); do
         nvr --servername "$server" -cc 'set background=light'
       done
     fi
   '';
+# currently, there is some friction between sway and gtk:
+  # https://github.com/swaywm/sway/wiki/GTK-3-settings-on-Wayland
+  # the suggested way to set gtk settings is with gsettings
+  # for gsettings to work, we need to tell it where the schemas are
+  # using the XDG_DATA_DIR environment variable
+  # run at the end of sway config
+  configure-gtk-dark = pkgs.writeTextFile {
+    name = "configure-gtk-dark";
+    destination = "/bin/configure-gtk-dark";
+    executable = true;
+    text = let
+      schema = pkgs.gsettings-desktop-schemas;
+      datadir = "${schema}/share/gsettings-schemas/${schema.name}";
+    in ''
+      export XDG_DATA_DIRS=${datadir}:$XDG_DATA_DIRS
+      gnome_schema=org.gnome.desktop.interface
+      gsettings set $gnome_schema gtk-theme 'Adwaita-dark'
+    '';
+  };
+
+  configure-gtk-light = pkgs.writeTextFile {
+    name = "configure-gtk";
+    destination = "/bin/configure-gtk-light";
+    executable = true;
+    text = let
+      schema = pkgs.gsettings-desktop-schemas;
+      datadir = "${schema}/share/gsettings-schemas/${schema.name}";
+    in ''
+      export XDG_DATA_DIRS=${datadir}:$XDG_DATA_DIRS
+      gnome_schema=org.gnome.desktop.interface
+      gsettings set $gnome_schema gtk-theme 'Adwaita'
+    '';
+  };
 in
 {
 
@@ -69,7 +102,9 @@ in
     dunst # notifications
     playerctl # media status for waybar
     shotman # screenshot
-
+    
+    configure-gtk-dark
+    configure-gtk-light
     unstable.wl-clipboard
     #unstable.xdg-utils
     handlr
@@ -439,6 +474,7 @@ in
     # https://wiki.hyprland.org/Useful-Utilities/Clipboard-Managers/#cliphist
     exec-once = wl-paste --type text --watch cliphist store #Stores only text data
     exec-once = wl-paste --type image --watch cliphist store #Stores only image data
+    exec-once = configure-gtk
 
     exec-once=dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
     exec-once=[workspace 1 silent] alacritty

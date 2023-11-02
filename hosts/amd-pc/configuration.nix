@@ -174,9 +174,10 @@
     xfce.xfce4-pulseaudio-plugin
 
     #    polkit_gnome
-    #gnome.adwaita-icon-theme
-    #    gnome.gnome-themes-extra
-    #    gsettings-desktop-schemas
+    gnome.adwaita-icon-theme
+    gnome.gnome-themes-extra
+    gsettings-desktop-schemas
+    gruvbox-dark-gtk
 
     pavucontrol
     docker
