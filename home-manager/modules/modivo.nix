@@ -15,7 +15,7 @@ in
 
   home.packages = with pkgs; [
     #slack-wrapped
-    master.slack
+    slack
     google-cloud-sdk
     openfortivpn
     minio-client
