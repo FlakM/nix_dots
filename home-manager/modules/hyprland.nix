@@ -50,6 +50,7 @@ let
       export XDG_DATA_DIRS=${datadir}:$XDG_DATA_DIRS
       gnome_schema=org.gnome.desktop.interface
       gsettings set $gnome_schema gtk-theme 'Adwaita-dark'
+      dconf write /org/gnome/desktop/interface/color-scheme "'prefer-dark'"
     '';
   };
 
@@ -64,6 +65,7 @@ let
       export XDG_DATA_DIRS=${datadir}:$XDG_DATA_DIRS
       gnome_schema=org.gnome.desktop.interface
       gsettings set $gnome_schema gtk-theme 'Adwaita'
+      dconf write /org/gnome/desktop/interface/color-scheme "'prefer-light'"
     '';
   };
 in
