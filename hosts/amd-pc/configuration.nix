@@ -184,7 +184,6 @@
     curl
     #google-chrome
     #firefox
-    firefox-wayland
     xdg-utils
 
     #chromium

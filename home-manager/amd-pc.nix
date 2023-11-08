@@ -32,6 +32,8 @@
   xsession.windowManager.i3.config.fonts.size = 18.0;
   programs.alacritty.settings.font.size = 11;
 
+  xdg.enable = true;
+
   gtk = {
     enable = true;
     theme = {
