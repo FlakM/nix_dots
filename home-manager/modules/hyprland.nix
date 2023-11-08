@@ -474,7 +474,7 @@ in
     # https://wiki.hyprland.org/Useful-Utilities/Clipboard-Managers/#cliphist
     exec-once = wl-paste --type text --watch cliphist store #Stores only text data
     exec-once = wl-paste --type image --watch cliphist store #Stores only image data
-    exec-once = configure-gtk
+    exec-once = ${configure-gtk-dark}/bin/configure-gtk-dark
 
     exec-once=dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
     exec-once=[workspace 1 silent] alacritty

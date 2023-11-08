@@ -35,8 +35,6 @@
 
       settings = {
         "layout.css.devPixelsPerPx" = "1.5";
-        "widget.content.allow-gtk-dark-theme" = true;
-        "widget.content.gtk-theme-override" = "Adwaita:light";
       };
 
       userChrome = ''
@@ -48,6 +46,6 @@
 
 
   home.packages = with pkgs; [
-    firefox-wayland
+    firefox
   ];
 }
