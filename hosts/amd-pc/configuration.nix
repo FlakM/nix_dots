@@ -34,7 +34,7 @@
     package = inputs.hyprland.packages.${pkgs.system}.hyprland;
   };
 
-  services.redis.servers."".enable = true;
+  services.redis.servers."".enable = false;
 
 
   # networking.hostName = "nixos"; # Define your hostname.
@@ -68,6 +68,8 @@
   };
 
   security.rtkit.enable = true;
+
+  #hardware.pulseaudio.enable = false;
   services.pipewire = {
     enable = true;
     alsa.enable = true;
