@@ -252,6 +252,10 @@
 
     xfce.thunar
     lxqt.lxqt-policykit
+
+
+    # fun
+    spotify
   ];
 
 
