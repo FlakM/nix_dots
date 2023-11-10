@@ -381,7 +381,7 @@ in
 
   wayland.windowManager.hyprland.extraConfig = ''
     # See https://wiki.hyprland.org/Configuring/Monitors/
-    monitor=,preferred,auto,1.5
+    monitor=,preferred,auto,1.5,bitdepth,10
 
     # unscale XWayland
     xwayland {

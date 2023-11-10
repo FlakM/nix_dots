@@ -69,7 +69,11 @@
 
   security.rtkit.enable = true;
 
-  #hardware.pulseaudio.enable = false;
+  # Enable sound.
+  sound.enable = true;
+  services.blueman.enable = true;
+  hardware.pulseaudio.enable = false;
+
   services.pipewire = {
     enable = true;
     alsa.enable = true;
@@ -78,7 +82,6 @@
     pulse.enable = true;
     wireplumber.enable = true;
     jack.enable = true;
-    systemWide = true;
   };
 
 
@@ -125,9 +128,6 @@
 
   services.dbus.enable = true;
 
-  # Enable sound.
-  sound.enable = true;
-  services.blueman.enable = true;
 
   hardware = {
     opengl = {
