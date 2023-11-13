@@ -65,38 +65,6 @@
         xdg-desktop-portal-gtk
       ];
     };
-    mime = {
-      enable = true;
-      defaultApplications = {
-        "text/html" = "firefox.desktop";
-        "default-web-browser" = "firefox.desktop";
-        "x-scheme-handler/http" = "firefox.desktop";
-        "x-scheme-handler/https" = "firefox.desktop";
-        "default-url-scheme-handler" = "firefox.desktop";
-        "scheme-handler/http" = "firefox.desktop";
-        "scheme-handler/https" = "firefox.desktop";
-        "x-scheme-handler/about" = "firefox.desktop";
-        "x-scheme-handler/unknown" = "firefox.desktop";
-        "x-scheme-handler/mailto" = "thunderbird.desktop";
-        "default-url-scheme-handler/http" = "firefox.desktop";
-        "default-url-scheme-handler/https" = "firefox.desktop";
-      };
-      addedAssociations = {
-        "text/html" = "firefox.desktop";
-        "default-web-browser" = "firefox.desktop";
-        "x-scheme-handler/http" = "firefox.desktop";
-        "x-scheme-handler/https" = "firefox.desktop";
-        "default-url-scheme-handler" = "firefox.desktop";
-        "scheme-handler/http" = "firefox.desktop";
-        "scheme-handler/https" = "firefox.desktop";
-        "x-scheme-handler/about" = "firefox.desktop";
-        "x-scheme-handler/unknown" = "firefox.desktop";
-        "x-scheme-handler/mailto" = "thunderbird.desktop";
-        "default-url-scheme-handler/http" = "firefox.desktop";
-        "default-url-scheme-handler/https" = "firefox.desktop";
-      };
-    };
-
   };
 
   security.rtkit.enable = true;
@@ -131,10 +99,10 @@
   #  displayManager.sddm.enable = true;
   #};
   services.xserver = {
-    enable = true; # might need it for xwayland
-    #displayManager.gdm.enable = true;
+    enable = false; # might need it for xwayland
+    displayManager.gdm.enable = false;
     #displayManager.gdm.wayland = true;
-    displayManager.sddm.enable = true;
+    displayManager.sddm.enable = false;
     #displayManager.sessionPackages = [ inputs.hyprland.hyprland ];
     libinput.enable = true;
     xkbOptions = "lv3:lalt_switch";
@@ -221,8 +189,6 @@
     docker
     wget
     curl
-    #google-chrome
-    #firefox-wayland
     xdg-utils
 
     #chromium

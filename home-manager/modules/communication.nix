@@ -14,12 +14,12 @@ in
   home.packages = with pkgs; [
     mumble
     unstable.teams-for-linux
-    #(google-chrome.override {
-    #  commandLineArgs = [
-    #    "--enable-features=UseOzonePlatform"
-    #    "--ozone-platform=wayland"
-    #  ];
-    #})
+    (google-chrome.override {
+      commandLineArgs = [
+        "--enable-features=UseOzonePlatform"
+        "--ozone-platform=wayland"
+      ];
+    })
     element-desktop
     discord
     master.signal-desktop
