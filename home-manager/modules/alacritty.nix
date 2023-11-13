@@ -6,7 +6,7 @@ let
     #!/usr/bin/env bash
     handlr open "$@"
   '';
-  alacritty-wrapped = pkgs.alacritty.overrideAttrs (old: {
+  alacritty-wrapped = pkgs.master.alacritty.overrideAttrs (old: {
     postPatch = ''
       substituteInPlace alacritty/src/config/ui_config.rs \
         --replace xdg-open ${xdg-open}/bin/xdg-open
@@ -165,8 +165,8 @@ in
 
 
   home.packages = [
-    #alacritty-wrapped
-    pkgs.master.alacritty
+    alacritty-wrapped
+    #pkgs.master.alacritty
   ];
 
 
