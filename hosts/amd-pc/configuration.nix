@@ -251,11 +251,14 @@
     xfce.thunar
     lxqt.lxqt-policykit
 
-
     # fun
     spotify
   ];
-
+  
+  programs.wireshark = {
+    enable = true;
+    package = inputs.nixpkgs-unstable.legacyPackages.${pkgs.system}.wireshark;
+  };
 
   # Enable the OpenSSH daemon.
   # services.openssh.enable = true;
