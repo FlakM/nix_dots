@@ -1,13 +1,13 @@
 { ... }: {
   services.syncoid = {
     enable = true;
-    user = "backupuser";
+    user = "flakm";
     commonArgs = [ "--no-sync-snap" "--skip-parent" "--recursive" ];
     sshKey = "/var/lib/syncoid/backup/keys";
 
     commands."odroid-programming" = {
       source = "rpool/nixos/home/programming";
-      target = "backupuser@odroid:tank/backup/programming";
+      target = "backup@odroid:tank/backup/programming";
       extraArgs = [ "--sshoption=StrictHostKeyChecking=off" ];
     };
   };
