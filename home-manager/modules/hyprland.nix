@@ -33,7 +33,7 @@ let
       done
     fi
   '';
-# currently, there is some friction between sway and gtk:
+  # currently, there is some friction between sway and gtk:
   # https://github.com/swaywm/sway/wiki/GTK-3-settings-on-Wayland
   # the suggested way to set gtk settings is with gsettings
   # for gsettings to work, we need to tell it where the schemas are
@@ -43,30 +43,34 @@ let
     name = "configure-gtk-dark";
     destination = "/bin/configure-gtk-dark";
     executable = true;
-    text = let
-      schema = pkgs.gsettings-desktop-schemas;
-      datadir = "${schema}/share/gsettings-schemas/${schema.name}";
-    in ''
-      export XDG_DATA_DIRS=${datadir}:$XDG_DATA_DIRS
-      gnome_schema=org.gnome.desktop.interface
-      gsettings set $gnome_schema gtk-theme 'Adwaita-dark'
-      dconf write /org/gnome/desktop/interface/color-scheme "'prefer-dark'"
-    '';
+    text =
+      let
+        schema = pkgs.gsettings-desktop-schemas;
+        datadir = "${schema}/share/gsettings-schemas/${schema.name}";
+      in
+      ''
+        export XDG_DATA_DIRS=${datadir}:$XDG_DATA_DIRS
+        gnome_schema=org.gnome.desktop.interface
+        gsettings set $gnome_schema gtk-theme 'Adwaita-dark'
+        dconf write /org/gnome/desktop/interface/color-scheme "'prefer-dark'"
+      '';
   };
 
   configure-gtk-light = pkgs.writeTextFile {
     name = "configure-gtk";
     destination = "/bin/configure-gtk-light";
     executable = true;
-    text = let
-      schema = pkgs.gsettings-desktop-schemas;
-      datadir = "${schema}/share/gsettings-schemas/${schema.name}";
-    in ''
-      export XDG_DATA_DIRS=${datadir}:$XDG_DATA_DIRS
-      gnome_schema=org.gnome.desktop.interface
-      gsettings set $gnome_schema gtk-theme 'Adwaita'
-      dconf write /org/gnome/desktop/interface/color-scheme "'prefer-light'"
-    '';
+    text =
+      let
+        schema = pkgs.gsettings-desktop-schemas;
+        datadir = "${schema}/share/gsettings-schemas/${schema.name}";
+      in
+      ''
+        export XDG_DATA_DIRS=${datadir}:$XDG_DATA_DIRS
+        gnome_schema=org.gnome.desktop.interface
+        gsettings set $gnome_schema gtk-theme 'Adwaita'
+        dconf write /org/gnome/desktop/interface/color-scheme "'prefer-light'"
+      '';
   };
 in
 {
@@ -108,7 +112,7 @@ in
     dunst # notifications
     playerctl # media status for waybar
     shotman # screenshot
-    
+
     configure-gtk-dark
     configure-gtk-light
     unstable.wl-clipboard
@@ -543,7 +547,7 @@ in
     # print screen selection range
     bind=SHIFT,Print,exec,grim -g "$(slurp)" - | swappy -f -
 
-    bind=SUPER SHIFT, L, exec, swaylock
+    #bind=SUPER SHIFT, L, exec, swaylock
 
 
     # volume button that allows press and hold, volume limited to 150%

@@ -8,6 +8,7 @@
     ./jellyfin.nix
     ./deluged.nix
     ./samba.nix
+    ./backupuser.nix
   ];
 
   programs.tmux = {

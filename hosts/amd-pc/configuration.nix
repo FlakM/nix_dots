@@ -7,6 +7,7 @@
     ../../shared/gpg.nix
     ../../shared/k3s.nix
     ./wildcard_cert.nix
+    ./zfs_replication.nix
   ];
 
 
@@ -107,7 +108,7 @@
     libinput.enable = true;
     xkbOptions = "lv3:lalt_switch";
   };
-  
+
 
   #environment.sessionVariables.NIXOS_OZONE_WL = "1"; # This variable fixes electron apps in wayland
 
@@ -254,7 +255,7 @@
     # fun
     spotify
   ];
-  
+
   programs.wireshark = {
     enable = true;
     package = inputs.nixpkgs-unstable.legacyPackages.${pkgs.system}.wireshark;
