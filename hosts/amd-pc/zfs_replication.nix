@@ -1,8 +1,17 @@
 { ... }: {
+
+  # one time setup of zfs permissions
+  # sudo zfs allow backup snapshot,send,receive tank/backup
+  users.users.backup = {
+    isNormalUser = true;
+    home = "/home/backup";
+    description = "Backup User";
+  };
+
   services.syncoid = {
     enable = true;
-    user = "flakm";
-    commonArgs = [ "--no-sync-snap" "--skip-parent" "--recursive" ];
+    user = "backup";
+    #commonArgs = [ "--no-sync-snap" "--skip-parent" "--recursive" ];
     sshKey = "/var/lib/syncoid/backup/keys";
 
     commands."odroid-programming" = {
