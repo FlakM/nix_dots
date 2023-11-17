@@ -254,6 +254,10 @@
 
     # fun
     spotify
+
+
+    # network monitoring
+    iftop
   ];
 
   programs.wireshark = {
