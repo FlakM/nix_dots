@@ -1,6 +1,14 @@
 # configuration in this file only applies to amd-pc host.
 
-{ pkgs, inputs, lib, ... }: {
+{ pkgs, inputs, lib, ... }:
+
+let
+  unstable = inputs.nixpkgs-unstable.legacyPackages.${pkgs.system};
+  hyprland = inputs.hyprland.packages.${pkgs.system};
+  fenix = inputs.fenix.packages.${pkgs.system}.stable;
+in
+
+{
 
   imports = [
     ../../shared/wireguard.nix
@@ -32,7 +40,7 @@
   #boot.kernel.sysctl."net.ipv6.conf.all.forwarding" = 1;
   programs.hyprland = {
     enable = true;
-    package = inputs.hyprland.packages.${pkgs.system}.hyprland;
+    package = hyprland.hyprland;
   };
 
   services.redis.servers."".enable = false;
@@ -212,13 +220,13 @@
     vlc
 
     # office
-    inputs.nixpkgs-unstable.legacyPackages.${pkgs.system}.thunderbird
+    unstable.thunderbird
     #unstable.thunderbird
     gpgme
     libreoffice
 
 
-    inputs.nixpkgs-unstable.legacyPackages.${pkgs.system}.bitwarden
+    unstable.bitwarden
     bitwarden-cli
 
     # spelling
@@ -257,12 +265,19 @@
     iftop
 
 
-    rustup
+    (fenix.withComponents [
+      "cargo"
+      "clippy"
+      "rust-src"
+      "rustc"
+      "rustfmt"
+    ])
+    fenix.rust-analyzer
   ];
 
   programs.wireshark = {
     enable = true;
-    package = inputs.nixpkgs-unstable.legacyPackages.${pkgs.system}.wireshark;
+    package = unstable.wireshark;
   };
 
   # Enable the OpenSSH daemon.

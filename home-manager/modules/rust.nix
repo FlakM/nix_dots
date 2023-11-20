@@ -2,7 +2,7 @@
 {
 
   home.packages = with pkgs; [
-#    rustup
+    #    rustup
     mold
     clang
     #gcc
@@ -31,7 +31,7 @@
   '';
 
   home.sessionVariables = {
-  #  PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig;${pkgs.libiconv}/lib/";
+    #  PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig;${pkgs.libiconv}/lib/";
     CARGO_TARGET_DIR = "${config.home.homeDirectory}/.cargo/target";
   };
 

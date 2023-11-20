@@ -2,6 +2,10 @@
   description = "Macieks's system config";
 
   inputs = {
+    fenix = {
+      url = "github:nix-community/fenix";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.05";
     nixpkgs-unstable.url = "nixpkgs/nixos-unstable";
     nixpkgs-master.url = "github:NixOS/nixpkgs/master";
@@ -31,6 +35,7 @@
     , nixpkgs-master
     , nixos-hardware
     , hyprland
+    , fenix
     , nur
     , ...
     }@inputs:
@@ -64,12 +69,14 @@
         (({ zfs-root, pkgs, system, ... }:
           nixpkgs.lib.nixosSystem {
             inherit system;
+
             specialArgs = { inherit inputs outputs; }; # this is the important part
             modules = [
               nur.nixosModules.nur
               {
                 nixpkgs.overlays = [
                   pkg-sets
+                  fenix.overlays.default
                 ];
               }
 
@@ -207,61 +214,6 @@
             ];
           };
 
-        amd-pc2 =
-          let
-            # Inject 'unstable' and 'trunk' into the overridden package set, so that
-            # the following overlays may access them (along with any system configs
-            # that wish to do so).
-            pkg-sets = (
-              final: prev: {
-                unstable = import inputs.nixpkgs-unstable { system = final.system; };
-              }
-            );
-
-          in
-          nixpkgs.lib.nixosSystem {
-            system = "x86_64-linux";
-            specialArgs = { inherit inputs outputs; }; # this is the important part
-
-            modules = [
-              nur.nixosModules.nur
-              ./wireguard.nix
-              ./gpg.nix
-              ./k3s.nix
-              ./amd-pc-hardware-configuration.nix
-              ./amd-pc-hardware-zfs-configuration.nix
-              ./amd-pc-configuration.nix
-              {
-                nixpkgs.overlays = [
-                  pkg-sets
-                  (self: super: {
-                    openfortivpn = super.openfortivpn.overrideAttrs (old: {
-                      #src = super.fetchFromGitHub {
-                      #  owner = "adrienverge";
-                      #  repo = "openfortivpn";
-                      #  rev = "master";
-                      #  hash = "sha256-jbgxhCQWDw1ZUOAeLhOG+b6JYgvpr5TnNDIO/4k+e7k=";
-                      #};
-                      src = builtins.fetchTarball {
-                        url = "https://github.com/adrienverge/openfortivpn/archive/master.tar.gz";
-                        sha256 = "sha256:1fgx1vhj714n4ihjg4gm79iahlnxpnh7igvrlzmkwransikfj4r8";
-                      };
-
-                    });
-                  })
-                  #(final: prev: {
-                  #  # very expensive since this invalidates the cache for a lot of (almost all) graphical apps.
-                  #  xdg-utils = prev.xdg-utils.overrideAttrs (oldAttrs: {
-                  #    postInstall = oldAttrs.postInstall + ''
-                  #      # "overwrite" xdg-open with handlr
-                  #      cp ${prev.writeShellScriptBin "xdg-open" "${prev.handlr}/bin/handlr open \"$@\""}/bin/xdg-open $out/bin/xdg-open
-                  #    '';
-                  #  });
-                  #})
-                ];
-              }
-            ];
-          };
         odroid = mkHost "odroid" "x86_64-linux";
         amd-pc = mkHost "amd-pc" "x86_64-linux";
       };
