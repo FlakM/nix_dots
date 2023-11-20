@@ -1,5 +1,8 @@
 { config, pkgs, pkgsUnstable, libs, ... }:
 {
+
+
+  
   home.packages = with pkgs; [
     rustup
     mold
@@ -31,9 +34,10 @@
   #   rustflags = ["-C", "link-arg=-fuse-ld=${pkgs.mold}/bin/mold"]
   # '';
 
-  #home.sessionVariables = {
+  home.sessionVariables = {
   #  PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig;${pkgs.libiconv}/lib/";
-  #};
+    CARGO_TARGET_DIR = "${config.home.homeDirectory}/.cargo/target";
+  };
 
   home.file.".cargo/config.toml".text = ''
     [target.x86_64-unknown-linux-gnu]
