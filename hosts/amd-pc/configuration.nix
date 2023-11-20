@@ -229,9 +229,6 @@
 
     tailscale
 
-    pkg-config
-    openssl
-
     qt6.full
 
     libsForQt5.qtstyleplugins

@@ -6,7 +6,7 @@
     mold
     clang
     #gcc
-    openssl
+    #openssl
     #libiconv
     pkg-config
     #    cargo
@@ -19,7 +19,6 @@
     heaptrack
     gdb
     lldb
-    openssl
   ] ++ lib.optionals stdenv.isDarwin [
     libiconv
   ];
