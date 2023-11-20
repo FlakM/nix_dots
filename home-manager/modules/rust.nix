@@ -1,10 +1,8 @@
-{ config, pkgs, pkgsUnstable, libs, ... }:
+{ config, pkgs, ... }:
 {
 
-
-  
   home.packages = with pkgs; [
-    rustup
+#    rustup
     mold
     clang
     #gcc
@@ -17,7 +15,6 @@
     #    rustfmt
     #    clippy
     libiconv
-    pkg-config
 
     heaptrack
     gdb
@@ -28,24 +25,16 @@
   ];
 
 
-  # home.file.".cargo/config.toml".text = ''
-  #   [target.x86_64-unknown-linux-gnu]
-  #   linker = "clang"
-  #   rustflags = ["-C", "link-arg=-fuse-ld=${pkgs.mold}/bin/mold"]
-  # '';
+  home.file.".cargo/config.toml".text = ''
+    [target.x86_64-unknown-linux-gnu]
+    linker = "clang"
+    rustflags = ["-C", "link-arg=-fuse-ld=${pkgs.mold}/bin/mold"]
+  '';
 
   home.sessionVariables = {
   #  PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig;${pkgs.libiconv}/lib/";
     CARGO_TARGET_DIR = "${config.home.homeDirectory}/.cargo/target";
   };
 
-  home.file.".cargo/config.toml".text = ''
-    [target.x86_64-unknown-linux-gnu]
-    linker = "clang"
-    rustflags = ["-C", "link-arg=-fuse-ld=${pkgs.master.mold-wrapped}/bin/mold"]
-
-    [registries.crates-io]
-    protocol = "sparse"
-  '';
 
 }

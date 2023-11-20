@@ -258,6 +258,9 @@
 
     # network monitoring
     iftop
+
+
+    rustup
   ];
 
   programs.wireshark = {
