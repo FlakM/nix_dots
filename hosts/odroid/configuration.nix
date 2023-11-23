@@ -9,6 +9,7 @@
     ./deluged.nix
     ./samba.nix
     ./backupuser.nix
+    ./zfs_replication.nix
   ];
 
   programs.tmux = {

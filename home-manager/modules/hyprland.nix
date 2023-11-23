@@ -126,6 +126,8 @@ in
     grim
     swappy
     slurp
+
+    pkgs.unstable.grimblast
   ];
 
 
@@ -543,9 +545,9 @@ in
 
 
     # print screen full screen
-    bind=,Print,exec,grim - | swappy -f -
+    bind=,Print,exec,grimblast --scale 2 --wait 2 copy screen
     # print screen selection range
-    bind=SHIFT,Print,exec,grim -g "$(slurp)" - | swappy -f -
+    bind=SHIFT,Print,exec,grimblast --scale 2 --wait 2 copy area
 
     #bind=SUPER SHIFT, L, exec, swaylock
 

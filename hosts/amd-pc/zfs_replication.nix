@@ -1,7 +1,10 @@
 { ... }: {
 
   # one time setup of zfs permissions
-  # sudo zfs allow backup snapshot,send,receive tank/backup
+  # local:
+  #   sudo zfs allow -d backup create,receive,destroy,rollback,snapshot,hold,release,mount rpool/nixos/home/programming
+  # remote:
+  #   sudo zfs allow backup snapshot,send,receive,destroy tank/backup
   users.users.backup = {
     isNormalUser = true;
     home = "/home/backup";
