@@ -65,7 +65,7 @@
       host smtp.fastmail.com
       port 587
       from nextcloud@flakm.com
-      user nextcloud@flakm.com
+      user me@flakm.com
       passwordeval "cat /var/secrets/fastmail-password" 
     '';
   };
