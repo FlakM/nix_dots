@@ -25,6 +25,8 @@
     ./modules/firefox.nix
     ./modules/kitty.nix
     ./modules/productivity.nix
+
+    ./modules/neomutt.nix
   ];
 
 

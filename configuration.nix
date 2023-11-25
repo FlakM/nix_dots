@@ -116,7 +116,7 @@
     inherit (pkgs)
       jq
       lsof
-      cachix # binary cache cli tool
+      cachix# binary cache cli tool
       ;
   };
 }

@@ -1,6 +1,7 @@
 { ... }: {
 
-  # sudo zfs allow -d backup create,receive,destroy,rollback,snapshot,hold,release,mount tank/backup/postgres
+  # sudo zfs allow -d backup create,receive,destroy,rollback,snapshot,hold,release,mount tank/backup/
+  # sudo zfs allow -d backup create,receive,destroy,rollback,snapshot,hold,release,mount rpool/nixos/var/lib/postgres
   services.syncoid = {
     enable = true;
     user = "backup";
