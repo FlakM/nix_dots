@@ -7,6 +7,9 @@ let
   list-empty-mailboxes = pkgs.writeScriptBin "list-empty-mailboxes" ''
     find ${config.accounts.email.maildirBasePath}/$1 -type d -exec bash -c 'd1=("$1"/cur/); d2=("$1"/*/); [[ ! -e "$d1" && -e "$d2" ]]' _ {} \; -printf "%p "
   '';
+  cat-cred = pkgs.writeScriptBin "cat-cred" ''
+    ${../../mutt_oauth2.py} /tmp/maciej.flak@modivo.com
+  '';
   autodiscoverMailboxes = path: "mailboxes `${list-mailboxes}/bin/list-mailboxes ${path}`";
   colorscheme = (import ./neomutt_colorscheme.nix).colorscheme;
   smokeOutBugs = true;
@@ -15,6 +18,7 @@ in
   home.packages = [
     list-mailboxes
     list-empty-mailboxes
+    cat-cred
   ];
 
   programs.neomutt = {
@@ -123,48 +127,9 @@ in
         };
         msmtp.enable = true;
 
-        passwordCommand = "cat /var/secrets/me@fastmail_pass";
+        passwordCommand = "gpg --decrypt /var/secrets/me@fastmail_pass";
       };
 
-      "maciej.flak@modivo.com" = {
-        realName = "Maciej Flak";
-        neomutt = {
-          enable = true;
-          extraConfig = ''
-            ${autodiscoverMailboxes "me@flakm.com"}
-            named-mailboxes ENS-Inbox +Inbox
-            folder-hook . "set sort=reverse-date ; set sort_aux=date"
-          '';
-        };
-        address = "maciej.flak@modivo.com";
-        flavor = "outlook.office365.com";
-        signature = {
-          showSignature = "append";
-          text = ''
-            Regards,
-            Maciek Flak
-          '';
-        };
-        imap = {
-          host = "outlook.office365.com";
-          port = 993;
-          tls.enable = true;
-        };
-        smtp = {
-          host = "smtp.office365.com";
-          port = 587;
-          tls.enable = true;
-          tls.useStartTls = true;
-        };
-
-        mbsync = {
-          enable = true;
-          create = "both";
-        };
-        msmtp.enable = true;
-
-        passwordCommand = "cat /var/secrets/me@fastmail_pass";
-      };
     };
   };
 

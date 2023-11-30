@@ -74,7 +74,7 @@ registrations = {
         'scope': ('offline_access https://outlook.office.com/IMAP.AccessAsUser.All '
                   'https://outlook.office.com/POP.AccessAsUser.All '
                   'https://outlook.office.com/SMTP.Send'),
-        'client_id': '',
+        'client_id': '9e5f94bc-e8a4-4e73-b8be-63364c29d753',
         'client_secret': '',
     },
 }
@@ -115,6 +115,7 @@ def writetokenfile():
         path.touch(mode=0o600)
     if 0o777 & path.stat().st_mode != 0o600:
         sys.exit('Token file has unsafe mode. Suggest deleting and starting over.')
+
     sub2 = subprocess.run(ENCRYPTION_PIPE, check=True, input=json.dumps(token).encode(),
                           capture_output=True)
     path.write_bytes(sub2.stdout)
