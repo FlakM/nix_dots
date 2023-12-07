@@ -18,6 +18,10 @@ in
     ./zfs_replication.nix
   ];
 
+  networking.extraHosts =
+  ''
+    127.0.0.1 modivo.local
+  '';
 
   nixpkgs.config = {
     allowUnfree = true;
