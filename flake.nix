@@ -6,7 +6,7 @@
       url = "github:nix-community/fenix";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
     nixpkgs-unstable.url = "nixpkgs/nixos-unstable";
     nixpkgs-master.url = "github:NixOS/nixpkgs/master";
     nixpkgs-staging.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -17,7 +17,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     home-manager = {
-      url = "github:nix-community/home-manager/release-23.05";
+      url = "github:nix-community/home-manager/release-23.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -101,7 +101,7 @@
                     self.rev
                   else
                     throw "refuse to build: git tree is dirty";
-                system.stateVersion = "23.05";
+                system.stateVersion = "23.11";
                 imports = [
                   "${nixpkgs}/nixos/modules/installer/scan/not-detected.nix"
                   # "${nixpkgs}/nixos/modules/profiles/hardened.nix"
