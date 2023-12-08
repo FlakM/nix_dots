@@ -18,10 +18,22 @@ in
     ./zfs_replication.nix
   ];
 
+  system.autoUpgrade = {
+    enable = true;
+    flake = inputs.self.outPath;
+    flags = [
+      "--update-input"
+      "nixpkgs"
+      "-L" # print build logs
+    ];
+    dates = "02:00";
+    randomizedDelaySec = "45min";
+  };
+
   networking.extraHosts =
-  ''
-    127.0.0.1 modivo.local
-  '';
+    ''
+      127.0.0.1 modivo.local
+    '';
 
   nixpkgs.config = {
     allowUnfree = true;
