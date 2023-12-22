@@ -97,6 +97,7 @@ in
   # Enable sound.
   sound.enable = true;
   services.blueman.enable = true;
+
   hardware.pulseaudio.enable = false;
 
   services.pipewire = {
@@ -159,7 +160,10 @@ in
       enable = true;
       driSupport = true;
     };
-    bluetooth.enable = true;
+    bluetooth = {
+      enable = true;
+      powerOnBoot = true;
+    };
   };
 
   virtualisation.docker.enable = true;
