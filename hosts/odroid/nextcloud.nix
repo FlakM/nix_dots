@@ -2,18 +2,18 @@
 
   services.nextcloud = {
     enable = true;
-    package = pkgs.nextcloud27;
+    package = pkgs.nextcloud28;
     hostName = "nextcloud.house.flakm.com";
     config.adminpassFile = "/etc/nextcloud-admin-pass";
 
     extraApps = with config.services.nextcloud.package.packages.apps; {
-      inherit news contacts calendar tasks;
+      inherit contacts calendar tasks;
     };
     extraAppsEnable = true;
     configureRedis = true;
 
     phpOptions = {
-      upload_max_filesize = "1G";
+      #upload_max_filesize = "1G";
       #post_max_size = "1G";
     };
 
