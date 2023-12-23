@@ -77,4 +77,26 @@
   };
 
 
+  # add systemd cron job to nextcloud-occ preview:pre-generate it should run at nigt
+  systemd.services.nextcloud-pre-generate = {
+    description = "Nextcloud OCC Preview Pre-generation";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "network.target" ];
+    serviceConfig = {
+      ExecStart = "${pkgs.nextcloud}/bin/nextcloud-occ preview:pre-generate";
+      User = "nextcloud";
+      Group = "nextcloud";
+    };
+  };
+
+  systemd.timers.nextcloudPreGenerateTimer = {
+    wantedBy = [ "timers.target" ];
+    partOf = [ "nextcloud-pre-generate.service" ];
+    timerConfig = {
+      OnCalendar = "daily";
+      Persistent = true;
+    };
+  };
+
+
 }
