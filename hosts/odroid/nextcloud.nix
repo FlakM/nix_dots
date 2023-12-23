@@ -2,7 +2,7 @@
 
   services.nextcloud = {
     enable = true;
-    package = pkgs.nextcloud28;
+    package = pkgs.nextcloud27;
     hostName = "nextcloud.house.flakm.com";
     config.adminpassFile = "/etc/nextcloud-admin-pass";
 
@@ -24,11 +24,12 @@
 
     https = true;
 
-    database.createLocally = true;
+    database.createLocally = false;
     config = {
       dbtype = "pgsql";
       dbuser = "nextcloud";
       dbname = "nextcloud";
+      dbhost= "/run/postgresql";
     };
 
   };
