@@ -12,7 +12,7 @@
 
     enableAutosuggestions = true;
     enableCompletion = true;
-    enableSyntaxHighlighting = true;
+    syntaxHighlighting.enable = true;
 
     zplug = {
       enable = true;

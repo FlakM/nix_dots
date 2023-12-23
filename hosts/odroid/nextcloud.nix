@@ -34,7 +34,12 @@
   };
 
   networking.firewall.allowedTCPPorts = [ 80 443 ];
-
+  services.postgresql.ensureUsers = [
+    {
+      name = "nextcloud";
+      ensureDBOwnership = true;
+    }
+  ];
 
   services.nginx = {
     enable = true;

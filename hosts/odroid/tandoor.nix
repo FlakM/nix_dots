@@ -8,6 +8,7 @@
     extraConfig = {
       DB_ENGINE = "django.db.backends.postgresql";
       POSTGRES_HOST = "/run/postgresql";
+      # to enter psql run: `psql -h /run/postgresql -U postgres`
       # ALTER USER tandoor WITH SUPERUSER;
       # was required to get migrations to work
       # and than ALTER USER tandoor WITH NOSUPERUSER ; to roll back

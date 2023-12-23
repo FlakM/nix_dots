@@ -488,6 +488,8 @@ in
     exec-once = wl-paste --type image --watch cliphist store #Stores only image data
     exec-once = ${configure-gtk-dark}/bin/configure-gtk-dark
 
+
+    windowrule = workspace 2, ^(.*Mozilla Firefox.*)$
     exec-once=dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
     exec-once=[workspace 1 silent] alacritty
     exec-once=[workspace 2 silent] firefox
