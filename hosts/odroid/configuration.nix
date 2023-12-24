@@ -10,6 +10,7 @@
     ./samba.nix
     ./backupuser.nix
     ./zfs_replication.nix
+    ./acme.nix
   ];
 
   programs.tmux = {

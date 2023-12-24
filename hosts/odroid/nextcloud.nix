@@ -47,11 +47,11 @@
 
     virtualHosts = {
       ${config.services.nextcloud.hostName} = {
-        enableACME = false; # Since you're providing your own certs
+        useACMEHost = "house.flakm.com";
         forceSSL = true;
 
-        sslCertificate = "/var/secrets/certs/house.crt";
-        sslCertificateKey = "/var/secrets/certs/house.key";
+        #sslCertificate = "/var/secrets/certs/house.crt";
+        #sslCertificateKey = "/var/secrets/certs/house.key";
         # redirect http to https
       };
     };
@@ -83,7 +83,7 @@
     wantedBy = [ "multi-user.target" ];
     after = [ "network.target" ];
     serviceConfig = {
-      ExecStart = "${pkgs.nextcloud}/bin/nextcloud-occ preview:pre-generate";
+      ExecStart = "${config.services.nextcloud.package}/bin/nextcloud-occ preview:pre-generate";
       User = "nextcloud";
       Group = "nextcloud";
     };
