@@ -49,10 +49,6 @@
       ${config.services.nextcloud.hostName} = {
         useACMEHost = "house.flakm.com";
         forceSSL = true;
-
-        #sslCertificate = "/var/secrets/certs/house.crt";
-        #sslCertificateKey = "/var/secrets/certs/house.key";
-        # redirect http to https
       };
     };
   };
@@ -83,7 +79,7 @@
     wantedBy = [ "multi-user.target" ];
     after = [ "network.target" ];
     serviceConfig = {
-      ExecStart = "${config.services.nextcloud.package}/bin/nextcloud-occ preview:pre-generate";
+      ExecStart = "${config.services.nextcloud.occ}/bin/nextcloud-occ preview:pre-generate";
       User = "nextcloud";
       Group = "nextcloud";
     };

@@ -23,12 +23,8 @@
     enable = true;
     virtualHosts = {
       "tandoor.house.flakm.com" = {
-        enableACME = false; # Since you're providing your own certs
+        useACMEHost = "house.flakm.com";
         forceSSL = true;
-
-        sslCertificate = "/var/secrets/certs/house.crt";
-        sslCertificateKey = "/var/secrets/certs/house.key";
-
         locations."/" = {
           extraConfig = ''
             proxy_set_header Host $host; # try $host instead if this doesn't work
