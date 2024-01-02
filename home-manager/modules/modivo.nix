@@ -1,10 +1,10 @@
-{ pkgs, lib, ... }: {
+{ pkgs, lib, pkgs-master, ... }: {
 
   home.packages = with pkgs; [
-    master.xwaylandvideobridge
+    pkgs-master.xwaylandvideobridge
     xorg.xwininfo
 
-    master.slack
+    pkgs-master.slack
     google-cloud-sdk
     openfortivpn
     minio-client

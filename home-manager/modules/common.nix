@@ -1,4 +1,4 @@
-{ config, pkgs, pkgsUnstable, libs, lib, ... }:
+{ config, pkgs, pkgs-unstable, libs, lib, ... }:
 {
 
   # https://github.com/nix-community/nix-direnv#via-home-manager
@@ -23,7 +23,7 @@
     htop
     dnsutils
 
-    unstable.yt-dlp
+    pkgs-unstable.yt-dlp
   ] ++ lib.optionals stdenv.isDarwin [
     coreutils # provides `dd` with --status=progress
   ] ++ lib.optionals stdenv.isLinux [

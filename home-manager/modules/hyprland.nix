@@ -1,4 +1,4 @@
-{ config, pkgs, inputs, ... }:
+{ config, pkgs, inputs, pkgs-unstable, ... }:
 let
   path = "${config.home.homeDirectory}/.config/current-color_scheme";
   apply-theme-script = pkgs.writeScript "apply-theme" ''
@@ -115,7 +115,7 @@ in
 
     configure-gtk-dark
     configure-gtk-light
-    unstable.wl-clipboard
+    pkgs-unstable.wl-clipboard
     #unstable.xdg-utils
     handlr
     cliphist # clipboard history
@@ -127,7 +127,7 @@ in
     swappy
     slurp
 
-    pkgs.unstable.grimblast
+    pkgs-unstable.grimblast
   ];
 
 

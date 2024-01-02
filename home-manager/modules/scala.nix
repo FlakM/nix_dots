@@ -1,8 +1,8 @@
-{ config, pkgs, pkgsUnstable, libs, ... }:
+{ config, pkgs, pkgs-unstable, libs, ... }:
 {
 
   home.packages = with pkgs; [
-    unstable.bloop
+    pkgs-unstable.bloop
     scalafix
     scalafmt
     #     sbt

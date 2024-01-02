@@ -1,19 +1,16 @@
 # configuration in this file only applies to amd-pc host.
-
-{ pkgs, inputs, lib, pkgs-unstable, ... }:
+{ pkgs, inputs, lib, nixos-hardware, ... }:
 
 let
+  unstable = inputs.nixpkgs-unstable.legacyPackages.${pkgs.system};
   hyprland = inputs.hyprland.packages.${pkgs.system};
   fenix = inputs.fenix.packages.${pkgs.system}.stable;
 in
 
 {
-
   imports = [
-    ../../shared/wireguard.nix
+    nixos-hardware.nixosModules.dell-xps-15-9560-intel
     ../../shared/gpg.nix
-    ../../shared/k3s.nix
-    ./zfs_replication.nix
   ];
 
   system.autoUpgrade = {
@@ -28,15 +25,10 @@ in
     randomizedDelaySec = "45min";
   };
 
-  networking.extraHosts =
-    ''
-      127.0.0.1 modivo.local
-    '';
-
-  nixpkgs.config = {
-    allowUnfree = true;
-    allowUnfreePredicate = (_: true);
-  };
+  #nixpkgs.config = {
+  #  allowUnfree = true;
+  #  allowUnfreePredicate = (_: true);
+  #};
 
 
   nix.settings = {
@@ -57,16 +49,13 @@ in
     package = hyprland.hyprland;
   };
 
-  services.redis.servers."".enable = false;
-
-
   # networking.hostName = "nixos"; # Define your hostname.
   networking.networkmanager.enable = lib.mkForce true;
   networking.wireless.iwd.enable = true;
   networking.networkmanager.wifi.backend = "iwd";
   networking.firewall.checkReversePath = "loose";
 
-  networking.hostName = "amd-pc";
+  networking.hostName = "dell-xps";
 
   time.timeZone = "Europe/Warsaw";
 
@@ -191,11 +180,6 @@ in
   };
 
 
-
-
-
-
-
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
@@ -211,6 +195,8 @@ in
     gnome.gnome-themes-extra
     gsettings-desktop-schemas
     gruvbox-dark-gtk
+    obsidian
+    spotify
 
     pavucontrol
     docker
@@ -238,12 +224,13 @@ in
     vlc
 
     # office
-    pkgs-unstable.thunderbird
+    unstable.thunderbird
+    #unstable.thunderbird
     gpgme
     libreoffice
 
 
-    pkgs-unstable.bitwarden
+    unstable.bitwarden
     bitwarden-cli
 
     # spelling
@@ -294,7 +281,7 @@ in
 
   programs.wireshark = {
     enable = true;
-    package = pkgs-unstable.wireshark;
+    package = unstable.wireshark;
   };
 
   # Enable the OpenSSH daemon.
@@ -341,8 +328,6 @@ in
   };
 
 
-
-
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
   # on your system were taken. It‘s perfectly fine and recommended to leave
@@ -352,18 +337,10 @@ in
   system.stateVersion = "23.11"; # Did you read the comment?
 
 
-
   fonts.fontDir.enable = true;
   fonts.fonts = with pkgs; [
     (nerdfonts.override { fonts = [ "RobotoMono" ]; })
   ];
-
-
-
-  services.minio = {
-    enable = true;
-    region = "us-east-1";
-  };
 
 
 
@@ -374,5 +351,13 @@ in
   services.gvfs = {
     enable = true;
     package = lib.mkForce pkgs.gnome3.gvfs;
+  };
+
+  services.undervolt = {
+    # it stopped working
+    enable = true;
+    coreOffset = -150;
+    uncoreOffset = -150;
+    gpuOffset = -100;
   };
 }

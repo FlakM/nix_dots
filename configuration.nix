@@ -21,10 +21,10 @@
     options = "--delete-older-than 30d";
   };
 
-  nixpkgs.config = {
-    allowUnfree = true;
-    allowUnfreePredicate = (_: true);
-  };
+  #nixpkgs.config = {
+  #  allowUnfree = true;
+  #  allowUnfreePredicate = (_: true);
+  #};
 
   users.users = {
     root = {
@@ -119,4 +119,7 @@
       cachix# binary cache cli tool
       ;
   };
+
+
+  system.stateVersion = "23.11";
 }

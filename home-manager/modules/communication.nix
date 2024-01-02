@@ -1,6 +1,6 @@
-{ config, pkgs, pkgsUnstable, libs, ... }:
+{ config, pkgs, pkgs-unstable, pkgs-master, libs, ... }:
 let
-  signal-wrapped = pkgs.master.signal-desktop.overrideAttrs (old: {
+  signal-wrapped = pkgs-master.signal-desktop.overrideAttrs (old: {
     preFixup = old.preFixup + ''
       gappsWrapperArgs+=(
         --add-flags "--enable-features=UseOzonePlatform"
@@ -13,7 +13,7 @@ in
 
   home.packages = with pkgs; [
     mumble
-    unstable.teams-for-linux
+    pkgs-unstable.teams-for-linux
     (google-chrome.override {
       commandLineArgs = [
         "--enable-features=UseOzonePlatform"
@@ -22,7 +22,7 @@ in
     })
     element-desktop
     discord
-    master.signal-desktop
+    pkgs-master.signal-desktop
   ];
 
 }

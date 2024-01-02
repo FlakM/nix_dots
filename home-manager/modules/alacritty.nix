@@ -1,4 +1,4 @@
-{ inputs, config, pkgs, pkgsUnstable, libs, lib, ... }:
+{ inputs, config, pkgs, pkgs-unstable, pkgs-master, libs, lib, ... }:
 let
 
   ## xdg-open shim that proxies to handlr
@@ -6,7 +6,7 @@ let
     #!/usr/bin/env bash
     handlr open "$@"
   '';
-  alacritty-wrapped = pkgs.master.alacritty.overrideAttrs (old: {
+  alacritty-wrapped = pkgs-master.alacritty.overrideAttrs (old: {
     postPatch = ''
       substituteInPlace alacritty/src/config/ui_config.rs \
         --replace xdg-open ${xdg-open}/bin/xdg-open

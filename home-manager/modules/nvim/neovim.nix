@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, pkgs-unstable, ... }:
 {
   home.sessionVariables = {
     EDITOR = "nvim";
@@ -120,7 +120,7 @@
         ""
         ""
         "lua << EOF"
-        "local extension_path = \"${pkgs.unstable.vscode-extensions.vadimcn.vscode-lldb}/share/vscode/extensions/vadimcn.vscode-lldb\""
+        "local extension_path = \"${pkgs-unstable.vscode-extensions.vadimcn.vscode-lldb}/share/vscode/extensions/vadimcn.vscode-lldb\""
         (builtins.readFile ./config/rust-config.lua)
         "EOF"
 

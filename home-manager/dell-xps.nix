@@ -20,13 +20,14 @@
 
     ./modules/communication.nix
 
-    ./modules/sql.nix
 
     ./modules/firefox.nix
     ./modules/productivity.nix
 
     ./modules/neomutt.nix
   ];
+
+
 
   xsession.windowManager.i3.config.fonts.size = 18.0;
   programs.alacritty.settings.font.size = 11;
@@ -59,6 +60,8 @@
       size = 24;
     };
     stateVersion = "23.05";
+
+
 
   };
 
