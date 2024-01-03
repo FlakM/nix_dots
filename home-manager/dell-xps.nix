@@ -25,6 +25,7 @@
     ./modules/productivity.nix
 
     ./modules/neomutt.nix
+    ./modules/hyprland.nix
   ];
 
 

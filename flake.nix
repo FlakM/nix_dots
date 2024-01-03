@@ -137,13 +137,11 @@
         "flakm@dell-xps" = mkHomeManager "flakm" "dell-xps" "x86_64-linux" [
           hyprland.homeManagerModules.default
           { wayland.windowManager.hyprland.enable = true; }
-          ./home-manager/modules/hyprland.nix
         ];
 
         "flakm@amd-pc" = mkHomeManager "flakm" "amd-pc" "x86_64-linux" [
           hyprland.homeManagerModules.default
           { wayland.windowManager.hyprland.enable = true; }
-          ./home-manager/modules/hyprland.nix
         ];
 
         "flakm@odroid" = mkHomeManager "flakm" "odroid" "x86_64-linux" [ ];
