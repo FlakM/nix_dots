@@ -112,6 +112,7 @@ in
     dunst # notifications
     playerctl # media status for waybar
     shotman # screenshot
+    dconf
 
     configure-gtk-dark
     configure-gtk-light
