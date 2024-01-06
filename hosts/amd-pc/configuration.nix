@@ -3,12 +3,10 @@
 { pkgs, inputs, lib, pkgs-unstable, ... }:
 
 let
-  hyprland = inputs.hyprland.packages.${pkgs.system};
   fenix = inputs.fenix.packages.${pkgs.system}.stable;
 in
 
 {
-
   imports = [
     ../../shared/wireguard.nix
     ../../shared/gpg.nix
@@ -39,22 +37,11 @@ in
   };
 
 
-  nix.settings = {
-    experimental-features = [ "nix-command" "flakes" ];
-    substituters = [ "https://hyprland.cachix.org" ];
-    trusted-public-keys = [ "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc=" ];
-    trusted-users = [
-      "root"
-      "flakm"
-    ];
-  };
-
 
   #boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
   #boot.kernel.sysctl."net.ipv6.conf.all.forwarding" = 1;
   programs.hyprland = {
     enable = true;
-    package = hyprland.hyprland;
   };
 
   services.redis.servers."".enable = false;
@@ -84,7 +71,6 @@ in
       enable = true;
       xdgOpenUsePortal = true;
       extraPortals = with pkgs; [
-        #xdg-desktop-portal-hyprland
         xdg-desktop-portal-gtk
       ];
     };
@@ -110,30 +96,13 @@ in
 
 
 
-
-  # Use xfce as desktop manager not DE
-  #services.xserver = {
-  #  enable = true;
-  #  # left alt should switch to 3rd level
-  #  # https://nixos.wiki/wiki/Keyboard_Layout_Customization
-  #  xkbOptions = "lv3:lalt_switch";
-  # #   windowManager.i3.enable = true;
-  #  
-  #  desktopManager.plasma5.enable = true;
-  #  displayManager.sddm.enable = true;
-  #};
   services.xserver = {
-    enable = false; # might need it for xwayland
-    displayManager.gdm.enable = false;
-    #displayManager.gdm.wayland = true;
-    displayManager.sddm.enable = false;
-    #displayManager.sessionPackages = [ inputs.hyprland.hyprland ];
+    enable = true;
+    videoDrivers = [ "amdgpu" ];
+    displayManager.sddm.enable = true;
     libinput.enable = true;
     xkbOptions = "lv3:lalt_switch";
   };
-
-
-  #environment.sessionVariables.NIXOS_OZONE_WL = "1"; # This variable fixes electron apps in wayland
 
 
   boot.initrd.kernelModules = [ "amdgpu" ];
@@ -189,11 +158,6 @@ in
   security.pam.services.swaylock = {
     text = "auth include login";
   };
-
-
-
-
-
 
 
   # List packages installed in system profile. To search, run:

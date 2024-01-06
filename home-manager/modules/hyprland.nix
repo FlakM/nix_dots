@@ -84,7 +84,6 @@ in
 
     NIXOS_OZONE_WL = "1"; # hint electron apps to use wayland
 
-    POLKIT_AUTH_AGENT = "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
     SDL_VIDEODRIVER = "wayland";
     _JAVA_AWT_WM_NONREPARENTING = "1";
 

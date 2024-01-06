@@ -21,26 +21,6 @@
     options = "--delete-older-than 30d";
   };
 
-  #nixpkgs.config = {
-  #  allowUnfree = true;
-  #  allowUnfreePredicate = (_: true);
-  #};
-
-  users.users = {
-    root = {
-      initialHashedPassword = "$6$ECzYTRvzHdOohVWt$8MPudaACM.a7DiMLJHatslZmHCcl0d69TOO0N89ju5jAV387Yf9VncP94PfJ4jSYaxjSzWmRnQg20C1/bFxOM.";
-      openssh.authorizedKeys.keys = [ "sshKey_placeholder" ];
-    };
-  };
-
-  ## enable GNOME desktop.
-  ## You need to configure a normal, non-root user.
-  # services.xserver = {
-  #  enable = true;
-  #  desktopManager.gnome.enable = true;
-  #  displayManager.gdm.enable = true;
-  # };
-
   ## enable ZFS auto snapshot on datasets
   ## You need to set the auto snapshot property to "true"
   ## on datasets for this to work, such as

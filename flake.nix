@@ -15,7 +15,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    hyprland.url = "github:hyprwm/Hyprland";
     nur.url = "github:nix-community/NUR";
 
   };
@@ -26,7 +25,6 @@
     , nixpkgs-unstable
     , nixpkgs-master
     , nixos-hardware
-    , hyprland
     , fenix
     , nur
     , ...
@@ -135,13 +133,19 @@
       # Available through 'home-manager --flake .#your-username@your-hostname'
       homeConfigurations = {
         "flakm@dell-xps" = mkHomeManager "flakm" "dell-xps" "x86_64-linux" [
-          hyprland.homeManagerModules.default
-          { wayland.windowManager.hyprland.enable = true; }
+          { wayland.windowManager.hyprland = {
+             enable = true;
+             systemd.enable = true;
+            };
+          }
         ];
 
         "flakm@amd-pc" = mkHomeManager "flakm" "amd-pc" "x86_64-linux" [
-          hyprland.homeManagerModules.default
-          { wayland.windowManager.hyprland.enable = true; }
+          { wayland.windowManager.hyprland = {
+             enable = true;
+             systemd.enable = true;
+            };
+          }
         ];
 
         "flakm@odroid" = mkHomeManager "flakm" "odroid" "x86_64-linux" [ ];
