@@ -83,6 +83,7 @@
             ./configuration.nix
 
             # Configuration per host
+            # Be sure to include all other modules in ./hosts/${hostName}/default.nix
             ./hosts/${hostName}
 
             # home-manager
@@ -132,22 +133,8 @@
       # Standalone home-manager configuration entrypoint
       # Available through 'home-manager --flake .#your-username@your-hostname'
       homeConfigurations = {
-        "flakm@dell-xps" = mkHomeManager "flakm" "dell-xps" "x86_64-linux" [
-          { wayland.windowManager.hyprland = {
-             enable = true;
-             systemd.enable = true;
-            };
-          }
-        ];
-
-        "flakm@amd-pc" = mkHomeManager "flakm" "amd-pc" "x86_64-linux" [
-          { wayland.windowManager.hyprland = {
-             enable = true;
-             systemd.enable = true;
-            };
-          }
-        ];
-
+        "flakm@dell-xps" = mkHomeManager "flakm" "dell-xps" "x86_64-linux" [ ];
+        "flakm@amd-pc" = mkHomeManager "flakm" "amd-pc" "x86_64-linux" [ ];
         "flakm@odroid" = mkHomeManager "flakm" "odroid" "x86_64-linux" [ ];
       };
     };

@@ -17,8 +17,7 @@
   # import preconfigured profiles
   imports = [
     (modulesPath + "/installer/scan/not-detected.nix")
-    # (modulesPath + "/profiles/hardened.nix")
-    # (modulesPath + "/profiles/qemu-guest.nix")
+    ./configuration.nix
   ];
 }
 

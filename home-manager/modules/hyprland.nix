@@ -385,6 +385,11 @@ in
     '';
   };
 
+  wayland.windowManager.hyprland = {
+    enable = true;
+    systemd.enable = true;
+  };
+
   wayland.windowManager.hyprland.extraConfig = ''
     # See https://wiki.hyprland.org/Configuring/Monitors/
     monitor=,preferred,auto,1.5

@@ -26,4 +26,8 @@
       hostId = "96f5bb16";
     };
   };
+
+  imports = [
+    ./configuration.nix
+  ];
 }

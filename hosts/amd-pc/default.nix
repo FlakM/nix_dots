@@ -40,7 +40,7 @@
       bootDevices = [
         "nvme-Samsung_SSD_990_PRO_2TB_S6Z2NJ0TB26329Y"
         "nvme-Samsung_SSD_990_PRO_2TB_S6Z2NJ0TB26332W"
-         ];
+      ];
       immutable.enable = false;
       removableEfi = true;
       luks.enable = false;
@@ -54,6 +54,7 @@
 
   imports = [
     (modulesPath + "/installer/scan/detected.nix")
+    ./configuration.nix
   ];
 }
 
