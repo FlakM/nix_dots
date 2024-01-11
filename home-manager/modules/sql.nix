@@ -1,8 +1,9 @@
-{ config, pkgs, pkgsUnstable, libs, ... }:
+{ config, pkgs, pkgs-master, libs, ... }:
 {
 
-  home.packages = with pkgs; [
-    dbeaver
+  home.packages = [
+    pkgs-master.dbeaver
+    pkgs.pgadmin4-desktopmode
   ];
 
 }

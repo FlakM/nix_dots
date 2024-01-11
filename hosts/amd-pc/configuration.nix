@@ -170,9 +170,6 @@ in
     xdg-utils
 
     #chromium
-
-    dbeaver
-
     binutils
     inotify-tools
     lm_sensors

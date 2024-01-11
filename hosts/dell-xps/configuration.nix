@@ -1,15 +1,12 @@
 # configuration in this file only applies to amd-pc host.
-{ pkgs, inputs, lib, nixos-hardware, ... }:
-
+{ pkgs, inputs, lib, nixos-hardware, pkgs-unstable, ... }:
 let
-  unstable = inputs.nixpkgs-unstable.legacyPackages.${pkgs.system};
-  hyprland = inputs.hyprland.packages.${pkgs.system};
   fenix = inputs.fenix.packages.${pkgs.system}.stable;
 in
 
 {
   imports = [
-    nixos-hardware.nixosModules.dell-xps-15-9560-intel
+    inputs.nixos-hardware.nixosModules.dell-xps-15-9560-intel
     ../../shared/gpg.nix
   ];
 
@@ -45,8 +42,7 @@ in
   #boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
   #boot.kernel.sysctl."net.ipv6.conf.all.forwarding" = 1;
   programs.hyprland = {
-    enable = true;
-    package = hyprland.hyprland;
+    enable = false;
   };
 
   # networking.hostName = "nixos"; # Define your hostname.
@@ -73,8 +69,12 @@ in
       enable = true;
       xdgOpenUsePortal = true;
       extraPortals = with pkgs; [
-        #xdg-desktop-portal-hyprland
+        xdg-desktop-portal-hyprland
         xdg-desktop-portal-gtk
+      ];
+      configPackages = with pkgs; [
+        xdg-desktop-portal-gtk
+        xdg-desktop-portal-hyprland
       ];
     };
   };
@@ -195,7 +195,6 @@ in
     gnome.gnome-themes-extra
     gsettings-desktop-schemas
     gruvbox-dark-gtk
-    obsidian
     spotify
 
     pavucontrol
@@ -205,9 +204,6 @@ in
     xdg-utils
 
     #chromium
-
-    dbeaver
-
     binutils
     inotify-tools
     lm_sensors
@@ -224,13 +220,13 @@ in
     vlc
 
     # office
-    unstable.thunderbird
+    pkgs-unstable.thunderbird
     #unstable.thunderbird
     gpgme
     libreoffice
 
 
-    unstable.bitwarden
+    pkgs-unstable.bitwarden
     bitwarden-cli
 
     # spelling
@@ -281,7 +277,8 @@ in
 
   programs.wireshark = {
     enable = true;
-    package = unstable.wireshark;
+    package = pkgs-unstable.wireshark;
+
   };
 
   # Enable the OpenSSH daemon.
@@ -338,7 +335,7 @@ in
 
 
   fonts.fontDir.enable = true;
-  fonts.fonts = with pkgs; [
+  fonts.packages = with pkgs; [
     (nerdfonts.override { fonts = [ "RobotoMono" ]; })
   ];
 
@@ -355,9 +352,10 @@ in
 
   services.undervolt = {
     # it stopped working
-    enable = true;
-    coreOffset = -150;
-    uncoreOffset = -150;
+    enable = false;
+    coreOffset = -100;
+    uncoreOffset = -100;
     gpuOffset = -100;
   };
+
 }

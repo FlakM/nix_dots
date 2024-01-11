@@ -392,7 +392,10 @@ in
 
   wayland.windowManager.hyprland.extraConfig = ''
     # See https://wiki.hyprland.org/Configuring/Monitors/
-    monitor=,preferred,auto,1.5
+    monitor=,highres,auto,1.5
+
+    env = GDK_SCALE,1.5
+    env = XCURSOR_SIZE,32
 
     # unscale XWayland
     xwayland {
