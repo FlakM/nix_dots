@@ -70,6 +70,7 @@
           specialArgs = {
             pkgs-unstable = pkgs-unstable system;
             pkgs-master = pkgs-master system;
+            pkgs-default = pkgs-stable system;
 
             # make all inputs availabe in other nix files
             inherit inputs;

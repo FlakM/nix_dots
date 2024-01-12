@@ -29,6 +29,10 @@
   ];
 
 
+  wayland.windowManager.hyprland.settings = {
+    # Monitor settings
+    monitor = ",highres,auto,2.0";
+  };
 
   programs.alacritty.settings.font.size = 11;
 

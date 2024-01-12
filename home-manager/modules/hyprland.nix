@@ -1,4 +1,4 @@
-{ config, pkgs, inputs, pkgs-unstable, ... }:
+{ config, pkgs, inputs, pkgs-unstable, lib, osConfig, ... }:
 let
   path = "${config.home.homeDirectory}/.config/current-color_scheme";
   apply-theme-script = pkgs.writeScript "apply-theme" ''
@@ -55,6 +55,7 @@ let
         dconf write /org/gnome/desktop/interface/color-scheme "'prefer-dark'"
       '';
   };
+
 
   configure-gtk-light = pkgs.writeTextFile {
     name = "configure-gtk";
@@ -390,9 +391,10 @@ in
     systemd.enable = true;
   };
 
+
   wayland.windowManager.hyprland.extraConfig = ''
     # See https://wiki.hyprland.org/Configuring/Monitors/
-    monitor=,highres,auto,1.5
+    #monitor=,highres,auto,1.5
 
     env = GDK_SCALE,1.5
     env = XCURSOR_SIZE,32

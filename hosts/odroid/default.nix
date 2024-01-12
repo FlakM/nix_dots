@@ -4,29 +4,27 @@
 #
 # all others goes to `configuration.nix` under the same directory as
 # this file. 
-{ system, pkgs, ... }: {
-  inherit pkgs system;
+{ pkgs, ... }: {
   zfs-root = {
     boot = {
       devNodes = "/dev/disk/by-id/";
       bootDevices = [ "nvme-Samsung_SSD_970_EVO_Plus_2TB_S4J4NX0W825442P" ];
-      immutable = false;
-      availableKernelModules = [ "xhci_pci" "ahci" "nvme" "usb_storage" "sd_mod" "sdhci_pci" ];
+      immutable.enable = false;
       removableEfi = true;
-      kernelParams = [ ];
-      sshUnlock = {
-        # read sshUnlock.txt file.
-        enable = false;
-        authorizedKeys = [ ];
-      };
+      luks.enable = false;
     };
-    networking = {
-      hostName = "odroid";
-      timeZone = "Europe/Warsaw";
-      hostId = "96f5bb16";
-    };
+
   };
 
+
+  networking = {
+    hostName = "odroid";
+    hostId = "96f5bb16";
+  };
+  time.timeZone = "Europe/Warsaw";
+
+  boot.kernelParams = [ ];
+  boot.initrd.availableKernelModules = [ "xhci_pci" "ahci" "nvme" "usb_storage" "sd_mod" "sdhci_pci" ];
   imports = [
     ./configuration.nix
   ];

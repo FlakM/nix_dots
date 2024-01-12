@@ -34,6 +34,19 @@
 
   xdg.enable = true;
 
+
+
+  wayland.windowManager.hyprland.settings = {
+    # Monitor settings
+    monitor = ",highres,auto,1.5";
+  };
+
+  #config = {
+  #  hyprland-local = {
+  #    scale = 1.5;
+  #  };
+  #};
+
   gtk = {
     enable = true;
     theme = {
@@ -60,6 +73,7 @@
       size = 24;
     };
     stateVersion = "23.05";
+
 
   };
 
