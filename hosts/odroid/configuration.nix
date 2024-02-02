@@ -11,6 +11,9 @@
     ./backupuser.nix
     ./zfs_replication.nix
     ./acme.nix
+    ../../shared/k3s.nix
+    ../../shared/wireguard.nix
+
   ];
 
   programs.tmux = {
@@ -44,4 +47,7 @@
 
   boot.zfs.extraPools = [ "tank" ];
 
+
+  # workaround for openforify client
+  environment.etc."ppp/options".text = "ipcp-accept-remote";
 }

@@ -500,7 +500,7 @@ in
 
 
     windowrule = workspace 2, ^(.*Mozilla Firefox.*)$
-    exec-once=dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
+    #exec-once=dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
     exec-once=[workspace 1 silent] alacritty
     exec-once=[workspace 2 silent] firefox
     exec-once=[workspace 3 silent] obsidian

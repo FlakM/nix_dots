@@ -26,12 +26,14 @@
         useACMEHost = "house.flakm.com";
         forceSSL = true;
         locations."/" = {
-          extraConfig = ''
-            proxy_set_header Host $host; # try $host instead if this doesn't work
-            proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_pass http://127.0.0.1:3030; # replace port
-            proxy_redirect http://127.0.0.1:3030 https://recipes.domain.tld; # replace port and domain
-          '';
+          proxyPass = "http://127.0.0.1:3030";
+          recommendedProxySettings = true;
+          #extraConfig = ''
+          #  proxy_set_header Host $http_host; # try $host instead if this doesn't work
+          #  proxy_set_header X-Forwarded-Proto $scheme;
+          #  proxy_pass http://127.0.0.1:3030; # replace port
+          #  proxy_redirect http://127.0.0.1:3030 https://recipes.domain.tld; # replace port and domain
+          #'';
         };
       };
     };

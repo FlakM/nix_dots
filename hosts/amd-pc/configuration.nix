@@ -12,6 +12,7 @@ in
     ../../shared/gpg.nix
     ../../shared/k3s.nix
     ./zfs_replication.nix
+    ./postgres.nix
   ];
 
   system.autoUpgrade = {
@@ -186,7 +187,7 @@ in
     vlc
 
     # office
-    pkgs-unstable.thunderbird
+    thunderbird
     gpgme
     libreoffice
 
@@ -238,6 +239,10 @@ in
       "rustfmt"
     ])
     fenix.rust-analyzer
+
+
+    insomnia
+
   ];
 
   programs.wireshark = {

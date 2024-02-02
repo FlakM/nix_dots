@@ -7,6 +7,8 @@
     ./modules/nvim/neovim.nix
     ./modules/zsh.nix
     ./modules/tmux.nix
+
+    ./modules/modivo.nix
   ];
 
   home = {

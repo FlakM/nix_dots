@@ -58,6 +58,8 @@
         new_version=$(echo $latest_tag | awk -F. '{$NF = $NF + 1;} 1' OFS=.)
         git-cliff "$latest_tag..HEAD" --tag "$new_version"
       }
+
+      source ~/.zshrc_local
     '';
 
     initExtraBeforeCompInit = ''
