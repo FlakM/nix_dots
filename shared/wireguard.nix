@@ -38,6 +38,7 @@
       # but this makes the private key world-readable; thus, using privateKeyFile is
       # recommended.
       privateKeyFile = "/home/flakm/wireguard-keys/private";
+      mtu = 1420; # https://www.wireguard.com/receive/
 
       peers = [
         # For a client configuration, one peer entry for the server will suffice.
@@ -56,6 +57,7 @@
 
           # Send keepalives every 25 seconds. Important to keep NAT tables alive.
           persistentKeepalive = 25;
+
         }
       ];
     };

@@ -30,6 +30,7 @@ in
   networking.extraHosts =
     ''
       127.0.0.1 modivo.local
+      fdf3:e1c5:2572::f:9:1 eobuwie-db.local
     '';
 
 
@@ -242,6 +243,8 @@ in
 
 
     insomnia
+
+    mysql
 
   ];
 
