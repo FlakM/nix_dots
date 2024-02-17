@@ -118,17 +118,13 @@ in
     displayManager.sddm.enable = false;
     #displayManager.sessionPackages = [ inputs.hyprland.hyprland ];
     libinput.enable = true;
-    xkbOptions = "lv3:lalt_switch";
+    xkbOptions = "lv3:lalt_switch caps:swapescape";
   };
 
 
   #environment.sessionVariables.NIXOS_OZONE_WL = "1"; # This variable fixes electron apps in wayland
 
-
-  boot.initrd.kernelModules = [ "amdgpu" ];
-  boot.kernelParams = [ "amdgpu.sg_display=0" ];
-
-  boot.kernelModules = [ "kvm-amd" "tun" "virtio" ];
+  boot.kernelModules = [ "kvm-intel" "tun" "virtio" ];
 
   # Configure keymap in X11
   #services.xserver.layout = "pl";

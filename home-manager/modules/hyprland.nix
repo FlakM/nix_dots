@@ -411,6 +411,7 @@ in
         kb_model =
         kb_options = lv3:lalt_switch
         kb_rules =
+        kb_options=ctrl:nocaps
     
         follow_mouse = 1
     
