@@ -243,8 +243,9 @@ in
       "rust-src"
       "rustc"
       "rustfmt"
+      "rust-analyzer"
     ])
-    fenix.rust-analyzer
+    #fenix.rust-analyzer
 
 
     insomnia
