@@ -38,6 +38,16 @@
         "force group" = "smolnica";
       };
 
+      victor = {
+        path = "/var/data/victor";
+        browseable = "yes";
+        "read only" = "no";
+        "guest ok" = "no";
+        "create mask" = "0644";
+        "directory mask" = "0755";
+        "force user" = "victor";
+        "force group" = "victor";
+      };
 
       kleszczow = {
         path = "/var/data/kleszczow";
