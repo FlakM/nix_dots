@@ -27,6 +27,8 @@
 
     ./modules/hyprland.nix
     ./modules/neomutt.nix
+
+    ./modules/atuin.nix
   ];
 
   xsession.windowManager.i3.config.fonts.size = 18.0;

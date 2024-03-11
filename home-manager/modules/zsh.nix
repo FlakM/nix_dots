@@ -53,6 +53,9 @@
       export PKG_CONFIG_PATH="${pkgs.openssl.dev}/lib/pkgconfig"
       export PKG="/lib/pkgconfig"
 
+      bindkey -M vicmd '^R' _atuin_search_widget
+      bindkey -M vicmd '^[OA' _atuin_up_search_widget
+
       changelog() {
         latest_tag=$(git tag --sort=taggerdate | tail -1)
         new_version=$(echo $latest_tag | awk -F. '{$NF = $NF + 1;} 1' OFS=.)

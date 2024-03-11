@@ -26,6 +26,8 @@
 
     ./modules/neomutt.nix
     ./modules/hyprland.nix
+
+    ./modules/atuin.nix
   ];
 
 
