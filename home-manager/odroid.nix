@@ -9,6 +9,7 @@
     ./modules/tmux.nix
 
     ./modules/modivo.nix
+    ./modules/atuin.nix
   ];
 
   home = {
