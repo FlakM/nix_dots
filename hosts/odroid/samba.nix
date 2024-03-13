@@ -29,7 +29,7 @@
     shares = {
       smolnica = {
         path = "/var/data/smolnica";
-        browseable = "yes";
+        browseable = "no";
         "read only" = "no";
         "guest ok" = "no";
         "create mask" = "0644";
@@ -40,7 +40,7 @@
 
       victor = {
         path = "/var/data/victor";
-        browseable = "yes";
+        browseable = "no";
         "read only" = "no";
         "guest ok" = "no";
         "create mask" = "0644";
@@ -51,7 +51,7 @@
 
       kleszczow = {
         path = "/var/data/kleszczow";
-        browseable = "yes";
+        browseable = "no";
         "read only" = "no";
         "guest ok" = "no";
         "create mask" = "0644";

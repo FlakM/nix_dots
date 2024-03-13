@@ -24,7 +24,7 @@
     virtualHosts = {
       "jellyfin.house.flakm.com" = {
         useACMEHost = "house.flakm.com";
-        serverAliases = [ "*.house.flakm.com" ];
+        #serverAliases = [ "*.house.flakm.com" ];
         forceSSL = true;
         locations."/" = {
           extraConfig = ''
