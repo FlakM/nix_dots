@@ -6,6 +6,12 @@
     enable = true;
     enableZshIntegration = true;
     package = pkgs-unstable.atuin;
+    # https://github.com/atuinsh/atuin/issues/1199#issuecomment-1940931241
+    settings = {
+      sync = {
+        records = true;
+      };
+    };
   };
 
 }
