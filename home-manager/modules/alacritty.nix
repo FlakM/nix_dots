@@ -126,8 +126,8 @@ let
   };
 in
 {
-  xdg.configFile."alacritty/dark_alacritty.yml".source = (pkgs.formats.yaml { }).generate "alacritty-config" (dark_theme // settings);
-  xdg.configFile."alacritty/light_alacritty.yml".source = (pkgs.formats.yaml { }).generate "alacritty-config" (light_theme // settings);
+  xdg.configFile."alacritty/dark_alacritty.toml".source = (pkgs.formats.toml { }).generate "alacritty-config" (dark_theme // settings);
+  xdg.configFile."alacritty/light_alacritty.toml".source = (pkgs.formats.toml { }).generate "alacritty-config" (light_theme // settings);
 
   #home.packages = with pkgs; [
   #  alacritty
@@ -139,11 +139,11 @@ in
       path=$2
 
       function dark() {
-        cat ~/.config/alacritty/dark_alacritty.yml > ~/.config/alacritty/alacritty.yml
+        cat ~/.config/alacritty/dark_alacritty.toml > ~/.config/alacritty/alacritty.toml
       }
 
       function light() {
-        cat ~/.config/alacritty/light_alacritty.yml > ~/.config/alacritty/alacritty.yml
+        cat ~/.config/alacritty/light_alacritty.toml > ~/.config/alacritty/alacritty.toml
       }
 
       if [ "$color" = "dark" ]; then
