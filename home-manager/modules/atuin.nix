@@ -11,6 +11,8 @@
       sync = {
         records = true;
       };
+      # use this to disable auto sync
+      auto_sync = true;
     };
   };
 

@@ -15,6 +15,18 @@ in
     ./postgres.nix
   ];
 
+  systemd.services.mount-atuin = {
+    description = "Mount Atuin ZFS Volume";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "zfs.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStart = "${pkgs.utillinux}/bin/mount /dev/zvol/rpool/nixos/atuin /home/flakm/.local/share/atuin";
+      User = "root";
+    };
+  };
+
   system.autoUpgrade = {
     enable = true;
     flake = inputs.self.outPath;
@@ -95,7 +107,10 @@ in
     jack.enable = true;
   };
 
-  services.xserver.enable = false;
+  services.xserver = {
+    enable = false;
+    xkbOptions = "lv3:lalt_switch caps:swapescape";
+  };
 
   boot.initrd.kernelModules = [ "amdgpu" ];
   boot.kernelParams = [ "amdgpu.sg_display=0" ];

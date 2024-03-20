@@ -129,6 +129,8 @@ in
     slurp
 
     pkgs-unstable.grimblast
+
+    xwaylandvideobridge
   ];
 
 
@@ -409,9 +411,9 @@ in
         kb_layout = pl
         kb_variant =
         kb_model =
-        kb_options = lv3:lalt_switch
         kb_rules =
         kb_options=ctrl:nocaps
+        kb_options=lv3:lalt_switch
     
         follow_mouse = 1
     

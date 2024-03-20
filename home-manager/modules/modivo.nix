@@ -1,7 +1,6 @@
 { pkgs, lib, pkgs-master, ... }: {
 
   home.packages = with pkgs; [
-    pkgs-master.xwaylandvideobridge
     xorg.xwininfo
 
     pkgs-master.slack
@@ -9,6 +8,9 @@
     openfortivpn
     minio-client
     redis
+
+    # database schema comparing tool
+    migra
 
   ];
 
