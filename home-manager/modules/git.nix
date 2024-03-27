@@ -1,9 +1,11 @@
-{ config, pkgs, pkgsUnstable, libs, ... }:
+{ config, pkgs, pkgs-unstable, lib, ... }:
 {
 
   home.packages = with pkgs; [
     git
     git-crypt
+    pkgs-unstable.delta
+    as-tree
   ];
 
   programs.git = {
@@ -16,7 +18,10 @@
       signByDefault = true;
     };
 
-    delta.enable = true;
+    #delta = {
+    #  enable = true;
+    #  package = pkgs-unstable.delta;
+    #};
     lfs.enable = true;
 
     ignores = [
@@ -39,6 +44,22 @@
     extraConfig = {
       pull = { ff = "only"; };
       init.defaultBranch = "main";
+      core.pager = "${pkgs-unstable.delta}/bin/delta --color-only --features ${"\$\(cat ~/.config/delta/theme 2>/dev/null || echo dark-mode\)"}";
+      delta = {
+        navigate = true;
+        "dark-mode" = {
+          light = false;
+          syntax-theme = "Visual Studio Dark+";
+        };
+        "light-mode" = {
+          light = true;
+          syntax-theme = "GitHub";
+        };
+      };
+      interactive.diffFilter = "${pkgs-unstable.delta}/bin/delta --color-only";
+      merge.conflictStyle = "diff3";
+      diff.colorMoved = "default";
+
     };
 
 

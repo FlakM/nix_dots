@@ -15,6 +15,9 @@
       auto_sync = true;
 
       filter_mode_shell_up_key_binding = "session";
+
+      # use ctrl instead of alt as the shortcut modifier key for numerical UI shortcuts
+      ctrl_n_shortcuts = true;
     };
   };
 

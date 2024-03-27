@@ -19,7 +19,6 @@
     fd
     ripgrep
     fzf
-    delta
     htop
     dnsutils
 

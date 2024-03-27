@@ -140,10 +140,12 @@ in
 
       function dark() {
         cat ~/.config/alacritty/dark_alacritty.toml > ~/.config/alacritty/alacritty.toml
+        echo "dark-mode" > ~/.config/delta/theme
       }
 
       function light() {
         cat ~/.config/alacritty/light_alacritty.toml > ~/.config/alacritty/alacritty.toml
+        echo "light-mode" > ~/.config/delta/theme
       }
 
       if [ "$color" = "dark" ]; then
