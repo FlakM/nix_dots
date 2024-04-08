@@ -239,7 +239,7 @@
 
   fonts.fontDir.enable = true;
   fonts.fonts = with pkgs; [
-    (nerdfonts.override { fonts = [ "RobotoMono" ]; })
+    (nerdfonts.override { fonts = [ "FiraCode" ]; })
   ];
 
 }

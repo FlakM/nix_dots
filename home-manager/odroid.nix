@@ -10,6 +10,8 @@
 
     ./modules/modivo.nix
     ./modules/atuin.nix
+    ./modules/kitty.nix
+    ./modules/starship.nix
   ];
 
   home = {

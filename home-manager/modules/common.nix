@@ -23,6 +23,9 @@
     dnsutils
 
     pkgs-unstable.yt-dlp
+
+
+    du-dust
   ] ++ lib.optionals stdenv.isDarwin [
     coreutils # provides `dd` with --status=progress
   ] ++ lib.optionals stdenv.isLinux [

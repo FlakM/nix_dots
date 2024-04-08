@@ -1,4 +1,4 @@
-{ config, pkgs, pkgsUnstable, libs, ... }:
+{ config, pkgs, ... }:
 {
 
   home.packages = with pkgs; [
@@ -10,7 +10,6 @@
     enable = true;
     autocd = true;
 
-
     enableAutosuggestions = true;
     enableCompletion = true;
     syntaxHighlighting.enable = true;
@@ -20,7 +19,6 @@
       plugins = [
         { name = "agkozak/zsh-z"; } # smart CD
         { name = "jeffreytse/zsh-vi-mode"; } # vi mode <3
-        { name = "romkatv/powerlevel10k"; tags = [ as:theme depth:1 ]; } # Installations with additional options. For the list of options, please refer to Zplug README.
       ];
     };
     shellAliases = {
@@ -30,8 +28,8 @@
       vi = "vi";
     };
 
+
     initExtra = ''
-      source ~/.p10k.zsh
       # home end
       bindkey  "^[[H"   beginning-of-line
       bindkey  "^[[F"   end-of-line

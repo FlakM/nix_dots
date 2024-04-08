@@ -2,6 +2,7 @@
 let
   path = "${config.home.homeDirectory}/.config/current-color_scheme";
   apply-theme-script = pkgs.writeScript "apply-theme" ''
+    set -e
     curr=$(cat ${path})
     
     function switch_theme() {
@@ -18,6 +19,7 @@ let
     if [ "$curr" = "prefer-light" ]; then
       switch_theme "prefer-dark"
       ~/.config/alacritty/switch.sh dark ${path}
+      ~/.config/kitty/switch.sh dark ${path}
       ${configure-gtk-dark}/bin/configure-gtk-dark
 
       for server in $(nvr --serverlist); do
@@ -26,6 +28,7 @@ let
     else
       switch_theme "prefer-light"
       ~/.config/alacritty/switch.sh light ${path}
+      ~/.config/kitty/switch.sh light ${path}
       ${configure-gtk-light}/bin/configure-gtk-light
 
       for server in $(nvr --serverlist); do
@@ -288,7 +291,7 @@ in
       * {
             border: none;
             border-radius: 0;
-            font-family: "Ubuntu Nerd Font";
+            font-family: "FiraCode Nerd Font";
             font-size: 13px;
             min-height: 0;
         }
@@ -300,7 +303,7 @@ in
 
         #window {
             font-weight: bold;
-            font-family: "Ubuntu";
+            font-family: "FiraCode";
         }
         /*
         #workspaces {
@@ -504,10 +507,13 @@ in
 
     windowrule = workspace 2, ^(.*Mozilla Firefox.*)$
     #exec-once=dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
-    exec-once=[workspace 1 silent] alacritty
+    exec-once=[workspace 1 silent] kitty
     exec-once=[workspace 2 silent] firefox
     exec-once=[workspace 3 silent] obsidian
     exec-once=[workspace 4 silent] spotify
+    exec-once=[workspace 6 silent] kdeconnect-app
+    exec-once=[workspace 4 silent] spotify
+
     exec-once=[workspace 9 silent] thunderbird
     exec-once=[workspace 10 silent] slack
     exec-once=waybar

@@ -19,6 +19,8 @@
 
     # for debugging
     python3
+
+    proximity-sort
   ];
 
   programs.neovim = {

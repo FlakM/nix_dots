@@ -29,6 +29,8 @@
     ./modules/neomutt.nix
 
     ./modules/atuin.nix
+    ./modules/kitty.nix
+    ./modules/starship.nix
   ];
 
   xsession.windowManager.i3.config.fonts.size = 18.0;

@@ -24,9 +24,9 @@ let
       TERM = "xterm-256color";
     };
     font = {
-      normal.family = "RobotoMono Nerd Font";
-      bold.family = "RobotoMono Nerd Font";
-      italic.family = "RobotoMono Nerd Font";
+      normal.family = "FiraCode Nerd Font";
+      bold.family = "FiraCode Nerd Font";
+      italic.family = "FiraCode Nerd Font";
       # Offset is the extra space around each character. offset.y can be thought of
       # as modifying the linespacing, and offset.x as modifying the letter spacing.
       offset = {

@@ -49,7 +49,7 @@
         navigate = true;
         "dark-mode" = {
           light = false;
-          syntax-theme = "Visual Studio Dark+";
+          syntax-theme = "TwoDark";
         };
         "light-mode" = {
           light = true;

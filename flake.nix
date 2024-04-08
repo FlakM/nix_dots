@@ -120,7 +120,7 @@
     {
       formatter.x86_64-linux = pkgs-default.nixpkgs-fmt;
       fonts.fonts = with nixpkgs; [
-        (nerdfonts.override { fonts = [ "Roboto Mono" ]; })
+        (nerdfonts.override { fonts = [ "FiraCode" ]; })
       ];
 
       # NixOS configuration entrypoint
