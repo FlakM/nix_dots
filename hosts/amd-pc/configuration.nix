@@ -138,7 +138,18 @@ in
     };
   };
 
-  virtualisation.docker.enable = true;
+  virtualisation.docker = {
+    enable = true;
+    daemon.settings = {
+      bip = "172.26.0.1/16";
+      default-address-pools = [
+        {
+          base = "172.26.0.1/16";
+          size = 24;
+        }
+      ];
+    };
+  };
 
   # enable the tailscale daemon; this will do a variety of tasks:
   # 1. create the TUN network device

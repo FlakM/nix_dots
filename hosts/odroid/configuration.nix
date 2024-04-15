@@ -15,6 +15,7 @@
     #../../shared/k3s.nix
     #../../shared/wireguard.nix
     ../../shared/netdata.nix
+    ./calibre.nix
 
 
   ];
