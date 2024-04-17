@@ -42,24 +42,30 @@
       export PKG_CONFIG_PATH="${pkgs.openssl.dev}/lib/pkgconfig"
       export PKG="/lib/pkgconfig"
 
-      changelog() {
+      function changelog() {
         latest_tag=$(git tag --sort=taggerdate | tail -1)
         new_version=$(echo $latest_tag | awk -F. '{$NF = $NF + 1;} 1' OFS=.)
         git-cliff "$latest_tag..HEAD" --tag "$new_version"
       }
 
+      export ATUIN_NOBIND="true"
+      eval "$(atuin init zsh)"
+      
+      bindkey '^r' atuin-search
+      
+      # bind to the up key, which depends on terminal mode
+      bindkey '^[[A' atuin-up-search
+      bindkey '^[OA' atuin-up-search
+
+      bindkey -M vicmd '^r' atuin-search-vicmd
+      bindkey -M vicmd '^[OA' atuin-up-search-vicmd
+
+      bindkey -M viins '^r' atuin-search-viins
+      bindkey -M viins '^[OA' atuin-up-search-viins
+
       source ~/.zshrc_local
-
-      # in normal mode
-      bindkey -M vicmd '^R' _atuin_search_widget
-      bindkey -M vicmd '^[OA' _atuin_up_search_widget
-      # in insert mode
-      bindkey -M viins '^R' _atuin_search_widget
     '';
 
-    initExtraBeforeCompInit = ''
-      fpath+=("${config.home.profileDirectory}"/share/zsh/site-functions "${config.home.profileDirectory}"/share/zsh/$ZSH_VERSION/functions "${config.home.profileDirectory}"/share/zsh/vendor-completions)
-    '';
     #       initExtraBeforeCompInit = ''
     #    fpath+=("${config.home.homeDirectory}"/share/zsh/site-functions "${config.home.homeDirectory}"/share/zsh/$ZSH_VERSION/functions "${config.home.homeDirectory}"/share/zsh/vendor-completions)
     #  '';

@@ -39,6 +39,8 @@
 
     extraConfig = "
       include current-theme.conf
+      # Allow neovim jump to last cursor position
+      map ctrl+shift+o no_op
     ";
 
     font = {

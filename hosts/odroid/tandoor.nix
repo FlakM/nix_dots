@@ -1,4 +1,4 @@
-{ pkgs, config, inputs, pkgs-unstable, ... }: {
+{ pkgs, lib, config, inputs, pkgs-unstable, ... }: {
 
   services.tandoor-recipes = {
     package = pkgs-unstable.tandoor-recipes;
@@ -14,10 +14,16 @@
       # and than ALTER USER tandoor WITH NOSUPERUSER ; to roll back
       POSTGRES_USER = "tandoor";
       POSTGRES_DB = "tandoor";
+      #MEDIA_URL = "https://tandoor.house.flakm.com/";
+      GUNICORN_MEDIA = "0";
     };
   };
 
   networking.firewall.allowedTCPPorts = [ 443 3030 ];
+
+  users.groups.tandoor-recipes.members = [ "nginx" ];
+  
+  services.nginx.user = "nginx";
 
   services.nginx = {
     enable = true;
@@ -25,15 +31,18 @@
       "tandoor.house.flakm.com" = {
         useACMEHost = "house.flakm.com";
         forceSSL = true;
-        locations."/" = {
-          proxyPass = "http://127.0.0.1:3030";
-          recommendedProxySettings = true;
-          #extraConfig = ''
-          #  proxy_set_header Host $http_host; # try $host instead if this doesn't work
-          #  proxy_set_header X-Forwarded-Proto $scheme;
-          #  proxy_pass http://127.0.0.1:3030; # replace port
-          #  proxy_redirect http://127.0.0.1:3030 https://recipes.domain.tld; # replace port and domain
-          #'';
+        locations = {
+          "/media/".alias = "/var/lib/tandoor-recipes/";
+          "/" = {
+            proxyPass = "http://127.0.0.1:3030";
+            recommendedProxySettings = true;
+            #extraConfig = ''
+            #  proxy_set_header Host $http_host; # try $host instead if this doesn't work
+            #  proxy_set_header X-Forwarded-Proto $scheme;
+            #  proxy_pass http://127.0.0.1:3030; # replace port
+            #  proxy_redirect http://127.0.0.1:3030 https://recipes.domain.tld; # replace port and domain
+            #'';
+          };
         };
       };
     };
