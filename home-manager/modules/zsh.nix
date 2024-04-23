@@ -6,6 +6,8 @@
     eza
   ];
 
+  programs.zoxide.enable = true;
+
   programs.zsh = {
     enable = true;
     autocd = true;
@@ -15,10 +17,10 @@
     syntaxHighlighting.enable = true;
 
     zplug = {
-      enable = true;
+      enable = false;
       plugins = [
         { name = "agkozak/zsh-z"; } # smart CD
-        { name = "jeffreytse/zsh-vi-mode"; } # vi mode <3
+        #{ name = "jeffreytse/zsh-vi-mode"; } # vi mode <3
       ];
     };
     shellAliases = {
@@ -50,21 +52,25 @@
 
       export ATUIN_NOBIND="true"
       eval "$(atuin init zsh)"
-      
-      bindkey '^r' atuin-search
-      
-      # bind to the up key, which depends on terminal mode
-      bindkey '^[[A' atuin-up-search
-      bindkey '^[OA' atuin-up-search
 
-      bindkey -M vicmd '^r' atuin-search-vicmd
-      bindkey -M vicmd '^[OA' atuin-up-search-vicmd
+      bindkey -M viins -r '^R'
+      bindkey -M viins '^R' atuin-search-viins
 
-      bindkey -M viins '^r' atuin-search-viins
+      bindkey -M vicmd -r '^R'
+      bindkey -M vicmd '^R' atuin-search-vicmd
+
+      bindkey '^R' atuin-search-viins
+
+      bindkey '^[[A' atuin-up-search-viins
+      bindkey '^[OA' atuin-up-search-viins
+      bindkey -M viins '^[[A' atuin-up-search-viins
       bindkey -M viins '^[OA' atuin-up-search-viins
+      bindkey -M vicmd '^[[A' atuin-up-search-viins
+      bindkey -M vicmd '^[OA' atuin-up-search-viins
 
       source ~/.zshrc_local
     '';
+
 
     #       initExtraBeforeCompInit = ''
     #    fpath+=("${config.home.homeDirectory}"/share/zsh/site-functions "${config.home.homeDirectory}"/share/zsh/$ZSH_VERSION/functions "${config.home.homeDirectory}"/share/zsh/vendor-completions)

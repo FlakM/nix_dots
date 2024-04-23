@@ -22,7 +22,7 @@
   networking.firewall.allowedTCPPorts = [ 443 3030 ];
 
   users.groups.tandoor-recipes.members = [ "nginx" ];
-  
+
   services.nginx.user = "nginx";
 
   services.nginx = {

@@ -22,6 +22,14 @@
         ];
         enable_dnssec = true;
         ratelimit = 100;
+
+        rewrites = [
+          {
+            domain = "*.house.flakm.com";
+            answer = "192.168.0.102";
+          }
+        ];
+
       };
 
       users = [

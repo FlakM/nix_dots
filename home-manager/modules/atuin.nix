@@ -18,7 +18,7 @@
 
       # use ctrl instead of alt as the shortcut modifier key for numerical UI shortcuts
       ctrl_n_shortcuts = true;
-      keymap_mode = "auto";
+      keymap_mode = "vim-insert";
     };
   };
 
