@@ -59,7 +59,7 @@
       interactive.diffFilter = "${pkgs-unstable.delta}/bin/delta --color-only";
       merge.conflictStyle = "diff3";
       diff.colorMoved = "default";
-
+      merge.conflictstyle = "diff3";
     };
 
 

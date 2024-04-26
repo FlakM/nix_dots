@@ -49,24 +49,38 @@
         new_version=$(echo $latest_tag | awk -F. '{$NF = $NF + 1;} 1' OFS=.)
         git-cliff "$latest_tag..HEAD" --tag "$new_version"
       }
+      
 
-      export ATUIN_NOBIND="true"
-      eval "$(atuin init zsh)"
+      function my_init() {
+        export ATUIN_NOBIND="true"
+        eval "$(atuin init zsh)"
 
-      bindkey -M viins -r '^R'
-      bindkey -M viins '^R' atuin-search-viins
+        bindkey -M viins -r '^R'
+        bindkey -M viins '^R' atuin-search-viins
 
-      bindkey -M vicmd -r '^R'
-      bindkey -M vicmd '^R' atuin-search-vicmd
+        bindkey -M vicmd -r '^R'
+        bindkey -M vicmd '^R' atuin-search-vicmd
 
-      bindkey '^R' atuin-search-viins
+        bindkey '^R' atuin-search-viins
 
-      bindkey '^[[A' atuin-up-search-viins
-      bindkey '^[OA' atuin-up-search-viins
-      bindkey -M viins '^[[A' atuin-up-search-viins
-      bindkey -M viins '^[OA' atuin-up-search-viins
-      bindkey -M vicmd '^[[A' atuin-up-search-viins
-      bindkey -M vicmd '^[OA' atuin-up-search-viins
+        bindkey '^[[A' atuin-up-search-viins
+        bindkey '^[OA' atuin-up-search-viins
+        bindkey -M viins '^[[A' atuin-up-search-viins
+        bindkey -M viins '^[OA' atuin-up-search-viins
+        bindkey -M vicmd '^[[A' atuin-up-search-viins
+        bindkey -M vicmd '^[OA' atuin-up-search-viins
+      }
+
+
+
+      function zvm_config() {
+        ZVM_LAZY_KEYBINDINGS=false
+      }
+      zvm_after_init_commands+=(my_init)
+
+      source ${pkgs.zsh-vi-mode}/share/zsh-vi-mode/zsh-vi-mode.plugin.zsh
+      
+
 
       source ~/.zshrc_local
     '';

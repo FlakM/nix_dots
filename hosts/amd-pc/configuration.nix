@@ -13,6 +13,7 @@ in
     ../../shared/k3s.nix
     ./zfs_replication.nix
     ./postgres.nix
+    ./grafana.nix
   ];
 
   systemd.services.mount-atuin = {
