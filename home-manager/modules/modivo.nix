@@ -10,7 +10,7 @@
     redis
 
     # database schema comparing tool
-    migra
+    #migra
 
   ];
 

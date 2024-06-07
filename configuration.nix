@@ -56,9 +56,9 @@
 
     gnupg = {
       dirmngr.enable = true;
+      package = pkgs.pinentry-tty;
       agent = {
         enable = true;
-        pinentryFlavor = "tty";
         enableSSHSupport = true;
       };
     };
@@ -95,6 +95,7 @@
   environment.systemPackages = builtins.attrValues {
     inherit (pkgs)
       jq
+      yq-go
       lsof
       cachix# binary cache cli tool
       nvd

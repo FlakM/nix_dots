@@ -110,7 +110,7 @@ in
 
   services.xserver = {
     enable = false;
-    xkbOptions = "lv3:lalt_switch caps:swapescape";
+    xkb.options = "lv3:lalt_switch caps:swapescape";
   };
 
   boot.initrd.kernelModules = [ "amdgpu" ];
@@ -120,7 +120,7 @@ in
 
   # Configure keymap in X11
   #services.xserver.layout = "pl";
-  # services.xserver.xkbOptions = "eurosign:e";
+  # services.xserver.xkb.options = "eurosign:e";
   i18n.defaultLocale = "en_US.UTF-8";
 
 
@@ -314,7 +314,6 @@ in
       dirmngr.enable = true;
       agent = {
         enable = true;
-        pinentryFlavor = "tty";
         enableSSHSupport = true;
       };
     };

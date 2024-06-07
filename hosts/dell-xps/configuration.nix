@@ -103,7 +103,7 @@ in
   #  enable = true;
   #  # left alt should switch to 3rd level
   #  # https://nixos.wiki/wiki/Keyboard_Layout_Customization
-  #  xkbOptions = "lv3:lalt_switch";
+  #  xkb.options = "lv3:lalt_switch";
   # #   windowManager.i3.enable = true;
   #  
   #  desktopManager.plasma5.enable = true;
@@ -116,7 +116,7 @@ in
     displayManager.sddm.enable = false;
     #displayManager.sessionPackages = [ inputs.hyprland.hyprland ];
     libinput.enable = true;
-    xkbOptions = "lv3:lalt_switch caps:swapescape";
+    xkb.options = "lv3:lalt_switch caps:swapescape";
   };
 
 
@@ -126,7 +126,7 @@ in
 
   # Configure keymap in X11
   #services.xserver.layout = "pl";
-  # services.xserver.xkbOptions = "eurosign:e";
+  # services.xserver.xkb.options = "eurosign:e";
   i18n.defaultLocale = "en_US.UTF-8";
 
 
@@ -314,7 +314,6 @@ in
       dirmngr.enable = true;
       agent = {
         enable = true;
-        pinentryFlavor = "tty";
         enableSSHSupport = true;
       };
     };

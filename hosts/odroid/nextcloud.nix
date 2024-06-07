@@ -2,7 +2,7 @@
 
   services.nextcloud = {
     enable = true;
-    package = pkgs.nextcloud28;
+    package = pkgs.nextcloud29;
     hostName = "nextcloud.house.flakm.com";
     config.adminpassFile = "/etc/nextcloud-admin-pass";
 
@@ -12,7 +12,7 @@
       news = pkgs.fetchNextcloudApp {
         sha256 = "sha256-BbGzrOBDshZfiDhKUMiTXGnI7767hpCGsujMbPqmJyg=";
         url = "https://github.com/nextcloud/news/releases/download/25.0.0-alpha5/news.tar.gz";
-        license = "agpl3";
+        license = "gpl3";
       };
     };
 
@@ -25,7 +25,7 @@
       #post_max_size = "1G";
     };
 
-    extraOptions = {
+    settings = {
       mail_smtpmode = "sendmail";
       mail_sendmailmode = "pipe";
       enabledPreviewProviders = [
