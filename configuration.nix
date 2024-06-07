@@ -97,6 +97,7 @@
       jq
       lsof
       cachix# binary cache cli tool
+      nvd
       ;
   };
 
