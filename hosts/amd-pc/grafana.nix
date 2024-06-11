@@ -66,6 +66,14 @@
           # interval = "1s";
         }];
       }
+      {
+        job_name = "order-killer";
+        scrape_interval = "1s";
+        static_configs = [{
+          targets = [ "127.0.0.1:8081" ];
+          # interval = "1s";
+        }];
+      }
     ];
   };
 

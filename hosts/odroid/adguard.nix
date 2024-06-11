@@ -12,6 +12,23 @@
       #block_auth_min = 10;
       http.address = "0.0.0.0:3000";
 
+      filtering = {
+        rewrites = [
+          {
+            domain = "jellyfin.house.flakm.com";
+            answer = "192.168.0.102";
+          }
+          {
+            domain = "house.flakm.com";
+            answer = "192.168.0.102";
+          }
+          {
+            domain = "*.house.flakm.com";
+            answer = "192.168.0.102";
+          }
+        ];
+      };
+
       dns = {
         bind_hosts = [ "0.0.0.0" ];
         bootstrap_dns = [ "1.1.1.1" "8.8.8.8" ];
@@ -22,13 +39,8 @@
         ];
         enable_dnssec = true;
         ratelimit = 100;
+        mutableSettings = true;
 
-        rewrites = [
-          {
-            domain = "*.house.flakm.com";
-            answer = "192.168.0.102";
-          }
-        ];
 
       };
 

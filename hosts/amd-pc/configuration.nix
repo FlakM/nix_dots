@@ -15,6 +15,8 @@ in
     ./postgres.nix
     ./grafana.nix
   ];
+  
+  nix.package = pkgs-unstable.nixVersions.nix_2_19;
 
   systemd.services.mount-atuin = {
     description = "Mount Atuin ZFS Volume";
@@ -275,7 +277,7 @@ in
     #fenix.rust-analyzer
 
 
-    insomnia
+    nextcloud-client
 
     mysql
 
@@ -315,6 +317,7 @@ in
       agent = {
         enable = true;
         enableSSHSupport = true;
+        pinentryPackage = pkgs.pinentry-curses;
       };
     };
     kdeconnect.enable = true;

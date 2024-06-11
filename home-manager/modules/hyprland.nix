@@ -156,31 +156,40 @@ in
     executable = true;
   };
 
-  programs.swaylock = {
-    enable = true;
-    settings = {
-      color = "000000";
-      font-size = 24;
-      indicator-idle-visible = false;
-      indicator-radius = 100;
-      line-color = "ffffff";
-      show-failed-attempts = true;
-    };
+  programs.hyprlock.enable = true;
+  services.hypridle.enable = true;
+
+  # xdg config file for hypridle
+  xdg.configFile."hypr/hypridle.conf" = {
+    source = ./hypridle.conf;
   };
 
 
-  services.swayidle = {
-    enable = true;
-    events = [
-      { event = "lock"; command = "${pkgs.swaylock}/bin/swaylock"; }
-      { event = "before-sleep"; command = "${pkgs.swaylock}/bin/swaylock"; }
-      { event = "after-resume"; command = "${pkgs.sway}/bin/swaymsg \"output * toggle\""; }
-    ];
-    timeouts = [
-      { timeout = 600; command = "${pkgs.swaylock}/bin/swaylock"; }
-      { timeout = 1200; command = "${pkgs.sway}/bin/swaymsg \"output * toggle\""; }
-    ];
-  };
+  #programs.swaylock = {
+  #  enable = true;
+  #  settings = {
+  #    color = "000000";
+  #    font-size = 24;
+  #    indicator-idle-visible = false;
+  #    indicator-radius = 100;
+  #    line-color = "ffffff";
+  #    show-failed-attempts = true;
+  #  };
+  #};
+
+
+  #services.swayidle = {
+  #  enable = true;
+  #  events = [
+  #    { event = "lock"; command = "${pkgs.swaylock}/bin/swaylock"; }
+  #    { event = "before-sleep"; command = "${pkgs.swaylock}/bin/swaylock"; }
+  #    { event = "after-resume"; command = "${pkgs.sway}/bin/swaymsg \"output * toggle\""; }
+  #  ];
+  #  timeouts = [
+  #    { timeout = 600; command = "${pkgs.swaylock}/bin/swaylock"; }
+  #    { timeout = 1200; command = "${pkgs.sway}/bin/swaymsg \"output * toggle\""; }
+  #  ];
+  #};
 
   # status bar
   programs.waybar = {

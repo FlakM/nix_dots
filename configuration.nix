@@ -56,7 +56,6 @@
 
     gnupg = {
       dirmngr.enable = true;
-      package = pkgs.pinentry-tty;
       agent = {
         enable = true;
         enableSSHSupport = true;
