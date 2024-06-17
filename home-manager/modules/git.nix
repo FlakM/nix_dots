@@ -72,4 +72,12 @@
       "flake-unhide" = "!mv .flake_dir/flake* . || true && git add --intent-to-add flake.* || true && git update-index --assume-unchanged flake* || true";
     };
   };
+
+
+
+  # configure ssh to ForwardAgent
+  #Host amd-pc
+  #RemoteForward <remote socket> <local socket>
+
+
 }

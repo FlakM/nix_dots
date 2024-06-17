@@ -293,6 +293,12 @@ in
   # Enable the OpenSSH daemon.
   # services.openssh.enable = true;
 
+  services.openssh = {
+    settings = {
+      StreamLocalBindUnlink = "yes";
+    };
+  };
+
   # Open ports in the firewall.
   networking.firewall.allowedTCPPorts = [ 8096 ];
   # networking.firewall.allowedUDPPorts = [ ... ];
@@ -317,9 +323,8 @@ in
     gnupg = {
       dirmngr.enable = true;
       agent = {
-        enable = true;
         enableSSHSupport = true;
-        pinentryPackage = pkgs.pinentry-curses;
+        pinentryPackage = pkgs.pinentry-qt;
       };
     };
     kdeconnect.enable = true;
