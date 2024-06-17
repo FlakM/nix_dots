@@ -12,8 +12,6 @@
     ./modules/gpg_home.nix
     ./modules/brother.nix
 
-    ./modules/alacritty.nix
-
     ./modules/modivo.nix
     ./modules/yubikey.nix
 

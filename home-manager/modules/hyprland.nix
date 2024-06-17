@@ -18,7 +18,6 @@ let
 
     if [ "$curr" = "prefer-light" ]; then
       switch_theme "prefer-dark"
-      ~/.config/alacritty/switch.sh dark ${path}
       ~/.config/kitty/switch.sh dark ${path}
       ${configure-gtk-dark}/bin/configure-gtk-dark
 
@@ -27,7 +26,6 @@ let
       done
     else
       switch_theme "prefer-light"
-      ~/.config/alacritty/switch.sh light ${path}
       ~/.config/kitty/switch.sh light ${path}
       ${configure-gtk-light}/bin/configure-gtk-light
 

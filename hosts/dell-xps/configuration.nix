@@ -6,7 +6,7 @@ in
 
 {
   imports = [
-    inputs.nixos-hardware.nixosModules.dell-xps-15-9560-intel
+    inputs.nixos-hardware.nixosModules.dell-xps-15-9570-intel
     ../../shared/gpg.nix
   ];
 
@@ -40,7 +40,8 @@ in
   #boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
   #boot.kernel.sysctl."net.ipv6.conf.all.forwarding" = 1;
   programs.hyprland = {
-    enable = false;
+    enable = true;
+    systemd.setPath.enable = true;
   };
 
   # networking.hostName = "nixos"; # Define your hostname.
@@ -308,10 +309,13 @@ in
       agent = {
         enable = true;
         enableSSHSupport = true;
+        enableExtraSocket = true;
       };
     };
     kdeconnect.enable = true;
   };
+
+  services.yubikey-agent.enable = true;
 
 
 
