@@ -67,10 +67,18 @@
         }];
       }
       {
+        # add labels job order-killer-job
+        # add labels service order-killer
         job_name = "order-killer";
         scrape_interval = "1s";
+        metrics_path = "/_system/metrics";
         static_configs = [{
           targets = [ "127.0.0.1:8081" ];
+          labels = {
+            job = "order-killer-app";
+            service = "order-killer";
+            pod = "order";
+          };
           # interval = "1s";
         }];
       }

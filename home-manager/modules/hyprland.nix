@@ -156,40 +156,66 @@ in
     executable = true;
   };
 
-  programs.hyprlock.enable = true;
-  services.hypridle.enable = true;
+  programs.hyprlock = {
+    enable = true;
+    settings = {
+      general = {
+        disable_loading_bar = true;
+        grace = 300;
+        hide_cursor = true;
+        no_fade_in = false;
+      };
 
-  # xdg config file for hypridle
-  xdg.configFile."hypr/hypridle.conf" = {
-    source = ./hypridle.conf;
+      background = [
+        {
+          path = "screenshot";
+          blur_passes = 3;
+          blur_size = 8;
+        }
+      ];
+
+      input-field = [
+        {
+          size = "300, 50";
+          position = "0, -80";
+          monitor = "";
+          dots_center = true;
+          fade_on_empty = false;
+          font_color = "rgb(202, 211, 245)";
+          inner_color = "rgb(91, 96, 120)";
+          outer_color = "rgb(24, 25, 38)";
+          outline_thickness = 5;
+          shadow_passes = 2;
+        }
+      ];
+    };
+  };
+
+  services.hypridle = {
+    enable = true;
+    settings = {
+      general = {
+        after_sleep_cmd = "hyprctl dispatch dpms on";
+        ignore_dbus_inhibit = false;
+        lock_cmd = "hyprlock";
+      };
+
+      listener = [
+        {
+          timeout = 900;
+          on-timeout = "hyprlock";
+        }
+        {
+          timeout = 1200;
+          on-timeout = "hyprctl dispatch dpms off";
+          on-resume = "hyprctl dispatch dpms on";
+        }
+      ];
+    };
   };
 
 
-  #programs.swaylock = {
-  #  enable = true;
-  #  settings = {
-  #    color = "000000";
-  #    font-size = 24;
-  #    indicator-idle-visible = false;
-  #    indicator-radius = 100;
-  #    line-color = "ffffff";
-  #    show-failed-attempts = true;
-  #  };
-  #};
 
-
-  #services.swayidle = {
-  #  enable = true;
-  #  events = [
-  #    { event = "lock"; command = "${pkgs.swaylock}/bin/swaylock"; }
-  #    { event = "before-sleep"; command = "${pkgs.swaylock}/bin/swaylock"; }
-  #    { event = "after-resume"; command = "${pkgs.sway}/bin/swaymsg \"output * toggle\""; }
-  #  ];
-  #  timeouts = [
-  #    { timeout = 600; command = "${pkgs.swaylock}/bin/swaylock"; }
-  #    { timeout = 1200; command = "${pkgs.sway}/bin/swaymsg \"output * toggle\""; }
-  #  ];
-  #};
 
   # status bar
   programs.waybar = {
@@ -197,7 +223,9 @@ in
     #package = pkgs.unstable.waybar;
 
     enable = true;
-    systemd.enable = false;
+    systemd = {
+      enable = false;
+    };
     settings.mainBar = {
       layer = "top"; # Waybar at top layer
       position = "top"; # Waybar at the bottom of your screen
@@ -402,9 +430,12 @@ in
 
   wayland.windowManager.hyprland = {
     enable = true;
-    systemd.enable = true;
+    systemd = {
+      enable = true;
+      variables = ["--all"];
+      enableXdgAutostart = true;
+    };
   };
-
 
   wayland.windowManager.hyprland.extraConfig = ''
     # See https://wiki.hyprland.org/Configuring/Monitors/
@@ -573,7 +604,7 @@ in
     # print screen selection range
     bind=SHIFT,Print,exec,grimblast --scale 2 --wait 2 copy area
 
-    #bind=SUPER SHIFT, L, exec, swaylock
+    bind=SUPER SHIFT, L, exec, hyprlock
 
 
     # volume button that allows press and hold, volume limited to 150%

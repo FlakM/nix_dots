@@ -6,7 +6,7 @@
 
   home.packages = with pkgs; [
     timewarrior
-    pkgs-unstable.obsidian
+    pkgs.obsidian
   ];
 
   programs.dircolors = {

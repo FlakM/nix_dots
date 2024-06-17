@@ -109,16 +109,18 @@ in
   #  desktopManager.plasma5.enable = true;
   #  displayManager.sddm.enable = true;
   #};
-  services.xserver = {
-    enable = false; # might need it for xwayland
-    displayManager.gdm.enable = false;
-    #displayManager.gdm.wayland = true;
-    displayManager.sddm.enable = false;
-    #displayManager.sessionPackages = [ inputs.hyprland.hyprland ];
-    libinput.enable = true;
-    xkb.options = "lv3:lalt_switch caps:swapescape";
+
+  services.displayManager.sddm = {
+    enable = true;
+    wayland.enable = true;
   };
 
+  services.libinput.enable = true;
+
+  services.xserver = {
+    enable = true; # might need it for xwayland
+    xkb.options = "lv3:lalt_switch caps:swapescape";
+  };
 
   #environment.sessionVariables.NIXOS_OZONE_WL = "1"; # This variable fixes electron apps in wayland
 
@@ -149,15 +151,6 @@ in
 
   virtualisation.docker = {
     enable = true;
-    deamonSettings = {
-      bip = "172.26.0.1/16";
-      default-address-pools = [
-        {
-          base = "172.26.0.1/16";
-          size = 24;
-        }
-      ];
-    };
   };
 
   # enable the tailscale daemon; this will do a variety of tasks:
@@ -327,15 +320,6 @@ in
   networking.firewall = {
     allowedUDPPorts = [ 41641 ]; # tailscale
   };
-
-
-  # This value determines the NixOS release from which the default
-  # settings for stateful data, like file locations and database versions
-  # on your system were taken. It‘s perfectly fine and recommended to leave
-  # this value at the release version of the first install of this system.
-  # Before changing this value read the documentation for this option
-  # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "23.11"; # Did you read the comment?
 
 
   fonts.fontDir.enable = true;

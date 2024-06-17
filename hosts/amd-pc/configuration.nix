@@ -15,8 +15,8 @@ in
     ./postgres.nix
     ./grafana.nix
   ];
-  
-  nix.package = pkgs-unstable.nixVersions.nix_2_19;
+
+  nix.package = pkgs.nixVersions.latest;
 
   systemd.services.mount-atuin = {
     description = "Mount Atuin ZFS Volume";
@@ -52,7 +52,8 @@ in
   #boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
   #boot.kernel.sysctl."net.ipv6.conf.all.forwarding" = 1;
   programs.hyprland = {
-    enable = false;
+    enable = true;
+    systemd.setPath.enable = true;
   };
 
   services.redis.servers."".enable = false;
@@ -81,14 +82,6 @@ in
     portal = {
       enable = true;
       xdgOpenUsePortal = true;
-      extraPortals = with pkgs; [
-        xdg-desktop-portal-gtk
-        xdg-desktop-portal-hyprland
-      ];
-      configPackages = with pkgs; [
-        xdg-desktop-portal-gtk
-        xdg-desktop-portal-hyprland
-      ];
     };
   };
 
@@ -110,10 +103,19 @@ in
     jack.enable = true;
   };
 
+  services.libinput.enable = true;
+
+  services.displayManager.sddm = {
+    enable = true;
+    wayland.enable = true;
+  };
+
+
   services.xserver = {
-    enable = false;
+    enable = true; # might need it for xwayland
     xkb.options = "lv3:lalt_switch caps:swapescape";
   };
+
 
   boot.initrd.kernelModules = [ "amdgpu" ];
   boot.kernelParams = [ "amdgpu.sg_display=0" ];
@@ -340,7 +342,7 @@ in
   # this value at the release version of the first install of this system.
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "23.11"; # Did you read the comment?
+  system.stateVersion = "23.12"; # Did you read the comment?
 
 
 
