@@ -430,7 +430,7 @@ in
     enable = true;
     systemd = {
       enable = true;
-      variables = ["--all"];
+      variables = [ "--all" ];
       enableXdgAutostart = true;
     };
   };

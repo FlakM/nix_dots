@@ -36,8 +36,6 @@
     monitor = ",highres,auto,2.0";
   };
 
-  programs.alacritty.settings.font.size = 11;
-
   xdg.enable = true;
 
   gtk = {
@@ -66,10 +64,26 @@
       size = 24;
     };
     stateVersion = "23.05";
-
-
-
   };
+
+  # ~/.gnupg/gpg-agent.conf
+  xdg.configFile."/.gnupg/gpg-agent.conf".text = ''
+    enable-ssh-support
+    pinentry-program ${pkgs.pinentry-qt}/bin/pinentry
+    extra-socket /run/user/1000/gnupg/S.gpg-agent.extra
+  '';
+
+  # ~/.ssh/config
+  xdg.configFile."/.ssh/config".text = ''
+    Host github.com
+        IdentitiesOnly yes
+        IdentityFile ~/.ssh/id_rsa_yubikey.pub
+
+    Host amd-pc
+        ForwardAgent yes
+        RemoteForward /run/user/1000/gnupg/S.gpg-agent /run/user/1000/gnupg/S.gpg-agent.extra
+        User flakm
+  '';
 
 
 }
