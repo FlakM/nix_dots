@@ -1,0 +1,13 @@
+# This example uses YAML anchors which allows reuse of multiple keys 
+# without having to repeat yourself.
+# Also see https://github.com/Mic92/dotfiles/blob/master/nixos/.sops.yaml
+# for a more complex example.
+keys:
+  - &admin_flakm DDB89AF3335111A17243467C7288322161C6A632
+  - &server_amd_pc 1ef3cbd4366ee09c589ea3dbde75d7b6fa9c8acf
+creation_rules:
+  - path_regex: secrets/[^/]+\.(yaml|json|env|ini)$
+    key_groups:
+    - pgp:
+      - *admin_flakm
+      - *server_amd_pc

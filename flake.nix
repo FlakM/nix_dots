@@ -17,6 +17,8 @@
 
     nur.url = "github:nix-community/NUR";
 
+    sops-nix.url = "github:Mic92/sops-nix";
+
   };
   outputs =
     { self
@@ -27,6 +29,7 @@
     , nixos-hardware
     , fenix
     , nur
+    , sops-nix
     , ...
     }@inputs:
     let
@@ -100,6 +103,8 @@
                 fenix.overlays.default
               ];
             }
+
+            sops-nix.nixosModules.sops
           ];
         };
 
