@@ -11,6 +11,7 @@ in
     ../../shared/wireguard.nix
     ../../shared/gpg.nix
     ../../shared/k3s.nix
+    ../../shared/syncthing.nix
     ./zfs_replication.nix
     ./postgres.nix
     ./grafana.nix

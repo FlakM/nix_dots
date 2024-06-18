@@ -121,3 +121,10 @@ gpg --output public.pgp --armor --export maciej.jan.flak@gmail.com
 
 ```
 
+#### Manage secrets
+
+Insert yubikey and run:
+
+```bash
+nix-shell -p sops --run "sops secrets/secrets.yaml"
+```
