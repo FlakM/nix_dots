@@ -38,6 +38,8 @@
     };
   };
 
+  users.groups.jellyfin.members = [ "deluge" ];
+
   environment.systemPackages = with pkgs; [
     ffmpeg
   ];

@@ -18,8 +18,10 @@
       }
 
       if [ "$color" = "dark" ]; then
+        echo "dark-mode" > ~/.config/delta/theme
         dark
       elif [ "$color" = "light" ]; then
+        echo "light-mode" > ~/.config/delta/theme
         light
       else
         if grep -q "prefer-dark" $path; then

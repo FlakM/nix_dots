@@ -19,6 +19,8 @@
     heaptrack
     gdb
     lldb
+
+    rustfilt
   ] ++ lib.optionals stdenv.isDarwin [
     libiconv
   ];

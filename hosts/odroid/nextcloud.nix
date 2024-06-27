@@ -14,6 +14,7 @@
         url = "https://github.com/nextcloud/news/releases/download/25.0.0-alpha5/news.tar.gz";
         license = "gpl3";
       };
+
     };
 
 

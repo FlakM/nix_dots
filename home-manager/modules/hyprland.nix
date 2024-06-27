@@ -77,6 +77,35 @@ let
 in
 {
 
+
+  xdg = {
+    portal = {
+      enable = true;
+
+
+      config = {
+        common = {
+          default = [
+            "gtk"
+          ];
+        };
+        hyprland = {
+          default = [
+            "gtk"
+            "hyprland"
+          ];
+        };
+      };
+
+      xdgOpenUsePortal = true;
+
+      extraPortals = with pkgs; [
+        xdg-desktop-portal-hyprland
+        xdg-desktop-portal-gtk
+      ];
+    };
+  };
+
   # define session variables
   home.sessionVariables = {
     # https://wiki.hyprland.org/Configuring/Environment-variables/
@@ -117,7 +146,8 @@ in
 
     configure-gtk-dark
     configure-gtk-light
-    pkgs-unstable.wl-clipboard
+    wl-clipboard-rs
+
     #unstable.xdg-utils
     handlr
     cliphist # clipboard history

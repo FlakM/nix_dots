@@ -1,6 +1,6 @@
 # configuration in this file only applies to amd-pc host.
 
-{ pkgs, inputs, lib, pkgs-unstable, ... }:
+{ pkgs, inputs, lib, pkgs-unstable, pkgs-master, config, ... }:
 
 let
   fenix = inputs.fenix.packages.${pkgs.system}.stable;
@@ -15,6 +15,7 @@ in
     ./zfs_replication.nix
     ./postgres.nix
     ./grafana.nix
+    ./performance.nix
   ];
 
   nix.package = pkgs.nixVersions.latest;
@@ -79,12 +80,6 @@ in
 
   programs.dconf.enable = true;
 
-  xdg = {
-    portal = {
-      enable = true;
-      xdgOpenUsePortal = true;
-    };
-  };
 
   security.rtkit.enable = true;
 
@@ -121,7 +116,19 @@ in
   boot.initrd.kernelModules = [ "amdgpu" ];
   boot.kernelParams = [ "amdgpu.sg_display=0" ];
 
-  boot.kernelModules = [ "kvm-amd" "tun" "virtio" ];
+  boot.kernelModules = [ "kvm-amd" ];
+
+  # configured according too:
+  # https://github.com/iovisor/bcc/blob/6d3d8a2aca2772dbd91644462852206387e296f2/INSTALL.md?plain=1#L29
+  boot.kernelPatches = [{
+    name = "bcc-configuration";
+    patch = null;
+    extraConfig = ''
+      IKHEADERS y
+    '';
+  }];
+
+
 
   # Configure keymap in X11
   #services.xserver.layout = "pl";
@@ -190,10 +197,15 @@ in
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
+    nix-index
+
+    okular
+
     qemu_full
     virt-manager
     quickemu
     glib
+    linuxHeaders
 
     xfce.xfce4-pulseaudio-plugin
 
@@ -254,7 +266,6 @@ in
 
     wgnord
     qbittorrent
-    bpftrace
 
     glibc
 
@@ -281,10 +292,14 @@ in
 
 
     nextcloud-client
+    libation
 
     mysql
 
   ];
+
+
+  boot.extraModulePackages = [ pkgs.bcc ];
 
   programs.wireshark = {
     enable = true;
@@ -373,4 +388,5 @@ in
     enable = true;
     package = lib.mkForce pkgs.gnome3.gvfs;
   };
+
 }

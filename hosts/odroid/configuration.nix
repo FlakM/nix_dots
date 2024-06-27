@@ -16,9 +16,16 @@
     #../../shared/wireguard.nix
     ../../shared/netdata.nix
     ./calibre.nix
+    ./audiobookshelf.nix
 
 
   ];
+
+
+
+  users.users.flakm = {
+    extraGroups = [ "deluge" "nextcloud" ];
+  };
 
   systemd.services.mount-atuin = {
     description = "Mount Atuin ZFS Volume";
@@ -47,6 +54,7 @@
     wgnord
     wireguard-tools
     transmission
+    unrar
   ];
 
   # Let's open the UDP port with which the network is tunneled through

@@ -4,7 +4,7 @@
   inputs = {
     fenix = {
       url = "github:nix-community/fenix";
-      inputs.nixpkgs.follows = "nixpkgs-unstable";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
     nixpkgs-unstable.url = "nixpkgs/nixos-unstable";
@@ -124,6 +124,8 @@
     in
     {
       formatter.x86_64-linux = pkgs-default.nixpkgs-fmt;
+      packages.x86_64-linux.default = fenix.packages.x86_64-linux.beta.toolchain;
+
       fonts.fonts = with nixpkgs; [
         (nerdfonts.override { fonts = [ "FiraCode" ]; })
       ];
