@@ -95,12 +95,12 @@ end)
 
 -- Toggle runnables
 map("n", "<leader>dr", function()
-    require('rust-tools').runnables.runnables()
+    vim.cmd.RustLsp('debug')
 end)
 
 -- Toggle debuggables
 map("n", "<leader>dd", function()
-    require('rust-tools').debuggables.debuggables()
+    vim.cmd.RustLsp('debuggables')
 end)
 
 -- Toggle breakpoint

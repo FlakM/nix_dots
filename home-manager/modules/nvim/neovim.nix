@@ -83,7 +83,7 @@
 
       vim-gitgutter
 
-      rust-tools-nvim
+      rustaceanvim
 
       one-nvim
 
