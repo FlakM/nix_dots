@@ -146,7 +146,7 @@ in
 
     configure-gtk-dark
     configure-gtk-light
-    wl-clipboard-rs
+    wl-clipboard
 
     #unstable.xdg-utils
     handlr

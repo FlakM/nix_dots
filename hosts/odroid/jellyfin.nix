@@ -39,6 +39,7 @@
   };
 
   users.groups.jellyfin.members = [ "deluge" ];
+  users.groups.deluge.members = [ "jellyfin" ];
 
   environment.systemPackages = with pkgs; [
     ffmpeg
