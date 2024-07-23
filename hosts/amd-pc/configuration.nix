@@ -242,7 +242,7 @@ in
     libreoffice
 
 
-    pkgs-unstable.bitwarden
+    bitwarden
     bitwarden-cli
 
     # spelling
