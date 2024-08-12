@@ -17,8 +17,7 @@
     ../../shared/netdata.nix
     ./calibre.nix
     ./audiobookshelf.nix
-
-
+    #../../shared/oom_killer.nix
   ];
 
 

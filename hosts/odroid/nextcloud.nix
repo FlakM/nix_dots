@@ -8,7 +8,7 @@
 
     extraApps = {
 
-      inherit (config.services.nextcloud.package.packages.apps) contacts calendar tasks previewgenerator notes memories cookbook mail;
+      inherit (config.services.nextcloud.package.packages.apps) contacts calendar tasks previewgenerator notes memories cookbook mail bookmarks;
       news = pkgs.fetchNextcloudApp {
         sha256 = "sha256-BbGzrOBDshZfiDhKUMiTXGnI7767hpCGsujMbPqmJyg=";
         url = "https://github.com/nextcloud/news/releases/download/25.0.0-alpha5/news.tar.gz";

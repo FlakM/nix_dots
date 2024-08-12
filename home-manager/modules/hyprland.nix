@@ -184,17 +184,17 @@ in
     executable = true;
   };
 
-  programs.swaylock = {                                                                                                                                                                                                                                                       
-    enable = true;                                                                                                                                                                                                                                                            
-    settings = {                                                                                                                                                                                                                                                              
-      color = "000000";                                                                                                                                                                                                                                                       
-      font-size = 24;                                                                                                                                                                                                                                                         
-      indicator-idle-visible = false;                                                                                                                                                                                                                                         
-      indicator-radius = 100;                                                                                                                                                                                                                                                 
-      line-color = "ffffff";                                                                                                                                                                                                                                                  
-      show-failed-attempts = true;                                                                                                                                                                                                                                            
-    };                                                                                                                                                                                                                                                                        
-  };   
+  programs.swaylock = {
+    enable = true;
+    settings = {
+      color = "000000";
+      font-size = 24;
+      indicator-idle-visible = false;
+      indicator-radius = 100;
+      line-color = "ffffff";
+      show-failed-attempts = true;
+    };
+  };
 
   services.hypridle = {
     enable = true;
@@ -608,9 +608,9 @@ in
 
 
     # volume button that allows press and hold, volume limited to 150%
-    binde=, XF86AudioRaiseVolume, exec, wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+
-    binde=, XF86AudioLowerVolume, exec, wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%-
-    bind=, XF86AudioMute, exec, wpctl set-mute @DEFAULT_SINK@ toggle
+    binde=, XF86AudioRaiseVolume, exec, wpctl set-volume -l 1.5 50 5%+
+    binde=, XF86AudioLowerVolume, exec, wpctl set-volume -l 1.5 50 5%-
+    bind=, XF86AudioMute, exec, wpctl set-mute 50 toggle
 
   '';
 

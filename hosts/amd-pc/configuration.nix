@@ -14,8 +14,9 @@ in
     ../../shared/syncthing.nix
     ./zfs_replication.nix
     ./postgres.nix
-    ./grafana.nix
+    #    ./grafana.nix
     ./performance.nix
+    ../../shared/oom_killer.nix
   ];
 
   nix.package = pkgs.nixVersions.latest;
@@ -316,7 +317,7 @@ in
   };
 
   # Open ports in the firewall.
-  networking.firewall.allowedTCPPorts = [ 8096 ];
+  networking.firewall.allowedTCPPorts = [ 8096 8000 ];
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
