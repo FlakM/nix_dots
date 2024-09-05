@@ -22,7 +22,7 @@ in
     nodejs
     go
     gopls
-    vscode-extensions.vadimcn.vscode-lldb
+
     nil
 
     # for toggling dark mode
@@ -69,13 +69,11 @@ in
 
       # LSP support & completion
       plenary-nvim
-      nvim-dap
-      nvim-dap-probe-rs
+      pkgs-unstable.vimPlugins.nvim-dap
 
-      nvim-dap-ui
+      pkgs-unstable.vimPlugins.nvim-dap-ui
 
-
-      nvim-lspconfig
+      pkgs-unstable.vimPlugins.nvim-lspconfig
 
       # for vsnip users
       cmp-vsnip
@@ -135,7 +133,7 @@ in
         ""
         ""
         "lua << EOF"
-        "local extension_path = \"${pkgs-unstable.vscode-extensions.vadimcn.vscode-lldb}/share/vscode/extensions/vadimcn.vscode-lldb\""
+        "local extension_path = \"${pkgs-unstable.vscode-extensions.ms-vscode.cpptools}/share/vscode/\""
         (builtins.readFile ./config/rust-config.lua)
         "EOF"
 
