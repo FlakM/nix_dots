@@ -1,4 +1,15 @@
 { config, lib, pkgs, pkgs-unstable, ... }:
+let
+  nvim-dap-probe-rs = pkgs.vimUtils.buildVimPlugin {
+    name = "nvim-dap-probe-rs";
+    src = pkgs.fetchFromGitHub {
+      owner = "abayomi185";
+      repo = "nvim-dap-probe-rs";
+      rev = "6df52c49755d78a2d7754c0630dd58694ea39ada";
+      hash = "sha256-SVEJG+2oVqJKaH4+jDp2ZpbJIWIL4nqGkH0cN9pCa6M=";
+    };
+  };
+in
 {
   home.sessionVariables = {
     EDITOR = "nvim";
@@ -59,6 +70,8 @@
       # LSP support & completion
       plenary-nvim
       nvim-dap
+      nvim-dap-probe-rs
+
       nvim-dap-ui
 
 

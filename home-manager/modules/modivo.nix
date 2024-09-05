@@ -1,4 +1,4 @@
-{ pkgs, lib, pkgs-master, ... }: {
+{ pkgs, config, lib, pkgs-master, ... }: {
 
   home.packages = with pkgs; [
     xorg.xwininfo
@@ -11,8 +11,14 @@
 
     # database schema comparing tool
     #migra
-
+    kubectx
   ];
+
+
+  home.sessionVariables = {
+    KUBECONFIG = "${config.home.homeDirectory}/.kube/config";
+  };
+
 
 
 }

@@ -21,6 +21,9 @@
     lldb
 
     rustfilt
+
+
+    probe-rs
   ] ++ lib.optionals stdenv.isDarwin [
     libiconv
   ];
@@ -36,6 +39,7 @@
     #  PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig;${pkgs.libiconv}/lib/";
     CARGO_TARGET_DIR = "${config.home.homeDirectory}/.cargo/target";
   };
+
 
 
 }

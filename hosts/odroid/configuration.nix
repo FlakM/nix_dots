@@ -18,8 +18,12 @@
     ./calibre.nix
     ./audiobookshelf.nix
     #../../shared/oom_killer.nix
+    ./smokeping.nix
   ];
 
+
+  networking.hostName = "odroid";
+  networking.domain = "house.flakm.com";
 
 
   users.users.flakm = {
@@ -74,4 +78,7 @@
 
   # workaround for openforify client
   environment.etc."ppp/options".text = "ipcp-accept-remote";
+
+
+
 }

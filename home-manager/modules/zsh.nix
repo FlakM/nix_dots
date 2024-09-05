@@ -6,6 +6,8 @@
     eza
   ];
 
+
+
   programs.zoxide.enable = true;
 
   programs.zsh = {
@@ -83,6 +85,11 @@
 
 
       source ~/.zshrc_local
+
+
+      # for home.sessionVariables to work
+      # see @ https://discourse.nixos.org/t/home-manager-doesnt-seem-to-recognize-sessionvariables/8488/7
+      . "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh"
     '';
 
 
