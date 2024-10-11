@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# THIS IS DANGEROUS BECAUSE IT DELETES SECRETS/CERTS e.g. in /var/lib/rancher.
+set -eux -o pipefail
+shopt -s nullglob
+systemctl stop k3s containerd
+find /sys/fs/cgroup/systemd/system.slice/containerd.service* /sys/fs/cgroup/kubepods* -name cgroup.procs -print0 | \
+    xargs -0 -r cat | xargs -r kill -9
+mount | awk '/\/var\/lib\/kubelet|\/run\/netns|\/run\/containerd/ {print $3}' | xargs -r umount
+zfs destroy -R rpool/containerd
+rm -rf /var/lib/rancher/ /var/lib/containerd /etc/rancher /run/containerd/ /var/lib/cni/
+systemctl start k3s

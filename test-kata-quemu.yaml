@@ -1,0 +1,33 @@
+kind: RuntimeClass
+apiVersion: node.k8s.io/v1
+metadata:
+    name: kata
+handler: kata
+overhead:
+    podFixed:
+        memory: "160Mi"
+        cpu: "250m"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: php-apache-kata-qemu
+  labels:
+    app: php-apache-kata-qemu
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: php-apache-kata-qemu
+  template:
+    metadata:
+      labels:
+        run: php-apache-kata-qemu
+    spec:
+      runtimeClassName: kata
+      containers:
+      - image: ubuntu:latest
+        imagePullPolicy: Always
+        name: ubuntu
+      restartPolicy: Always
+

@@ -23,6 +23,7 @@ in
     element-desktop
     discord
     pkgs-master.signal-desktop
+    zulip-term
   ];
 
 }

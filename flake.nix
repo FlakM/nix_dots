@@ -124,7 +124,6 @@
     in
     {
       formatter.x86_64-linux = pkgs-default.nixpkgs-fmt;
-      packages.x86_64-linux.default = fenix.packages.x86_64-linux.beta.toolchain;
 
       fonts.fonts = with nixpkgs; [
         (nerdfonts.override { fonts = [ "FiraCode" ]; })
@@ -145,5 +144,25 @@
         "flakm@amd-pc" = mkHomeManager "flakm" "amd-pc" "x86_64-linux" [ ];
         "flakm@odroid" = mkHomeManager "flakm" "odroid" "x86_64-linux" [ ];
       };
+
+
+
+packages.x86_64-linux =
+  let
+    headers = pkgs-default.dockerTools.buildImage {
+      name = "headers";
+      tag = "latest";
+      copyToRoot = pkgs-default.buildEnv {
+        name = "image-root";
+        paths = with pkgs-default; [ dockerTools.usrBinEnv dockerTools.binSh bcc coreutils kmod gzip ];
+        pathsToLink = [ "/bin" ];
+      };
     };
+
+  in
+  {
+    default = fenix.packages.x86_64-linux.beta.toolchain;
+    bcc = headers;
+  };
+};
 }

@@ -10,11 +10,12 @@ in
   imports = [
     ../../shared/wireguard.nix
     ../../shared/gpg.nix
-    ../../shared/k3s.nix
+    ../../shared/kata/kata-container
+    ../../shared/k3s/server.nix
     ../../shared/syncthing.nix
     ./zfs_replication.nix
     ./postgres.nix
-    #    ./grafana.nix
+    ./grafana.nix
     ./performance.nix
   ];
 
@@ -157,6 +158,11 @@ in
     };
   };
 
+  virtualisation.podman = {
+    enable = false;
+    #   defaultNetwork.settings.dns_enabled = true;
+  };
+
   virtualisation.docker = {
     enable = true;
     daemon.settings = {
@@ -176,6 +182,9 @@ in
   services.tailscale.enable = true;
 
   users.groups.plugdev = { };
+
+
+  services.flatpak.enable = true;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.flakm = {
@@ -310,6 +319,8 @@ in
     libation
 
     mysql
+
+    flatpak
 
   ];
 

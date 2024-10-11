@@ -30,6 +30,7 @@
       ll = "ls -l";
       vim = "nvim";
       vi = "vi";
+      k = "kubectl";
     };
 
 

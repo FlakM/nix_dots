@@ -102,6 +102,9 @@ in
 
       telescope-ui-select-nvim
 
+      # flutter
+      flutter-tools-nvim
+
     ] ++ lib.optionals (pkgs.stdenv.system != "aarch64-linux") [
       #vim-go
     ]

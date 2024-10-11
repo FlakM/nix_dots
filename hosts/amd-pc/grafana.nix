@@ -61,9 +61,14 @@
       {
         job_name = "thrud";
         scrape_interval = "1s";
+        metrics_path = "/metrics";
         static_configs = [{
           targets = [ "127.0.0.1:9091" ];
-          # interval = "1s";
+          labels = {
+            job = "thrud-app";
+            service = "thrud";
+            pod = "thrud";
+          };
         }];
       }
       {

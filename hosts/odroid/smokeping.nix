@@ -1,88 +1,54 @@
-{ pkgs, config, inputs, ... }: {
+{ pkgs, config, inputs, ... }:
+let
+  binary = pkgs.writeShellApplication {
+    name = "smokeping-curl";
+    runtimeInputs = [ pkgs.curl ];
+    text = ''
+      if [ "$1" = "--help" ]; then
+        exec curl --help all
+        exit 0
+      fi
+    
+      echo "params $*" >> /var/lib/smokeping/data/smokeping.log
+      exec curl "$@"
+    '';
+  };
+in
+{
+
+
+
+
+  # write binary to 
 
   services.smokeping = {
     enable = true;
-    #secretFile = "/var/lib/smokeping/smokeping_secrets";
+    webService = true;
+    host = "smokeping.house.flakm.com";
 
-    config = "
-*** General ***
-owner    = Your Name
-contact  = your-email@example.com
-mailhost = localhost
-imgcache = /var/lib/smokeping/cache
-imgurl   = cache
-datadir  = /var/lib/smokeping/data
-piddir   = /var/lib/smokeping/var
-cgiurl   = http://your-domain.com/cgi-bin/smokeping.cgi
+    probeConfig = ''
+      + Curl
+      binary = ${binary}/bin/smokeping-curl
+      step = 60
+      pings = 5
+      offset = random
+      timeout = 5
+      urlformat = https://%host%/
+    '';
 
-*** Alerts ***
-to = sysadmin@example.com
+    targetConfig = ''
+      probe = Curl
+      menu = Top
+      title = Seomatic API Test
 
-+bigloss
-type = loss
-pattern = >25%,*12*,>25%
+      + SEOGetRequestDev
+      menu = SEO API Test
+      title = SEOmatic API Test for URL
 
-*** Database ***
-step = 300
-pings = 5
-
-*** Presentation ***
-template = /usr/share/smokeping/etc/basepage.html
-
-+ charts
-menu = Charts
-title = My SmokePing Charts
-
-*** Probes ***
-+ Curl
-binary = /run/current-system/sw/bin/curl
-forks = 5
-offset = 50%
-timeout = 15
-pings = 5
-
-+++ Variables
-urlformat = https://seomatic.dev.modivo.io/api/v1/seo?url=%s
-
-*** Targets ***
-+ Modivo
-menu = Modivo API Check
-title = Modivo API SEO Check
-
-++ SEO
-menu = SEO API
-title = Check SEO for Modivo
-probe = Curl
-
-+++ MelissaBaleriny
-menu = Melissa Baleriny
-title = Melissa Baleriny URL Test
-url = https://modivo-local.pl/p/melissa-baleriny-jean-jason-wu-vii-ad-32288-foioletowy
-";
+      host = seomatic.dev.modivo.io
+      urlformat = https://%host%/api/v1/seo?url=https://fake.com
+    '';
   };
 
-
-
-  services.nginx = {
-    enable = true;
-    virtualHosts = {
-      "smokeping.house.flakm.com" = {
-        useACMEHost = "house.flakm.com";
-        forceSSL = true;
-        locations = {
-          "/" = {
-            proxyPass = "http://127.0.0.1:8888";
-            recommendedProxySettings = true;
-            #extraConfig = ''
-            #  proxy_set_header Host $http_host; # try $host instead if this doesn't work
-            #  proxy_set_header X-Forwarded-Proto $scheme;
-            #  proxy_pass http://127.0.0.1:3030; # replace port
-            #  proxy_redirect http://127.0.0.1:3030 https://recipes.domain.tld; # replace port and domain
-            #'';
-          };
-        };
-      };
-    };
-  };
 
 }
