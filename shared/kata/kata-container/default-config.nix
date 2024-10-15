@@ -1,12 +1,13 @@
 { config, lib, pkgs, kata-runtime, ... }:
 let
-  myKernelBase = pkgs.linuxManualConfig rec {
+  kernel-base = pkgs.linuxManualConfig {
     version = "6.6.54";
     src = pkgs.linuxPackages.kernel.src;
     configfile = ./linux-config-empty;
+    allowImportFromDerivation = true;
   };
 
-  myKernel = myKernelBase.overrideAttrs (oldAttrs: rec {
+  kernel = kernel-base.overrideAttrs (oldAttrs: {
     outputs = [ "out" "dev" ];
     postInstall = ''
       mkdir -p $dev
@@ -18,16 +19,18 @@ in
 {
 
   #kernel = "${pkgs.linuxPackages_latest.kernel.dev}/vmlinux"
+  #image = "${kata-runtime}/share/kata-containers/kata-ubuntu-latest.image"
   qemu = lib.mkForce ''
     [hypervisor.qemu]
     path = "${kata-runtime}/bin/qemu-system-x86_64"
-    kernel = "${myKernel.dev}/vmlinux"
-    image = "${kata-runtime}/share/kata-containers/kata-ubuntu-latest.image"
+    kernel2 = "${kernel-base}/"
+    kernel = "${kernel.dev}/vmlinux"
+    initrd = "/run/current-system/initrd"
     machine_type = "q35"
     rootfs_type="ext4"
     enable_annotations = ["enable_iommu", "virtio_fs_extra_args", "kernel_params"]
     valid_hypervisor_paths = ["${kata-runtime}/bin/qemu-system-x86_64"]
-    kernel_params = " ikheaders "
+    kernel_params = ""
     firmware = ""
     firmware_volume = ""
     machine_accelerators=""

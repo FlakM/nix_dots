@@ -21,13 +21,27 @@ spec:
       run: php-apache-kata-qemu
   template:
     metadata:
+      annotations:
+        io.katacontainers.config.runtime.disable_guest_seccomp: "false"
       labels:
         run: php-apache-kata-qemu
     spec:
       runtimeClassName: kata
       containers:
-      - image: ubuntu:latest
-        imagePullPolicy: Always
-        name: ubuntu
-      restartPolicy: Always
-
+      - image: headers:latest
+        name: headers
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /run/current-system/
+          name: current-system
+        - mountPath: /tmp/
+          name: tmp
+      volumes:
+      - name: current-system
+        hostPath:
+          path: /run/current-system/
+      - name: tmp
+        hostPath:
+          path: /tmp/

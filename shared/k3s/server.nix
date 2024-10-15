@@ -1,4 +1,4 @@
-{ ...
+{ pkgs,...
 }: {
   imports = [ ./. ];
 
@@ -13,5 +13,9 @@
   environment.sessionVariables = {
     CONTAINERD_ADDRESS = "/run/containerd/containerd.sock";
   };
+
+  environment.systemPackages = with pkgs; [
+    kubevirt
+  ];
 
 }
