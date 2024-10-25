@@ -5,9 +5,9 @@
     pkgs-unstable.bloop
     scalafix
     scalafmt
-    #     sbt
+    sbt
     #     dotty
-    metals
+    pkgs-unstable.metals
 
     coursier
   ];

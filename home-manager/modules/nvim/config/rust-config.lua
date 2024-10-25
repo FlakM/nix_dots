@@ -1,9 +1,5 @@
 local dap = require('dap')
 
--- print extension_path
-print(extension_path)
-
-
 -- the adapters are setup according to https://github.com/mfussenegger/nvim-dap/wiki/Debug-Adapter-installation
 --
 dap.adapters.cppdbg = {

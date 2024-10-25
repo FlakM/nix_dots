@@ -49,6 +49,9 @@
     ./modules/zsh.nix
 
     ./modules/zellij.nix
+    ./modules/jira_cli.nix
+
+    ./modules/scala.nix
   ];
 
   xsession.windowManager.i3.config.fonts.size = 18.0;

@@ -105,6 +105,9 @@ in
       # flutter
       flutter-tools-nvim
 
+      # scala 
+      nvim-metals
+
     ] ++ lib.optionals (pkgs.stdenv.system != "aarch64-linux") [
       #vim-go
     ]
@@ -140,7 +143,10 @@ in
         (builtins.readFile ./config/rust-config.lua)
         "EOF"
 
-        #(builtins.readFile ./config/metals-config.vim)
+        "lua << EOF"
+        "local metals_path = \"${pkgs-unstable.metals}/bin/metals\""
+        (builtins.readFile ./config/metals-config.lua)
+        "EOF"
         #(builtins.readFile ./config/python-config.vim)
         #(builtins.readFile ./config/go-config.vim)
       ]);

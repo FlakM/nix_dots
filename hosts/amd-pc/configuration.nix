@@ -314,6 +314,7 @@ in
 
     #fenix.rust-analyzer
 
+    calibre
 
     nextcloud-client
     libation

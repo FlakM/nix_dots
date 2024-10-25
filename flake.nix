@@ -17,7 +17,11 @@
 
     nur.url = "github:nix-community/NUR";
 
-    sops-nix.url = "github:Mic92/sops-nix";
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs-stable.follows = "nixpkgs";
+    };
 
   };
   outputs =
@@ -147,24 +151,24 @@
 
 
 
-packages.x86_64-linux =
-  let
-    headers = pkgs-default.dockerTools.buildImage {
-      name = "headers";
-      tag = "latest";
-      copyToRoot = pkgs-default.buildEnv {
-        name = "image-root";
-        paths = with pkgs-default; [ dockerTools.usrBinEnv dockerTools.binSh bcc busybox ];
-        pathsToLink = [ "/bin" ];
-      };
+      packages.x86_64-linux =
+        let
+          headers = pkgs-default.dockerTools.buildImage {
+            name = "headers";
+            tag = "latest";
+            copyToRoot = pkgs-default.buildEnv {
+              name = "image-root";
+              paths = with pkgs-default; [ dockerTools.usrBinEnv dockerTools.binSh bcc busybox ];
+              pathsToLink = [ "/bin" ];
+            };
 
-      config.Cmd = [ "/bin/sh" ];
+            config.Cmd = [ "/bin/sh" ];
+          };
+
+        in
+        {
+          default = fenix.packages.x86_64-linux.beta.toolchain;
+          bcc = headers;
+        };
     };
-
-  in
-  {
-    default = fenix.packages.x86_64-linux.beta.toolchain;
-    bcc = headers;
-  };
-};
 }

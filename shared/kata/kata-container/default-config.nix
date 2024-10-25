@@ -1,7 +1,7 @@
 { config, lib, pkgs, kata-runtime, ... }:
 let
   kernel-base = pkgs.linuxManualConfig {
-    version = "6.6.54";
+    version = "6.6.58";
     src = pkgs.linuxPackages.kernel.src;
     configfile = ./linux-config-empty;
     allowImportFromDerivation = true;
@@ -23,9 +23,8 @@ in
   qemu = lib.mkForce ''
     [hypervisor.qemu]
     path = "${kata-runtime}/bin/qemu-system-x86_64"
-    kernel2 = "${kernel-base}/"
     kernel = "${kernel.dev}/vmlinux"
-    initrd = "/run/current-system/initrd"
+    image = "${kata-runtime}/share/kata-containers/kata-ubuntu-latest.image"
     machine_type = "q35"
     rootfs_type="ext4"
     enable_annotations = ["enable_iommu", "virtio_fs_extra_args", "kernel_params"]
