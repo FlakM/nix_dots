@@ -189,7 +189,7 @@
         "flakm@dell-xps" = mkHomeManager "flakm" "dell-xps" "x86_64-linux" [ ];
         "flakm@amd-pc" = mkHomeManager "flakm" "amd-pc" "x86_64-linux" [ ];
         "flakm@odroid" = mkHomeManager "flakm" "odroid" "x86_64-linux" [ ];
-        "flakm@air" = mkHomeManager "flakm" "air" "aarch64-darwin" [ ];
+        "maciek@air" = mkHomeManager "maciek" "air" "aarch64-darwin" [ ];
       };
 
 
