@@ -122,11 +122,11 @@
         };
 
       mkHomeManager = user: hostName: system: modules: home-manager.lib.homeManagerConfiguration {
-        pkgs = pkgs-stable default_system;
+        pkgs = pkgs-stable system;
         extraSpecialArgs = {
           inherit inputs outputs;
-          pkgs-unstable = pkgs-unstable default_system;
-          pkgs-master = pkgs-master default_system;
+          pkgs-unstable = pkgs-unstable system;
+          pkgs-master = pkgs-master system;
         }; # this is the important part
 
         modules = [
