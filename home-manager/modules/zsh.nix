@@ -14,6 +14,10 @@
     enable = true;
     autocd = true;
 
+
+      
+    completionInit = "autoload -U compinit && compinit -i";
+
     autosuggestion.enable = true;
     enableCompletion = true;
     syntaxHighlighting.enable = true;

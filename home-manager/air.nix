@@ -6,7 +6,7 @@
     ./modules/common.nix
 
     # todo uncomment when i fix it
-    #./modules/nvim/neovim.nix
+    ./modules/nvim/neovim.nix
     ./modules/rust.nix
     ./modules/tmux.nix
     ./modules/git.nix

@@ -16,7 +16,6 @@
     #    clippy
     libiconv
 
-    lldb
 
     rustfilt
 

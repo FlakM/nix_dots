@@ -32,6 +32,10 @@ in
     python3
 
     proximity-sort
+
+    # for debugging
+    lldb
+    
   ];
 
   programs.neovim = {
@@ -69,11 +73,11 @@ in
 
       # LSP support & completion
       plenary-nvim
-      pkgs-unstable.vimPlugins.nvim-dap
+      nvim-dap
+      nvim-dap-ui
+      nvim-nio
 
-      pkgs-unstable.vimPlugins.nvim-dap-ui
-
-      pkgs-unstable.vimPlugins.nvim-lspconfig
+      nvim-lspconfig
 
       # for vsnip users
       cmp-vsnip
@@ -111,6 +115,8 @@ in
       # notes plugins for obsidian
       obsidian-nvim
 
+
+
     ] ++ lib.optionals (pkgs.stdenv.system != "aarch64-linux") [
       #vim-go
     ]
@@ -142,7 +148,7 @@ in
         ""
         ""
         "lua << EOF"
-        "local extension_path = \"${pkgs-unstable.vscode-extensions.ms-vscode.cpptools}/share/vscode/\""
+        "local dap_path  = \"${pkgs.lldb}/bin/lldb-vscode\""
         (builtins.readFile ./config/rust-config.lua)
         "EOF"
 
