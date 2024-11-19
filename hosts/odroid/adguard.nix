@@ -33,9 +33,9 @@
         bind_hosts = [ "0.0.0.0" ];
         bootstrap_dns = [ "1.1.1.1" "8.8.8.8" ];
         upstream_dns = [
-          "https://dns.quad9.net/dns-query"
           "https://dns.cloudflare.com/dns-query"
           "https://dns.google/dns-query"
+          "https://dns.quad9.net/dns-query"
         ];
         enable_dnssec = true;
         ratelimit = 100;
@@ -83,6 +83,27 @@
       ];
 
 
+    };
+  };
+
+
+
+  services.nginx = {
+    enable = true;
+    virtualHosts = {
+      "adguard.house.flakm.com" = {
+        useACMEHost = "house.flakm.com";
+        #serverAliases = [ "*.house.flakm.com" ];
+        forceSSL = true;
+        locations."/" = {
+          extraConfig = ''
+            proxy_set_header Host $host; # try $host instead if this doesn't work
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_pass http://127.0.0.1:3000; # replace port
+            proxy_redirect http://127.0.0.1:8096 https://adguard.house.flakm.com; # replace port
+          '';
+        };
+      };
     };
   };
 }

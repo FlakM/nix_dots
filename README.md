@@ -28,7 +28,13 @@ Higlights:
 3. Ship over ssh: `nix copy --to ssh://flakm@192.168.0.102 ./result`
 4. Apply changes: `home-manager --flake github:flakm/nix_dots#flakm@odroid switch`
 
+### On mac m1
+
+1. Clone repo into local dir `git clone git@github.com:FlakM/nix_dots.git` 
+2. Switch nixos 
+
 ### Add custom project with dev-shell and direnv integration
+
 
 #### Example project
 

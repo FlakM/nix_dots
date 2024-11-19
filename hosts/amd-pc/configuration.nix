@@ -17,6 +17,7 @@ in
     ./postgres.nix
     ./grafana.nix
     ./performance.nix
+    #./clickhouse.nix
   ];
 
   nix.package = pkgs.nixVersions.latest;
@@ -215,6 +216,7 @@ in
   environment.systemPackages = with pkgs; [
     nix-index
 
+
     okular
 
     qemu_full
@@ -281,7 +283,6 @@ in
 
 
     wgnord
-    qbittorrent
 
     glibc
 

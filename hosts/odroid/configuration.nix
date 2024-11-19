@@ -1,5 +1,8 @@
 # configuration in this file only applies to exampleHost host.
-{ pkgs, ... }: {
+{ pkgs, pkgs-unstable, ... }: {
+
+
+  disabledModules = [ "services/web-apps/mealie.nix" ];
 
   imports = [
     ./nextcloud.nix
@@ -18,7 +21,12 @@
     ./calibre.nix
     ./audiobookshelf.nix
     #../../shared/oom_killer.nix
-    ./smokeping.nix
+    #./smokeping.nix
+
+    "${pkgs-unstable.path}/nixos/modules/services/web-apps/mealie.nix"
+    ./mealie.nix
+
+
   ];
 
 

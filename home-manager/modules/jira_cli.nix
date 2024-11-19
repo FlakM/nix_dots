@@ -1,8 +1,11 @@
-{ config, pkgs, pkgsUnstable, libs, ... }:
+{ config, pkgs, pkgs-unstable, libs, ... }:
 {
 
   home.packages = with pkgs; [
     jira-cli-go
+
+    pkgs-unstable.chatgpt-cli
+    shellcheck
   ];
 
   home.file.".jira/.config.yml" = {

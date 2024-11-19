@@ -108,6 +108,9 @@ in
       # scala 
       nvim-metals
 
+      # notes plugins for obsidian
+      obsidian-nvim
+
     ] ++ lib.optionals (pkgs.stdenv.system != "aarch64-linux") [
       #vim-go
     ]
@@ -146,6 +149,7 @@ in
         "lua << EOF"
         "local metals_path = \"${pkgs-unstable.metals}/bin/metals\""
         (builtins.readFile ./config/metals-config.lua)
+        (builtins.readFile ./config/obsidian.lua)
         "EOF"
         #(builtins.readFile ./config/python-config.vim)
         #(builtins.readFile ./config/go-config.vim)

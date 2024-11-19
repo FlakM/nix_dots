@@ -248,7 +248,6 @@ in
 
 
     wgnord
-    qbittorrent
     bpftrace
 
     glibc

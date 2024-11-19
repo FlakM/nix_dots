@@ -15,6 +15,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    darwin = {
+      url = "github:lnl7/nix-darwin/master";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nur.url = "github:nix-community/NUR";
 
     sops-nix = {
@@ -31,6 +36,7 @@
     , nixpkgs-unstable
     , nixpkgs-master
     , nixos-hardware
+    , darwin
     , fenix
     , nur
     , sops-nix
@@ -140,6 +146,48 @@
         odroid = mkHost "odroid" "x86_64-linux";
         amd-pc = mkHost "amd-pc" "x86_64-linux";
       };
+
+
+      darwinConfigurations.m1pro =
+        let
+          pkg-sets = (
+            final: prev: {
+              pkgs-unstable = import inputs.nixpkgs-unstable { system = final.system; };
+              pkgs-master = import inputs.nixpkgs-master { system = final.system; };
+            }
+          );
+
+        in
+        darwin.lib.darwinSystem {
+          system = "aarch64-darwin";
+          modules = [
+            {
+              nixpkgs.overlays = [
+                pkg-sets
+              ];
+            }
+            ./hosts/air
+            home-manager.darwinModules.home-manager
+            {
+              home-manager.useGlobalPkgs = true;
+              home-manager.useUserPackages = true;
+              home-manager.users.maciek = import ./home-manager/air.nix;
+            }
+            {
+              users = {
+                users = {
+                  maciek = {
+                    description = "maciek";
+                    home = "/Users/maciek";
+                  };
+                };
+              };
+            }
+          ];
+        };
+
+
+
 
       # Standalone home-manager configuration entrypoint
       # Available through 'home-manager --flake .#your-username@your-hostname'

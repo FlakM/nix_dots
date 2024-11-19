@@ -24,6 +24,7 @@ in
     discord
     pkgs-master.signal-desktop
     zulip-term
+    zulip
   ];
 
 }

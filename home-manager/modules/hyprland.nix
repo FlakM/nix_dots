@@ -543,7 +543,13 @@ in
     #exec-once=dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
     exec-once=[workspace 1 silent] kitty
     exec-once=[workspace 2 silent] firefox
+
+
     exec-once=[workspace 3 silent] obsidian
+    exec-once=[workspace 3 silent] kitty --title "obsidian" --directory /home/flakm/programming/flakm/obsidian/work -- bash -c "tmux new-session -d -s obsidian 'nvim' && tmux attach-session -t obsidian"
+    windowrulev2 = float, kitty:title:obsidian
+    windowrulev2 = fullscreen, kitty:title:obsidian
+
     exec-once=[workspace 4 silent] spotify
     exec-once=[workspace 6 silent] kdeconnect-app
     exec-once=[workspace 4 silent] spotify

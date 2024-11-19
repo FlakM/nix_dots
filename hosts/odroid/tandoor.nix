@@ -1,7 +1,6 @@
 { pkgs, lib, config, inputs, pkgs-unstable, ... }: {
 
   services.tandoor-recipes = {
-    package = pkgs-unstable.tandoor-recipes;
     enable = true;
     port = 3030;
     address = "127.0.0.1";

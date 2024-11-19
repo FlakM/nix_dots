@@ -1,7 +1,7 @@
 { config, lib, pkgs, kata-runtime, ... }:
 let
   kernel-base = pkgs.linuxManualConfig {
-    version = "6.6.58";
+    version = "6.6.61";
     src = pkgs.linuxPackages.kernel.src;
     configfile = ./linux-config-empty;
     allowImportFromDerivation = true;

@@ -5,9 +5,11 @@
 keys:
   - &admin_flakm DDB89AF3335111A17243467C7288322161C6A632
   - &server_amd_pc 1ef3cbd4366ee09c589ea3dbde75d7b6fa9c8acf
+  - &odroid c0ac04c3e1ea066ce8a706be994f8a1556e3127d
 creation_rules:
   - path_regex: secrets/[^/]+\.(yaml|json|env|ini)$
     key_groups:
     - pgp:
       - *admin_flakm
       - *server_amd_pc
+      - *odroid
