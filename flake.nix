@@ -96,6 +96,9 @@
             # Configuration shared by all hosts
             ./configuration.nix
 
+            # Configuration shared by all linux hosts
+            ./configuration_linux.nix
+
             # Configuration per host
             # Be sure to include all other modules in ./hosts/${hostName}/default.nix
             ./hosts/${hostName}
@@ -149,29 +152,20 @@
 
 
       darwinConfigurations.air =
-        let
-          pkg-sets = (
-            final: prev: {
-              pkgs-unstable = import inputs.nixpkgs-unstable { system = final.system; };
-              pkgs-master = import inputs.nixpkgs-master { system = final.system; };
-            }
-          );
-
-        in
         darwin.lib.darwinSystem {
           system = "aarch64-darwin";
+          specialArgs = {
+            pkgs-unstable = pkgs-unstable "aarch64-darwin";
+            pkgs-master = pkgs-master "aarch64-darwin";
+            pkgs = pkgs-stable "aarch64-darwin";
+          };
           modules = [
-            {
-              nixpkgs.overlays = [
-                pkg-sets
-              ];
-            }
+            ./configuration.nix
             ./hosts/air
             home-manager.darwinModules.home-manager
             {
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
-              home-manager.users.maciek = import ./home-manager/air.nix;
             }
             {
               users = {
@@ -195,6 +189,7 @@
         "flakm@dell-xps" = mkHomeManager "flakm" "dell-xps" "x86_64-linux" [ ];
         "flakm@amd-pc" = mkHomeManager "flakm" "amd-pc" "x86_64-linux" [ ];
         "flakm@odroid" = mkHomeManager "flakm" "odroid" "x86_64-linux" [ ];
+        "flakm@air" = mkHomeManager "flakm" "air" "aarch64-darwin" [ ];
       };
 
 

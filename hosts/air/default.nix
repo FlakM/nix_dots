@@ -1,6 +1,6 @@
 { config, pkgs, lib, inputs, modulesPath, ... }: {
 
-  modules = [
+  imports = [
     ./configuration.nix
-  ]
+  ];
 }
