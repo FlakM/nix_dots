@@ -31,7 +31,12 @@ Higlights:
 ### On mac m1
 
 1. Clone repo into local dir `git clone git@github.com:FlakM/nix_dots.git` 
-2. Switch nixos 
+2. Follow [instructions](https://github.com/LnL7/nix-darwin?tab=readme-ov-file#flakes) to install nix-darwin. To change the machine name:
+```bash
+sudo scutil --set ComputerName "air"
+sudo scutil --set HostName "air"
+sudo scutil --set LocalHostName "air"
+```
 
 ### Add custom project with dev-shell and direnv integration
 

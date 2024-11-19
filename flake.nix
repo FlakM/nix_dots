@@ -148,7 +148,7 @@
       };
 
 
-      darwinConfigurations.m1pro =
+      darwinConfigurations.air =
         let
           pkg-sets = (
             final: prev: {
