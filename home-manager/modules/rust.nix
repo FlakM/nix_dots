@@ -16,7 +16,6 @@
     #    clippy
     libiconv
 
-    heaptrack
     gdb
     lldb
 
@@ -26,6 +25,8 @@
     probe-rs
   ] ++ lib.optionals stdenv.isDarwin [
     libiconv
+  ] ++ lib.optionals stdenv.isLinux [
+    heaptrack
   ];
 
 
