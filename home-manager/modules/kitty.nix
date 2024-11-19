@@ -1,4 +1,4 @@
-{ config, pkgs, pkgsUnstable, libs, ... }:
+{ config, pkgs, pkgs-unstable, libs, ... }:
 {
 
   xdg.configFile."kitty/switch.sh" = {
@@ -36,6 +36,7 @@
   };
 
   programs.kitty = {
+    package = pkgs-unstable.kitty;
     enable = true;
     shellIntegration.enableZshIntegration = true;
 
