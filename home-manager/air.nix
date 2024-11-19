@@ -5,7 +5,8 @@
     ./modules/home-manager.nix
     ./modules/common.nix
 
-    ./modules/nvim/neovim.nix
+    # todo uncomment when i fix it
+    #./modules/nvim/neovim.nix
     ./modules/rust.nix
     ./modules/tmux.nix
     ./modules/git.nix
