@@ -12,6 +12,7 @@
     ./modules/git.nix
     ./modules/gpg_home.nix
 
+    ./modules/productivity.nix
 
     ./modules/yubikey.nix
 
