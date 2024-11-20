@@ -57,7 +57,8 @@
     app_target_base="$HOME/Applications"
     app_target="$app_target_base/$moniker"
     mkdir -p "$app_target"
-    ${pkgs.rsync}/bin/rsync "$rsyncArgs" "$apps_source/" "$app_target"
+    # shellcheck disable=SC2086
+    ${pkgs.rsync}/bin/rsync $rsyncArgs "$apps_source/" "$app_target"
   '';
 
 }
