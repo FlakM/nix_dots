@@ -7,7 +7,7 @@
     gnupg-pkcs11-scd
     pcsclite
     gpgme
-  ]++ lib.optionals stdenv.isLinux [
+  ] ++ lib.optionals stdenv.isLinux [
     pinentry
   ];
 

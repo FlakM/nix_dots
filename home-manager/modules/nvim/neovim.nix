@@ -35,7 +35,7 @@ in
 
     # for debugging
     lldb
-    
+
   ];
 
   programs.neovim = {

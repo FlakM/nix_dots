@@ -15,7 +15,7 @@
     autocd = true;
 
 
-      
+
     completionInit = "autoload -U compinit && compinit -i";
 
     autosuggestion.enable = true;
