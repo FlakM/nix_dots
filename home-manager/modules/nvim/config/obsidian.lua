@@ -1,3 +1,14 @@
+local api = vim.api
+local cmd = vim.cmd
+
+local function map(mode, lhs, rhs, opts)
+  local options = { noremap = true }
+  if opts then
+    options = vim.tbl_extend("force", options, opts)
+  end
+  api.nvim_set_keymap(mode, lhs, rhs, options)
+end
+
 require("obsidian").setup({
     workspaces = {
         {
@@ -28,9 +39,12 @@ require("obsidian").setup({
            return require("obsidian").util.smart_action()
          end,
          opts = { buffer = true, expr = true },
-        }
+     },
     }
 })
+
+
+map("n", "<leader>d", [[<cmd>ObsidianDailies<CR>]])
 
 -- set conceallevel to 2
 vim.cmd("set conceallevel=2")

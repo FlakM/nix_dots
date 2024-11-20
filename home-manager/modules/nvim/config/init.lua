@@ -9,9 +9,11 @@ local function map(mode, lhs, rhs, opts)
   api.nvim_set_keymap(mode, lhs, rhs, options)
 end
 
-
---Lua:
+-- open in a dark mode
 vim.cmd 'colorscheme edge'
+vim.cmd("set background=dark")
+
+
 vim.g.edge_style = "default"
 vim.g.edge_transparent_background = 2
 

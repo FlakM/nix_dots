@@ -36,10 +36,15 @@ in
     # for debugging
     lldb
 
+      # debguging bash
+    nodePackages.bash-language-server
+    bashdb
+
   ];
 
   programs.neovim = {
     enable = true;
+    package = pkgs-unstable.neovim-unwrapped;
     plugins = with pkgs.vimPlugins; [
       # VIM enhancments
       editorconfig-vim
@@ -63,8 +68,8 @@ in
       vim-terraform
 
       #Theme
-      material-nvim
-      edge
+      pkgs-unstable.vimPlugins.material-nvim
+      pkgs-unstable.vimPlugins.edge
 
 
       #vim-nightfly-guicolors
@@ -73,9 +78,9 @@ in
 
       # LSP support & completion
       plenary-nvim
-      nvim-dap
-      nvim-dap-ui
-      nvim-nio
+      pkgs-unstable.vimPlugins.nvim-dap
+      pkgs-unstable.vimPlugins.nvim-dap-ui
+      pkgs-unstable.vimPlugins.nvim-nio
 
       nvim-lspconfig
 
@@ -98,7 +103,7 @@ in
 
       vim-gitgutter
 
-      rustaceanvim
+      pkgs-unstable.vimPlugins.rustaceanvim
 
       one-nvim
 
@@ -114,6 +119,7 @@ in
 
       # notes plugins for obsidian
       obsidian-nvim
+
 
 
 
@@ -156,6 +162,9 @@ in
         "local metals_path = \"${pkgs-unstable.metals}/bin/metals\""
         (builtins.readFile ./config/metals-config.lua)
         (builtins.readFile ./config/obsidian.lua)
+
+        "local bashdb_path = \"${pkgs.bashdb}/bin/bashdb\""
+        (builtins.readFile ./config/bash.lua)
         "EOF"
         #(builtins.readFile ./config/python-config.vim)
         #(builtins.readFile ./config/go-config.vim)
