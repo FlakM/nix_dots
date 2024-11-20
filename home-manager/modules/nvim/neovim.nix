@@ -1,5 +1,6 @@
 { config, lib, pkgs, pkgs-unstable, ... }:
 let
+  inherit (pkgs) stdenv;
   nvim-dap-probe-rs = pkgs.vimUtils.buildVimPlugin {
     name = "nvim-dap-probe-rs";
     src = pkgs.fetchFromGitHub {
@@ -36,10 +37,13 @@ in
     # for debugging
     lldb
 
-      # debguging bash
+    # bash lsp
     nodePackages.bash-language-server
-    bashdb
 
+    # for linux only
+  ] ++ lib.optionals stdenv.isLinux [
+    # for debugging
+    bashdb
   ];
 
   programs.neovim = {
@@ -163,12 +167,23 @@ in
         (builtins.readFile ./config/metals-config.lua)
         (builtins.readFile ./config/obsidian.lua)
 
-        "local bashdb_path = \"${pkgs.bashdb}/bin/bashdb\""
+        (if stdenv.isLinux then
+          "local bashdb_path = \"${pkgs.bashdb}/bin/bashdb\""
+        else
+          "local bashdb_path = nil")
+
         (builtins.readFile ./config/bash.lua)
-        "EOF"
+
+
+
+        # of on linux
+        
+
         #(builtins.readFile ./config/python-config.vim)
         #(builtins.readFile ./config/go-config.vim)
-      ]);
+      ]
+
+      );
 
 
   };
