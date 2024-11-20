@@ -37,6 +37,7 @@ sudo scutil --set ComputerName "air"
 sudo scutil --set HostName "air"
 sudo scutil --set LocalHostName "air"
 ```
+3. Install changes `nix  run nix-darwin -- switch --flake ~/programming/flakm/nix_dots`
 
 ### Add custom project with dev-shell and direnv integration
 
