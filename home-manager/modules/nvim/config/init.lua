@@ -11,7 +11,6 @@ end
 
 -- open in a dark mode
 vim.cmd 'colorscheme edge'
-vim.cmd("set background=dark")
 
 
 vim.g.edge_style = "default"
