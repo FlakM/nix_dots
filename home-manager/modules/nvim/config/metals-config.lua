@@ -27,6 +27,9 @@ vim.api.nvim_create_autocmd("FileType", {
 
 local dap = require("dap")
 
+
+require("metals").setup_dap()
+
 dap.configurations.scala = {
   {
     type = "scala",
