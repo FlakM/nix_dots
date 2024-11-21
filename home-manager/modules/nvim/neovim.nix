@@ -38,7 +38,8 @@ in
     lldb
 
     # bash lsp
-    nodePackages.bash-language-server
+    pkgs-unstable.nodePackages.bash-language-server
+    shfmt
 
     # for linux only
   ] ++ lib.optionals stdenv.isLinux [
