@@ -10,9 +10,7 @@ local function map(mode, lhs, rhs, opts)
 end
 
 -- open in a dark mode
-vim.cmd 'colorscheme edge'
-
-
+vim.cmd 'colorscheme default'
 vim.g.edge_style = "default"
 vim.g.edge_transparent_background = 2
 

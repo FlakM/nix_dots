@@ -180,6 +180,34 @@
           ];
         };
 
+      darwinConfigurations.work-laptop =
+        darwin.lib.darwinSystem {
+          system = "aarch64-darwin";
+          specialArgs = {
+            pkgs-unstable = pkgs-unstable "aarch64-darwin";
+            pkgs-master = pkgs-master "aarch64-darwin";
+            pkgs = pkgs-stable "aarch64-darwin";
+          };
+          modules = [
+            ./configuration.nix
+            ./hosts/air
+            home-manager.darwinModules.home-manager
+            {
+              home-manager.useGlobalPkgs = true;
+              home-manager.useUserPackages = true;
+            }
+            {
+              users = {
+                users = {
+                  maciek = {
+                    description = "flakm";
+                    home = "/Users/flakm";
+                  };
+                };
+              };
+            }
+          ];
+        };
 
 
 
@@ -190,6 +218,7 @@
         "flakm@amd-pc" = mkHomeManager "flakm" "amd-pc" "x86_64-linux" [ ];
         "flakm@odroid" = mkHomeManager "flakm" "odroid" "x86_64-linux" [ ];
         "maciek@air" = mkHomeManager "maciek" "air" "aarch64-darwin" [ ];
+        "flakm@work-laptop" = mkHomeManager "maciek" "work-laptop" "aarch64-darwin" [ ];
       };
 
 

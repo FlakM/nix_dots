@@ -427,4 +427,10 @@ in
     })
   ];
 
+
+
+  # enable gnome keyring for nextcloud-client to store the password
+  services.gnome.gnome-keyring.enable = true;
+  security.pam.services.sddm.enableGnomeKeyring = true;
+
 }

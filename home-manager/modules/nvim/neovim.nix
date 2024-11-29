@@ -178,7 +178,7 @@ in
 
 
         # of on linux
-        
+
 
         #(builtins.readFile ./config/python-config.vim)
         #(builtins.readFile ./config/go-config.vim)
@@ -192,7 +192,7 @@ in
 
   #home.file."${config.home.homeDirectory}/.config/nvim/ftplugin/java.lua".source = config.lib.file.mkOutOfStoreSymlink ./config/ftplugin/java.lua;
   home.file."${config.home.homeDirectory}/.config/nvim/ftplugin/json.lua".source = config.lib.file.mkOutOfStoreSymlink ./config/ftplugin/json.lua;
-  home.file."${config.home.homeDirectory}/.config/nvim/ftplugin/makrdown.lua".source = config.lib.file.mkOutOfStoreSymlink ./config/ftplugin/markdown.lua;
+  home.file."${config.home.homeDirectory}/.config/nvim/ftplugin/markdown.lua".source = config.lib.file.mkOutOfStoreSymlink ./config/ftplugin/markdown.lua;
 
   home.file."${config.home.homeDirectory}/.ideavimrc".source = config.lib.file.mkOutOfStoreSymlink ./config/idea-vim-config.vim;
 }
