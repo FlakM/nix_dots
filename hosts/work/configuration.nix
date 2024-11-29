@@ -32,14 +32,14 @@
   ];
 
 
-  users.users.maciek = {
-    home = "/Users/maciek";
+  users.users.flakm = {
+    home = "/Users/flakm";
     shell = pkgs.zsh;
     uid = 502;
   };
 
   users.knownUsers = [
-    "maciek"
+    "flakm"
   ];
 
 
