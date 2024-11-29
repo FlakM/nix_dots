@@ -199,7 +199,7 @@
             {
               users = {
                 users = {
-                  maciek = {
+                  flakm = {
                     description = "flakm";
                     home = "/Users/flakm";
                   };
@@ -218,7 +218,7 @@
         "flakm@amd-pc" = mkHomeManager "flakm" "amd-pc" "x86_64-linux" [ ];
         "flakm@odroid" = mkHomeManager "flakm" "odroid" "x86_64-linux" [ ];
         "maciek@air" = mkHomeManager "maciek" "air" "aarch64-darwin" [ ];
-        "flakm@work" = mkHomeManager "maciek" "work" "aarch64-darwin" [ ];
+        "flakm@work" = mkHomeManager "flakm" "work" "aarch64-darwin" [ ];
       };
 
 
