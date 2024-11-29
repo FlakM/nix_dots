@@ -180,7 +180,7 @@
           ];
         };
 
-      darwinConfigurations.work-laptop =
+      darwinConfigurations.work =
         darwin.lib.darwinSystem {
           system = "aarch64-darwin";
           specialArgs = {
@@ -218,7 +218,7 @@
         "flakm@amd-pc" = mkHomeManager "flakm" "amd-pc" "x86_64-linux" [ ];
         "flakm@odroid" = mkHomeManager "flakm" "odroid" "x86_64-linux" [ ];
         "maciek@air" = mkHomeManager "maciek" "air" "aarch64-darwin" [ ];
-        "flakm@work-laptop" = mkHomeManager "maciek" "work-laptop" "aarch64-darwin" [ ];
+        "flakm@work" = mkHomeManager "maciek" "work" "aarch64-darwin" [ ];
       };
 
 
