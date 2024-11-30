@@ -41,7 +41,7 @@
     ./modules/productivity.nix
 
     ./modules/hyprland.nix
-    ./modules/neomutt.nix
+    #./modules/neomutt.nix
 
     ./modules/atuin.nix
     ./modules/kitty.nix
@@ -75,11 +75,11 @@
   gtk = {
     enable = true;
     theme = {
-      package = pkgs.gnome.gnome-themes-extra;
+      package = pkgs.gnome-themes-extra;
       name = "Adwaita";
     };
     iconTheme = {
-      package = pkgs.gnome.adwaita-icon-theme;
+      package = pkgs.adwaita-icon-theme;
       name = "Adwaita";
     };
     font = {

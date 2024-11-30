@@ -80,8 +80,6 @@ in
 
   security.rtkit.enable = true;
 
-  # Enable sound.
-  sound.enable = true;
   services.blueman.enable = true;
 
   hardware.pulseaudio.enable = false;
@@ -140,9 +138,8 @@ in
 
 
   hardware = {
-    opengl = {
+    graphics = {
       enable = true;
-      driSupport = true;
     };
     bluetooth = {
       enable = true;
@@ -190,8 +187,8 @@ in
     xfce.xfce4-pulseaudio-plugin
 
     #    polkit_gnome
-    gnome.adwaita-icon-theme
-    gnome.gnome-themes-extra
+    adwaita-icon-theme
+    gnome-themes-extra
     gsettings-desktop-schemas
     gruvbox-dark-gtk
     spotify
@@ -338,7 +335,7 @@ in
   # enable browsing samba shares
   services.gvfs = {
     enable = true;
-    package = lib.mkForce pkgs.gnome3.gvfs;
+    package = lib.mkForce pkgs.gnome.gvfs;
   };
 
   services.undervolt = {
