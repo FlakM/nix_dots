@@ -27,6 +27,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    nix-homebrew.url = "github:zhaofengli-wip/nix-homebrew";
+
   };
   outputs =
     { self
@@ -39,6 +41,7 @@
     , fenix
     , nur
     , sops-nix
+    , nix-homebrew
     , ...
     }@inputs:
     let
@@ -54,6 +57,19 @@
           allowUnfree = true;
           allowUnfreePredicate = (_: true);
         };
+
+        overlays = [
+    (self: super: {
+      karabiner-elements = super.karabiner-elements.overrideAttrs (old: {
+        version = "14.13.0";
+
+        src = super.fetchurl {
+          inherit (old.src) url;
+          hash = "sha256-gmJwoht/Tfm5qMecmq1N6PSAIfWOqsvuHU8VDJY8bLw=";
+        };
+      });
+    })
+  ];
       };
 
       pkgs-default = pkgs-stable default_system;
@@ -162,6 +178,7 @@
             ./configuration.nix
             ./hosts/air
             home-manager.darwinModules.home-manager
+            nix-homebrew.darwinModules.nix-homebrew
             {
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
@@ -189,8 +206,9 @@
           };
           modules = [
             ./configuration.nix
-            ./hosts/air
+            ./hosts/work
             home-manager.darwinModules.home-manager
+            nix-homebrew.darwinModules.nix-homebrew
             {
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;

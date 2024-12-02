@@ -19,6 +19,8 @@
 
       set-option -a terminal-overrides ",alacritty:RGB"
 
+      set-option -g default-shell /run/current-system/sw/bin/zsh
+
       set-option -g status-style bg=default
 
       # to enter press prefix + [
