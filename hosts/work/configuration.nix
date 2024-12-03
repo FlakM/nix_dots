@@ -1,5 +1,9 @@
 { pkgs, inputs, lib, pkgs-unstable, pkgs-master, config, ... }:
 {
+
+  imports = [
+  ];
+
    # Add nix-homebrew configuration
   nix-homebrew = {
     enable = true;
@@ -20,6 +24,9 @@
     rustup
     podman
     spotify
+
+    protobuf
+    iconv
   ];
 
 
@@ -74,13 +81,14 @@
 
 
   # Add ability to use TouchID for sudo
-  security.pam.enableSudoTouchIdAuth = true;
+  #security.pam.enableSudoTouchIdAuth = true;
 
   homebrew = {
     enable = true;
     casks = [
       "aerospace"
       "anki"
+      "docker"
     ];
     taps = [
       "nikitabobko/tap"
@@ -157,6 +165,15 @@
           HIDKeyboardModifierMappingDst = 30064771125;
           HIDKeyboardModifierMappingSrc = 30064771172;
         }
+
+        #{
+        #  HIDKeyboardModifierMappingSrc = 30064771296; # left control
+        #  HIDKeyboardModifierMappingDst = 30064771299; # left command
+        #}
+        #{
+        #  HIDKeyboardModifierMappingSrc = 30064771299; # left command
+        #  HIDKeyboardModifierMappingDst = 30064771296; # left control
+        #}
       ];
     };
   };

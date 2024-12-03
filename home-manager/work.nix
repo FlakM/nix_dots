@@ -23,7 +23,9 @@
 
     ./modules/scala.nix
 
-    ./modules/aerospace.nix
+    ./modules/aerospace
+
+    ./modules/aws.nix
   ];
 
 
@@ -53,8 +55,35 @@
     "/opt/homebrew/bin/"
   ];
 
+
+
   # Nicely reload system units when changing configs
   systemd.user.startServices = "sd-switch";
 
+  # ~/.gnupg/gpg-agent.conf
+  xdg.configFile."/.gnupg/gpg-agent.conf".text = ''
+    enable-ssh-support
+    write-env-file
+    use-standard-socket
+    default-cache-ttl 600
+    max-cache-ttl 7200
+    pinentry-program ${pkgs.pinentry_mac}/bin/pinentry-mac
+  '';
+
+  # ~/.ssh/config
+  xdg.configFile."/.ssh/config".text = ''
+    Host github.com
+        IdentitiesOnly yes
+        IdentityFile ~/.ssh/id_rsa_yubikey.pub
+        IdentityAgent ~/.gnupg/S.gpg-agent.ssh
+  '';
+
+
+
+  home.file.".zshrc_local".text = ''
+    FPATH="$HOME/.docker/completions:$FPATH"
+    autoload -Uz compinit
+    compinit
+  '';
 
 }

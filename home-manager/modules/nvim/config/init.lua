@@ -15,6 +15,7 @@ vim.g.edge_style = "default"
 vim.g.edge_transparent_background = 2
 
 vim.g.mapleader = " "
+vim.cmd 'colorscheme edge'
 
 
 
