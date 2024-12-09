@@ -43,6 +43,11 @@ in
 
     tree-sitter
 
+    # protobuf support
+    protols
+    clang-tools # formatting is enabled when clang-format is available
+
+
     # for linux only
   ] ++ lib.optionals stdenv.isLinux [
     # for debugging
@@ -129,7 +134,6 @@ in
 
 
 
-
     ] ++ lib.optionals (pkgs.stdenv.system != "aarch64-linux") [
       #vim-go
     ]
@@ -169,6 +173,7 @@ in
         "local metals_path = \"${pkgs-unstable.metals}/bin/metals\""
         (builtins.readFile ./config/metals-config.lua)
         (builtins.readFile ./config/obsidian.lua)
+        (builtins.readFile ./config/protols.lua)
 
         (if stdenv.isLinux then
           "local bashdb_path = \"${pkgs.bashdb}/bin/bashdb\""
