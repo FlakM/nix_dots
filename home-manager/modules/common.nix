@@ -22,6 +22,8 @@
     htop
     dnsutils
 
+    neofetch
+
     pkgs-unstable.yt-dlp
 
 
