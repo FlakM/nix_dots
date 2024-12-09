@@ -4,7 +4,7 @@
   imports = [
   ];
 
-   # Add nix-homebrew configuration
+  # Add nix-homebrew configuration
   nix-homebrew = {
     enable = true;
     enableRosetta = true;

@@ -14,11 +14,12 @@
     #    rust-analyzer-unwrapped
     #    rustfmt
     #    clippy
-    libiconv
-
 
     rustfilt
 
+    pkgs-unstable.rust-analyzer
+
+    openssl
 
     probe-rs
   ] ++ lib.optionals stdenv.isDarwin [

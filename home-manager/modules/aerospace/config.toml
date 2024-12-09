@@ -34,6 +34,9 @@ outer.right =      6
 
 # Main mode bindings
 [mode.main.binding]
+# Switch themes
+alt-n = 'exec-and-forget ~/.nix-profile/bin/apply-theme'
+
 # Launch applications
 alt-shift-enter = 'exec-and-forget open -na kitty'
 alt-shift-b = 'exec-and-forget open -a "Brave Browser"'

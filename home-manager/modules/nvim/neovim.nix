@@ -41,6 +41,8 @@ in
     pkgs-unstable.nodePackages.bash-language-server
     shfmt
 
+    tree-sitter
+
     # for linux only
   ] ++ lib.optionals stdenv.isLinux [
     # for debugging

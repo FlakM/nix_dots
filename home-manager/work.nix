@@ -50,9 +50,10 @@
     '';
   };
 
-  # Ensure homebrew is in the PATH
+  # Ensure homebrew and cargo tools are in the PATH
   home.sessionPath = [
     "/opt/homebrew/bin/"
+    "~/.cargo/bin"
   ];
 
 
@@ -81,9 +82,17 @@
 
 
   home.file.".zshrc_local".text = ''
+    # docker is not installed by nix
     FPATH="$HOME/.docker/completions:$FPATH"
     autoload -Uz compinit
     compinit
+
+    # Set correct SSH_AUTH_SOCK
+
+    export PATH="$HOME/.cargo/bin:$PATH"
+    export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
+    export SHELL=/run/current-system/sw/bin/zsh
   '';
+
 
 }

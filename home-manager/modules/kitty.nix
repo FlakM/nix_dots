@@ -1,4 +1,6 @@
 { config, pkgs, pkgs-unstable, libs, ... }:
+let kitty = pkgs-unstable.kitty;
+in
 {
 
   xdg.configFile."kitty/switch.sh" = {
@@ -9,13 +11,20 @@
 
       function dark() {
         echo "dark"
-        kitten themes --config-file-name=my "GitHub Dark High Contrast"
+        ${kitty}/bin/kitten themes --config-file-name=my "GitHub Dark High Contrast"
       }
 
       function light() {
         echo "light"
-        kitten themes --config-file-name=my Material
+        ${kitty}/bin/kitten themes --config-file-name=my Material
       }
+
+
+      if [ ! -f ~/.config/delta/theme ]; then
+        mkdir -p ~/.config/delta
+        touch ~/.config/delta/theme
+        light
+      fi
 
       if [ "$color" = "dark" ]; then
         echo "dark-mode" > ~/.config/delta/theme
@@ -30,20 +39,20 @@
           light
         fi
       fi
-      pkill -SIGUSR1 kitty
+      pkill -SIGUSR1 -a kitty
     '';
     executable = true;
   };
 
   programs.kitty = {
-    package = pkgs-unstable.kitty;
+    package = kitty;
     enable = true;
     shellIntegration.enableZshIntegration = true;
 
     extraConfig = "
-      include current-theme.conf
-      # Allow neovim jump to last cursor position
-      map ctrl+shift+o no_op
+    include current-theme.conf
+    # Allow neovim jump to last cursor position
+    map ctrl+shift+o no_op
     ";
 
     font = {

@@ -17,9 +17,7 @@
       set -g default-terminal "tmux-256color"
       #set -ag terminal-overrides ",xterm-256color:RGB"
 
-      set-option -a terminal-overrides ",alacritty:RGB"
-
-      set-option -g default-shell /run/current-system/sw/bin/zsh
+      set-option -a terminal-overrides ",kitty:RGB"
 
       set-option -g status-style bg=default
 
@@ -34,6 +32,8 @@
 
       set -s set-clipboard on
     '';
+
+    shell = "${pkgs.zsh}/bin/zsh";
     plugins = with pkgs.tmuxPlugins; [ sensible yank ];
 
   };
