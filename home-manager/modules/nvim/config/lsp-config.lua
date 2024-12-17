@@ -1,4 +1,3 @@
-lua << EOF
 local api = vim.api
 local cmd = vim.cmd
 local map = vim.keymap.set
@@ -144,7 +143,18 @@ map("n", "<leader>duc", function()
 end)
 
 
-require'lspconfig'.nil_ls.setup{}
+require'lspconfig'.nil_ls.setup{
+ autostart = true,
+      settings = {
+        ['nil'] = {
+          testSetting = 42,
+          formatting = {
+            command = { "nixpkgs-fmt" },
+          },
+        },
+      },
+
+}
 
 -- completion related settings
 -- This is similiar to what I use
@@ -180,5 +190,3 @@ cmp.setup({
     })  }),
 })
 
-
-EOF

@@ -27,9 +27,20 @@
 
     protobuf
     iconv
+    age
   ];
 
 
+
+  sops.defaultSopsFile = ../../secrets/secrets.yaml;
+  #  sops.secrets = {
+  #    "work_npmrc" = {
+  #      path = "${config.users.users.flakm.home}/.npmrc";
+  #      mode = "0440";
+  #      #owner = config.users.users.flakm.name;
+  #      #neededForUsers = true;
+  #    };
+  #  };
 
 
 

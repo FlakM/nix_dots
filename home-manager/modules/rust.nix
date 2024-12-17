@@ -1,4 +1,4 @@
-{ config, pkgs, pkgs-unstable, ... }:
+{ config, pkgs, pkgs-unstable, pkgs-master, ... }:
 {
 
   home.packages = with pkgs; [
@@ -17,9 +17,12 @@
 
     rustfilt
 
-    pkgs-unstable.rust-analyzer
+    pkgs-master.rust-analyzer-unwrapped
+    pkgs-master.rustfmt
+
 
     openssl
+    cmake
 
     probe-rs
   ] ++ lib.optionals stdenv.isDarwin [

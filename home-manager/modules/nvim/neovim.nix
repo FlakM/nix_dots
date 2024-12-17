@@ -48,6 +48,19 @@ in
     clang-tools # formatting is enabled when clang-format is available
 
 
+    # node
+    typescript
+    typescript-language-server
+    nodePackages.prettier
+    vscode-langservers-extracted
+
+    # lua
+    lua-language-server
+
+
+    # nix
+    nixpkgs-fmt
+
     # for linux only
   ] ++ lib.optionals stdenv.isLinux [
     # for debugging
@@ -132,7 +145,7 @@ in
       # notes plugins for obsidian
       obsidian-nvim
 
-
+      null-ls-nvim
 
     ] ++ lib.optionals (pkgs.stdenv.system != "aarch64-linux") [
       #vim-go
@@ -161,10 +174,10 @@ in
         "EOF"
         (builtins.readFile ./config/init.vim)
         ""
-        (builtins.readFile ./config/lsp-config.vim)
         ""
         ""
         "lua << EOF"
+        (builtins.readFile ./config/lsp-config.lua)
         "local dap_path  = \"${pkgs.lldb}/bin/lldb-vscode\""
         (builtins.readFile ./config/rust-config.lua)
         "EOF"
@@ -174,6 +187,8 @@ in
         (builtins.readFile ./config/metals-config.lua)
         (builtins.readFile ./config/obsidian.lua)
         (builtins.readFile ./config/protols.lua)
+        (builtins.readFile ./config/node.lua)
+        (builtins.readFile ./config/lua.lua)
 
         (if stdenv.isLinux then
           "local bashdb_path = \"${pkgs.bashdb}/bin/bashdb\""

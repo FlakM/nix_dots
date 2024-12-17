@@ -56,7 +56,7 @@ in
     ";
 
     font = {
-      name = "FiraCode Nerd Font";
+      name = "FiraCode Nerd Font Mono";
       package = pkgs.nerdfonts;
     };
   };

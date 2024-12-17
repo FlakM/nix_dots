@@ -12,6 +12,8 @@ vim.g.rustaceanvim = {
     end,
     default_settings = {
           ["rust-analyzer"] = {
+            installCargo = false,
+            installRustc = false,
             cargo = {
               allFeatures = true,
               loadOutDirsFromCheck = true,
@@ -19,8 +21,12 @@ vim.g.rustaceanvim = {
                 enable = true,
               },
             },
-            -- Add clippy lints for Rust.
-            checkOnSave = true,
+            -- Add clippy/check lints for Rust.
+            checkOnSave = {
+                enable = true,
+                command = "check",
+                allTargets = true,
+            },
             procMacro = {
               enable = true,
               ignored = {

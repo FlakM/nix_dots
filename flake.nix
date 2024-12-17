@@ -145,8 +145,8 @@
         }; # this is the important part
 
         modules = [
-          nur.nixosModules.nur
           ./home-manager/${hostName}.nix
+          sops-nix.homeManagerModules.sops
         ] ++ modules;
       };
     in
@@ -209,6 +209,7 @@
             ./configuration.nix
             ./hosts/work
             home-manager.darwinModules.home-manager
+            sops-nix.darwinModules.sops
             nix-homebrew.darwinModules.nix-homebrew
             {
               home-manager.useGlobalPkgs = true;

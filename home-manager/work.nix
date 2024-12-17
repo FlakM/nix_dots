@@ -26,7 +26,22 @@
     ./modules/aerospace
 
     ./modules/aws.nix
+
+    ./modules/k8s.nix
   ];
+
+
+  sops = {
+    # It's also possible to use a ssh key, but only when it has no password:
+    age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+    defaultSopsFile = ../secrets/secrets.yaml;
+
+    secrets = {
+      "work_npmrc" = {
+        path = "${config.home.homeDirectory}/.npmrc";
+      };
+    };
+  };
 
 
   home = {
