@@ -22,7 +22,26 @@
     ./modules/zsh.nix
 
     ./modules/scala.nix
+
+    ./modules/aerospace
+
+    ./modules/aws.nix
+
+    ./modules/k8s.nix
   ];
+
+
+  sops = {
+    # It's also possible to use a ssh key, but only when it has no password:
+    age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+    defaultSopsFile = ../secrets/secrets.yaml;
+
+    secrets = {
+      "work_npmrc" = {
+        path = "${config.home.homeDirectory}/.npmrc";
+      };
+    };
+  };
 
 
   home = {
@@ -45,6 +64,50 @@
       ${pkgs.rsync}/bin/rsync $rsyncArgs "$apps_source/" "$app_target" || true
     '';
   };
+
+  # Ensure homebrew and cargo tools are in the PATH
+  home.sessionPath = [
+    "/opt/homebrew/bin/"
+    "~/.cargo/bin"
+  ];
+
+
+
+  # Nicely reload system units when changing configs
+  systemd.user.startServices = "sd-switch";
+
+  # ~/.gnupg/gpg-agent.conf
+  xdg.configFile."/.gnupg/gpg-agent.conf".text = ''
+    enable-ssh-support
+    write-env-file
+    use-standard-socket
+    default-cache-ttl 600
+    max-cache-ttl 7200
+    pinentry-program ${pkgs.pinentry_mac}/bin/pinentry-mac
+  '';
+
+  # ~/.ssh/config
+  xdg.configFile."/.ssh/config".text = ''
+    Host github.com
+        IdentitiesOnly yes
+        IdentityFile ~/.ssh/id_rsa_yubikey.pub
+        IdentityAgent ~/.gnupg/S.gpg-agent.ssh
+  '';
+
+
+
+  home.file.".zshrc_local".text = ''
+    # docker is not installed by nix
+    FPATH="$HOME/.docker/completions:$FPATH"
+    autoload -Uz compinit
+    compinit
+
+    # Set correct SSH_AUTH_SOCK
+
+    export PATH="$HOME/.cargo/bin:$PATH"
+    export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
+    export SHELL=/run/current-system/sw/bin/zsh
+  '';
 
 
 }

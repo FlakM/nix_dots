@@ -27,6 +27,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    nix-homebrew.url = "github:zhaofengli-wip/nix-homebrew";
+
   };
   outputs =
     { self
@@ -39,6 +41,7 @@
     , fenix
     , nur
     , sops-nix
+    , nix-homebrew
     , ...
     }@inputs:
     let
@@ -143,13 +146,14 @@
         }; # this is the important part
 
         modules = [
-          nur.nixosModules.nur
           ./home-manager/${hostName}.nix
+          sops-nix.homeManagerModules.sops
         ] ++ modules;
       };
     in
     {
       formatter.x86_64-linux = pkgs-default.nixpkgs-fmt;
+      formatter.aarch64-darwin = (pkgs-stable "aarch64-darwin").nixpkgs-fmt;
 
       fonts.fonts = with nixpkgs; [
         (nerdfonts.override { fonts = [ "FiraCode" ]; })
@@ -176,6 +180,7 @@
             ./configuration.nix
             ./hosts/air
             home-manager.darwinModules.home-manager
+            nix-homebrew.darwinModules.nix-homebrew
             {
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
@@ -206,8 +211,10 @@
           ];
           modules = [
             ./configuration.nix
-            ./hosts/air
+            ./hosts/work
             home-manager.darwinModules.home-manager
+            sops-nix.darwinModules.sops
+            nix-homebrew.darwinModules.nix-homebrew
             {
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;

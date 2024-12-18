@@ -1,5 +1,50 @@
 local dap = require('dap')
 
+
+vim.g.rustaceanvim = {
+  -- Plugin configuration
+  tools = {
+  },
+  -- LSP configuration
+  server = {
+    on_attach = function(client, bufnr)
+      -- you can also put keymaps in here
+    end,
+    default_settings = {
+          ["rust-analyzer"] = {
+            installCargo = false,
+            installRustc = false,
+            cargo = {
+              allFeatures = true,
+              loadOutDirsFromCheck = true,
+              buildScripts = {
+                enable = true,
+              },
+            },
+            -- Add clippy/check lints for Rust.
+            checkOnSave = {
+                enable = true,
+                command = "check",
+                allTargets = true,
+            },
+            procMacro = {
+              enable = true,
+              ignored = {
+    --            ["async-trait"] = { "async_trait" },
+                ["napi-derive"] = { "napi" },
+                ["async-recursion"] = { "async_recursion" },
+              },
+            },
+        },
+    },
+  },
+  -- DAP configuration
+  dap = {
+  },
+}
+
+
+
 -- print dap_path
 -- the adapters are setup according to https://github.com/mfussenegger/nvim-dap/wiki/Debug-Adapter-installation
 --
