@@ -102,5 +102,16 @@
 
   };
 
+  # ~/.gnupg/gpg-agent.conf
+  xdg.configFile."/.gnupg/gpg-agent.conf".text = ''
+    enable-ssh-support
+    write-env-file
+    use-standard-socket
+    default-cache-ttl 600
+    max-cache-ttl 7200
+    pinentry-program ${pkgs.pinentry-tty}/bin/pinentry-tty
+  '';
+ 
+
 
 }

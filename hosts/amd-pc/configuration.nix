@@ -318,6 +318,8 @@ in
 
     flatpak
 
+    ddcutil
+
   ];
 
 
