@@ -69,6 +69,14 @@
               };
             });
           })
+
+          # override ffmpeg version of audiookshelf
+          # otherwise it will panic
+          (self: super: {
+            audiookshelf = super.audiookshelf.override {
+              ffmpeg-full = super.ffmpeg;
+            };
+          })
         ];
       };
 

@@ -14,7 +14,7 @@ let
     
     function switch_theme() {
       echo $1 > ${path}
-      echo "Current theme: `cat ${path}`"
+      echo "Current theme: cat ${path}"
     }
 
     if [ ! -f ${path} ]; then
@@ -24,20 +24,22 @@ let
 
 
     if [ "$curr" = "prefer-light" ]; then
-      switch_theme "prefer-dark"
-      ${config.home.homeDirectory}/.config/kitty/switch.sh dark ${path}
-      ${configure-mac-dark}/bin/configure-mac-dark
+      switch_theme "prefer-dark" || true
+      ${config.home.homeDirectory}/.config/kitty/switch.sh dark ${path} || true
+      ${configure-mac-dark}/bin/configure-mac-dark || true
 
       for server in $(nvr --serverlist); do
+        echo "Setting background to dark for server: $server" >> /tmp/nvr.log
         nvr --servername "$server" -cc 'set background=dark'
       done
     else
-      switch_theme "prefer-light"
-      ${config.home.homeDirectory}/.config/kitty/switch.sh light ${path}
+      switch_theme "prefer-light" || true
+      ${config.home.homeDirectory}/.config/kitty/switch.sh light ${path} || true
 
-      ${configure-mac-light}/bin/configure-mac-light
+      ${configure-mac-light}/bin/configure-mac-light || true
 
       for server in $(nvr --serverlist); do
+        echo "Setting background to light for server: $server" >> /tmp/nvr.log
         nvr --servername "$server" -cc 'set background=light'
       done
     fi

@@ -362,7 +362,7 @@ in
       dirmngr.enable = true;
       agent = {
         enableSSHSupport = true;
-        pinentryPackage = pkgs.pinentry-qt;
+        pinentryPackage = pkgs.pinentry-tty;
       };
     };
     kdeconnect.enable = true;

@@ -27,12 +27,6 @@
       name = "Default";
       isDefault = true;
 
-      extensions = with config.nur.repos.rycee.firefox-addons; [
-        ublock-origin
-        darkreader
-        bitwarden
-      ];
-
       settings = {
         "layout.css.devPixelsPerPx" = "1.5";
       };
