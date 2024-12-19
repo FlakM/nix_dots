@@ -57,8 +57,9 @@
           allowUnfree = true;
           allowUnfreePredicate = (_: true);
         };
-
         overlays = [
+          # workaround for bug https://github.com/LnL7/nix-darwin/issues/1041
+          # it resulted in error ".... .karabiner_grabber.plist': No such file or directory"
           (self: super: {
             karabiner-elements = super.karabiner-elements.overrideAttrs (old: {
               version = "14.13.0";
@@ -213,6 +214,9 @@
             pkgs-master = pkgs-master "aarch64-darwin";
             pkgs = pkgs-stable "aarch64-darwin";
           };
+          nixpkgs.overlays = [
+            nur.overlay
+          ];
           modules = [
             ./configuration.nix
             ./hosts/work
