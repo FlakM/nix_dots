@@ -577,6 +577,9 @@ in
 
     bind = CTRL SHIFT, V, exec, cliphist list | tofi | cliphist decode | wl-copy
     bind = CTRL SHIFT, P, exec, wl-paste
+    
+    bind = SUPER, C, exec, wl-copy
+    bind = SUPER, V, exec, wl-paste
 
     bind = $mainMod CTRL SHIFT, l, resizeactive, 50 0
     bind = $mainMod CTRL SHIFT, h, resizeactive, -50 0
