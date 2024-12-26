@@ -54,16 +54,22 @@
     ./modules/scala.nix
   ];
 
-  xsession.windowManager.i3.config.fonts.size = 18.0;
-  programs.alacritty.settings.font.size = 11;
-
   xdg.enable = true;
 
 
 
   wayland.windowManager.hyprland.settings = {
     # Monitor settings
-    monitor = [ ",highres,auto,1.5" "headless,highres,auto,1.6" ];
+    monitor = [ ",highres,auto,1.25" "headless,highres,auto,1.6" ];
+    master = {
+      orientation = "center";
+      always_center_master = true;
+      mfact = 0.48;
+    };
+
+    general = {
+      layout = "master";
+    };
   };
 
   #config = {

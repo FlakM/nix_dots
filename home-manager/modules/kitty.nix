@@ -39,7 +39,9 @@ in
           light
         fi
       fi
-      pkill -SIGUSR1 -a kitty
+      ${pkgs.busybox}/bin/pkill -SIGUSR1 kitty
+
+
     '';
     executable = true;
   };

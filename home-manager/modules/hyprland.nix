@@ -160,8 +160,6 @@ in
     slurp
 
     pkgs-unstable.grimblast
-
-    xwaylandvideobridge
   ];
 
 
@@ -461,7 +459,6 @@ in
         kb_model =
         kb_rules =
         kb_options=ctrl:nocaps
-        kb_options=lv3:lalt_switch
     
         follow_mouse = 1
     
@@ -480,7 +477,6 @@ in
         col.active_border = rgba(33ccffee) rgba(00ff99ee) 45deg
         col.inactive_border = rgba(595959aa)
     
-        layout = dwindle
     }
     
     animations {
@@ -542,14 +538,14 @@ in
     exec-once=waybar
 
     # See https://wiki.hyprland.org/Configuring/Keywords/ for more
-    $mainMod = SUPER
+    $mainMod = ALT
 
-    bind=SUPER_SHIFT,Q,killactive,
+    bind=ALT_SHIFT,Q,killactive,
     
-    bind=SUPER,F,fullscreen 
+    bind=$mainMod,F,fullscreen 
 
-    bind = SUPER, D, exec, tofi-drun --drun-launch=true
-    bind = SUPER, N, exec, ${config.home.homeDirectory}/.config/theme-switch.sh 
+    bind = $mainMod, D, exec, tofi-drun --drun-launch=true
+    bind = $mainMod, N, exec, ${config.home.homeDirectory}/.config/theme-switch.sh 
 
     # workspaces
     # binds $mainMod + [shift +] {1..10} to [move to] workspace {1..10}
@@ -569,15 +565,15 @@ in
     # ...
 
 
-    bind=SUPER,h,movefocus,l
-    bind=SUPER,l,movefocus,r
-    bind=SUPER,k,movefocus,u
-    bind=SUPER,j,movefocus,d
+    bind=$mainMod,h,movefocus,l
+    bind=$mainMod,l,movefocus,r
+    bind=$mainMod,k,movefocus,u
+    bind=$mainMod,j,movefocus,d
 
-    bind = SUPER CTRL, H, movewindow, l
-    bind = SUPER CTRL, L, movewindow, r
-    bind = SUPER CTRL, K, movewindow, u
-    bind = SUPER CTRL, J, movewindow, d
+    bind = $mainMod CTRL, H, movewindow, l
+    bind = $mainMod CTRL, L, movewindow, r
+    bind = $mainMod CTRL, K, movewindow, u
+    bind = $mainMod CTRL, J, movewindow, d
 
     bind = CTRL SHIFT, V, exec, cliphist list | tofi | cliphist decode | wl-copy
     bind = CTRL SHIFT, P, exec, wl-paste
@@ -593,7 +589,7 @@ in
     # print screen selection range
     bind=SHIFT,Print,exec,grimblast --scale 2 --wait 2 copy area
 
-    bind=SUPER SHIFT, L, exec, swaylock
+    #bind=$mainMod SHIFT, L, exec, swaylock
 
 
     # volume button that allows press and hold, volume limited to 150%

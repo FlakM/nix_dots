@@ -57,14 +57,19 @@ alt-k = 'focus up'
 alt-l = 'focus right'
 
 # Window movement
-alt-shift-h = 'move left'
-alt-shift-j = 'move down'
-alt-shift-k = 'move up'
-alt-shift-l = 'move right'
+ctrl-shift-h = 'move left'
+ctrl-shift-j = 'move down'
+ctrl-shift-k = 'move up'
+ctrl-shift-l = 'move right'
 
 # Resize windows
-alt-shift-minus = 'resize smart -50'
-alt-shift-equal = 'resize smart +50'
+
+ctrl-alt-shift-h = 'resize smart -25'
+ctrl-alt-shift-j = 'resize smart -25'
+
+ctrl-alt-shift-k = 'resize smart +25'
+ctrl-alt-shift-l = 'resize smart +25'
+
 
 # Workspace management
 alt-1 = 'workspace 1'

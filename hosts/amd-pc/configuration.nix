@@ -112,7 +112,8 @@ in
 
   services.xserver = {
     enable = true; # might need it for xwayland
-    xkb.options = "lv3:lalt_switch caps:swapescape";
+    #xkb.options = "lv3:lalt_switch caps:swapescape";
+    xkb.options = "caps:swapescape";
   };
 
 
