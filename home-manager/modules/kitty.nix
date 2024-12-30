@@ -39,7 +39,7 @@ in
           light
         fi
       fi
-      ${pkgs.busybox}/bin/pkill -SIGUSR1 kitty
+      ${pkgs.toybox}/bin/pkill -SIGUSR1 kitty
 
 
     '';

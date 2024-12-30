@@ -214,9 +214,6 @@
             pkgs-master = pkgs-master "aarch64-darwin";
             pkgs = pkgs-stable "aarch64-darwin";
           };
-          nixpkgs.overlays = [
-            nur.overlay
-          ];
           modules = [
             ./configuration.nix
             ./hosts/work

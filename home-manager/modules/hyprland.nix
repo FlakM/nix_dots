@@ -564,27 +564,27 @@ in
 
     # ...
 
-
+    # Focus movement
     bind=$mainMod,h,movefocus,l
     bind=$mainMod,l,movefocus,r
     bind=$mainMod,k,movefocus,u
     bind=$mainMod,j,movefocus,d
 
+    # Window movement
     bind = $mainMod CTRL, H, movewindow, l
     bind = $mainMod CTRL, L, movewindow, r
     bind = $mainMod CTRL, K, movewindow, u
     bind = $mainMod CTRL, J, movewindow, d
 
-    bind = CTRL SHIFT, V, exec, cliphist list | tofi | cliphist decode | wl-copy
-    bind = CTRL SHIFT, P, exec, wl-paste
-    
-    bind = SUPER, C, exec, wl-copy
-    bind = SUPER, V, exec, wl-paste
-
+    # Resize windows
     bind = $mainMod CTRL SHIFT, l, resizeactive, 50 0
     bind = $mainMod CTRL SHIFT, h, resizeactive, -50 0
     bind = $mainMod CTRL SHIFT, k, resizeactive, 0 -50
     bind = $mainMod CTRL SHIFT, j, resizeactive, 0 50
+
+    bind = CTRL SHIFT, V, exec, cliphist list | tofi | cliphist decode | wl-copy
+    bind = CTRL SHIFT, P, exec, wl-paste
+
 
 
     # print screen full screen

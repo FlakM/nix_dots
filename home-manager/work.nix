@@ -110,4 +110,8 @@
   '';
 
 
+
+  programs.kitty.font.size = 15;
+
+
 }

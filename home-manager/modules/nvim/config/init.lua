@@ -87,10 +87,6 @@ function switch_theme()
 end
 
 
-map("n", "<leader>l", [[<cmd>lua switch_theme()<CR>]])
-
-
-
 function openUrl()
     local file = vim.fn.expand("<cWORD>")
     local result = "silent! xdg-open " .. file

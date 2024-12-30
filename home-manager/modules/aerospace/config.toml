@@ -48,6 +48,8 @@ alt-q = "close"
 alt-shift-q = "close"
 alt-slash = 'layout tiles horizontal vertical'
 alt-comma = 'layout accordion horizontal vertical'
+alt-period = 'layout tiling floating'
+
 alt-f = 'fullscreen'
 
 # Focus movement
@@ -57,18 +59,16 @@ alt-k = 'focus up'
 alt-l = 'focus right'
 
 # Window movement
-ctrl-shift-h = 'move left'
-ctrl-shift-j = 'move down'
-ctrl-shift-k = 'move up'
-ctrl-shift-l = 'move right'
+alt-ctrl-h = 'move left'
+alt-ctrl-j = 'move down'
+alt-ctrl-k = 'move up'
+alt-ctrl-l = 'move right'
 
 # Resize windows
-
-ctrl-alt-shift-h = 'resize smart -25'
-ctrl-alt-shift-j = 'resize smart -25'
-
-ctrl-alt-shift-k = 'resize smart +25'
-ctrl-alt-shift-l = 'resize smart +25'
+ctrl-alt-shift-h = 'resize smart -50'
+ctrl-alt-shift-j = 'resize smart -50'
+ctrl-alt-shift-k = 'resize smart +50'
+ctrl-alt-shift-l = 'resize smart +50'
 
 
 # Workspace management

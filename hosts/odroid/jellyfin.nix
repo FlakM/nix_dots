@@ -42,7 +42,7 @@
   users.groups.deluge.members = [ "jellyfin" ];
 
   environment.systemPackages = with pkgs; [
-    ffmpeg
+    #ffmpeg
   ];
 
 }
