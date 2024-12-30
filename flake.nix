@@ -253,25 +253,5 @@
       };
 
 
-
-      packages.x86_64-linux =
-        let
-          headers = pkgs-default.dockerTools.buildImage {
-            name = "headers";
-            tag = "latest";
-            copyToRoot = pkgs-default.buildEnv {
-              name = "image-root";
-              paths = with pkgs-default; [ dockerTools.usrBinEnv dockerTools.binSh bcc busybox ];
-              pathsToLink = [ "/bin" ];
-            };
-
-            config.Cmd = [ "/bin/sh" ];
-          };
-
-        in
-        {
-          default = fenix.packages.x86_64-linux.beta.toolchain;
-          bcc = headers;
-        };
     };
 }

@@ -10,7 +10,6 @@ in
   imports = [
     ../../shared/wireguard.nix
     ../../shared/gpg.nix
-    ../../shared/kata/kata-container
     ../../shared/k3s/server.nix
     ../../shared/syncthing.nix
     ./zfs_replication.nix
@@ -111,7 +110,7 @@ in
 
 
   services.xserver = {
-    enable = true; # might need it for xwayland
+    enable = false; # might need it for xwayland
     #xkb.options = "lv3:lalt_switch caps:swapescape";
     xkb.options = "caps:swapescape";
   };
@@ -414,7 +413,9 @@ in
     package = lib.mkForce pkgs.gnome.gvfs;
   };
 
-
+  services.udev.extraRules = ''
+    KERNEL=="i2c-[0-9]*", GROUP="users", MODE="0660"
+  '';
 
   services.udev.packages = [
     (pkgs.writeTextFile {
@@ -422,6 +423,8 @@ in
       text = builtins.readFile ./69-probe-rs.rules;
       destination = "/etc/udev/rules.d/69-probe-rs.rules";
     })
+
+
   ];
 
 

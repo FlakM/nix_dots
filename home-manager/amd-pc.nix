@@ -64,7 +64,7 @@
     master = {
       orientation = "center";
       always_center_master = true;
-      mfact = 0.48;
+      mfact = 0.55;
     };
 
     general = {
