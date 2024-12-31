@@ -16,7 +16,7 @@ in
 
       function light() {
         echo "light"
-        ${kitty}/bin/kitten themes --config-file-name=my Material
+        ${kitty}/bin/kitten themes --config-file-name=my "Pencil Light"
       }
 
 
@@ -39,7 +39,7 @@ in
           light
         fi
       fi
-      ${pkgs.toybox}/bin/pkill -SIGUSR1 kitty
+      pkill -SIGUSR1 kitty || pkill -a -SIGUSR1 kitty
 
 
     '';
@@ -62,5 +62,7 @@ in
       package = pkgs.nerdfonts;
     };
   };
+
+
 }
 

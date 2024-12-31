@@ -28,6 +28,9 @@
     protobuf
     iconv
     age
+    mariadb
+    
+    zed-editor
   ];
 
 

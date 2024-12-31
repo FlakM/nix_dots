@@ -1,4 +1,7 @@
-{ config, pkgs, pkgs-unstable, pkgs-master, ... }:
+{ inputs, config, pkgs, pkgs-unstable, pkgs-master, ... }:
+let
+  fenix = inputs.fenix.packages.${pkgs.system}.latest;
+in
 {
 
   home.packages = with pkgs; [
@@ -17,11 +20,10 @@
 
     rustfilt
 
-    pkgs-master.rust-analyzer-unwrapped
-    pkgs-master.rustfmt
 
 
     openssl
+    rdkafka
     cmake
 
     probe-rs

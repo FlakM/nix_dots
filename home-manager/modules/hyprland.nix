@@ -577,10 +577,10 @@ in
     bind = $mainMod CTRL, J, movewindow, d
 
     # Resize windows
-    bind = $mainMod CTRL SHIFT, l, resizeactive, 50 0
-    bind = $mainMod CTRL SHIFT, h, resizeactive, -50 0
-    bind = $mainMod CTRL SHIFT, k, resizeactive, 0 -50
-    bind = $mainMod CTRL SHIFT, j, resizeactive, 0 50
+    bind = $mainMod CTRL SHIFT, l, resizeactive, 100 0
+    bind = $mainMod CTRL SHIFT, h, resizeactive, -100 0
+    bind = $mainMod CTRL SHIFT, k, resizeactive, 0 -100
+    bind = $mainMod CTRL SHIFT, j, resizeactive, 0 100
 
     bind = CTRL SHIFT, V, exec, cliphist list | tofi | cliphist decode | wl-copy
     bind = CTRL SHIFT, P, exec, wl-paste

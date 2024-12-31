@@ -1,4 +1,4 @@
-{ config, lib, pkgs, pkgs-unstable, ... }:
+{ config, lib, pkgs, pkgs-unstable, pkgs-master, ... }:
 let
   inherit (pkgs) stdenv;
   nvim-dap-probe-rs = pkgs.vimUtils.buildVimPlugin {
@@ -96,6 +96,8 @@ in
       pkgs-unstable.vimPlugins.material-nvim
       pkgs-unstable.vimPlugins.edge
 
+      vim-one
+
 
       #vim-nightfly-guicolors
       lualine-nvim
@@ -106,6 +108,10 @@ in
       pkgs-unstable.vimPlugins.nvim-dap
       pkgs-unstable.vimPlugins.nvim-dap-ui
       pkgs-unstable.vimPlugins.nvim-nio
+
+      pkgs-unstable.vimPlugins.fidget-nvim
+
+      git-blame-nvim
 
       nvim-lspconfig
 
@@ -128,7 +134,7 @@ in
 
       vim-gitgutter
 
-      pkgs-unstable.vimPlugins.rustaceanvim
+      rustaceanvim
 
       one-nvim
 
@@ -163,6 +169,10 @@ in
       #  plugins.tree-sitter-python
       #  plugins.tree-sitter-go
       #]))
+    ];
+    extraPackages = with pkgs; [
+      # for debugging
+      clang
     ];
 
 

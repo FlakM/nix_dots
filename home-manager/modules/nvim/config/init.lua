@@ -17,7 +17,16 @@ vim.g.edge_transparent_background = 2
 vim.g.mapleader = " "
 vim.cmd 'colorscheme edge'
 
+-- for showing lsp init process status
+require("fidget").setup {
+  -- options
+}
 
+-- for showing git blame
+require('gitblame').setup {
+     --Note how the `gitblame_` prefix is omitted in `setup`
+    enabled = false,
+}
 
 
 --
