@@ -28,6 +28,10 @@
 
 
     du-dust
+
+    # tools for debugging grpc services
+    grpcurl
+    grpc-client-cli
   ] ++ lib.optionals stdenv.isDarwin [
     coreutils # provides `dd` with --status=progress
   ] ++ lib.optionals stdenv.isLinux [

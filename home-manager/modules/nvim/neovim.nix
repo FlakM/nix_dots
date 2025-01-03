@@ -153,6 +153,10 @@ in
 
       null-ls-nvim
 
+      # database access
+      vim-dadbod
+      vim-dadbod-completion
+      vim-dadbod-ui
     ] ++ lib.optionals (pkgs.stdenv.system != "aarch64-linux") [
       #vim-go
     ]
@@ -180,6 +184,7 @@ in
       (builtins.concatStringsSep "\n" [
         "lua << EOF"
         (builtins.readFile ./config/init.lua)
+        (builtins.readFile ./config/databases.lua)
 
         "EOF"
         (builtins.readFile ./config/init.vim)

@@ -1,6 +1,6 @@
 { inputs, config, pkgs, pkgs-unstable, pkgs-master, ... }:
 let
-  fenix = inputs.fenix.packages.${pkgs.system}.latest;
+  fenix = inputs.fenix.packages.${pkgs.system};
 in
 {
 
@@ -12,6 +12,7 @@ in
     #openssl
     #libiconv
     pkg-config
+    zlib
     #    cargo
     #    rustc
     #    rust-analyzer-unwrapped
@@ -19,6 +20,8 @@ in
     #    clippy
 
     rustfilt
+
+    fenix.latest.rust-analyzer
 
 
 
