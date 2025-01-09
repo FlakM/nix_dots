@@ -1,4 +1,32 @@
+local map = vim.keymap.set
 local dap = require('dap')
+
+-- Toggle runnables
+map("n", "<leader>dr", function()
+    vim.cmd.RustLsp('debug')
+end)
+
+
+-- Run check
+map("n", "<leader>cc", function()
+    vim.cmd.RustLsp('flyCheck')
+end)
+
+-- Toggle debuggables
+map("n", "<leader>dd", function()
+    vim.cmd.RustLsp('debuggables')
+end)
+
+-- Explain errors
+map("n", "<leader>ee", function()
+    vim.cmd.RustLsp('explainError')
+end)
+
+-- Show error
+map("n", "<leader>e", function()
+    vim.cmd.RustLsp('renderDiagnostic')
+end)
+
 
 
 vim.g.rustaceanvim = {
@@ -13,7 +41,7 @@ vim.g.rustaceanvim = {
         default_settings = {
             ["rust-analyzer"] = {
                 cargo = {
-                    allFeatures = true,
+                    --allFeatures = false,
                     loadOutDirsFromCheck = true,
                     buildScripts = {
                         enable = true,
@@ -23,7 +51,7 @@ vim.g.rustaceanvim = {
                 -- Add clippy/check lints for Rust.
                 checkOnSave = {
                     enable = true,
-                    command = "clippy",
+                    command = "check",
                     allTargets = true,
                 },
                 procMacro = {

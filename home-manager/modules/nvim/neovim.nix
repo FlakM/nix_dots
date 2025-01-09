@@ -37,6 +37,9 @@ in
     # for debugging
     lldb
 
+    # for creating diagrams
+    graphviz 
+
     # bash lsp
     pkgs-unstable.nodePackages.bash-language-server
     shfmt
@@ -60,6 +63,9 @@ in
 
     # nix
     nixpkgs-fmt
+
+    # yaml
+    yaml-language-server
 
     # for linux only
   ] ++ lib.optionals stdenv.isLinux [
@@ -157,6 +163,10 @@ in
       vim-dadbod
       vim-dadbod-completion
       vim-dadbod-ui
+
+
+      # fast switching between tabs:
+      harpoon2
     ] ++ lib.optionals (pkgs.stdenv.system != "aarch64-linux") [
       #vim-go
     ]
@@ -204,6 +214,8 @@ in
         (builtins.readFile ./config/protols.lua)
         (builtins.readFile ./config/node.lua)
         (builtins.readFile ./config/lua.lua)
+        (builtins.readFile ./config/harpoon.lua)
+        (builtins.readFile ./config/yaml.lua)
 
         (if stdenv.isLinux then
           "local bashdb_path = \"${pkgs.bashdb}/bin/bashdb\""

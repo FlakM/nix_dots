@@ -29,8 +29,6 @@
     iconv
     age
     mariadb
-    
-    zed-editor
   ];
 
 

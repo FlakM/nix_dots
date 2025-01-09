@@ -3,12 +3,15 @@ local cmd = vim.cmd
 local map = vim.keymap.set
 local builtin = require('telescope.builtin')
 
--- LSP mappings
+--LSP mappings
 -- go to definition
 map("n", "gd", function()
     vim.lsp.buf.definition()
 end)
 
+map("n", "gtd", function()
+    vim.lsp.buf.type_definition()
+end)
 
 -- print item's docs
 map("n", "K", function()
@@ -68,12 +71,12 @@ end)
 
 -- all workspace errors
 map("n", "<leader>ae", function()
-    vim.diagnostic.setqflist({ severity = "E" })
+    vim.diagnostic.setqflist({ severity = "ERROR" })
 end)
 
 -- all workspace warnings
 map("n", "<leader>aw", function()
-    vim.diagnostic.setqflist({ severity = "W" })
+    vim.diagnostic.setqflist({ severity = "WARN" })
 end)
 
 -- buffer diagnostics only
@@ -97,15 +100,6 @@ end)
 -- Example mappings for usage with nvim-dap. If you don't use that, you can skip these
 
 
--- Toggle runnables
-map("n", "<leader>dr", function()
-    vim.cmd.RustLsp('debug')
-end)
-
--- Toggle debuggables
-map("n", "<leader>dd", function()
-    vim.cmd.RustLsp('debuggables')
-end)
 
 -- Toggle breakpoint
 map("n", "<leader>dt", function()
