@@ -30,6 +30,10 @@ in
     cmake
 
     probe-rs
+
+    gnumake
+    rust-jemalloc-sys
+    protobuf
   ] ++ lib.optionals stdenv.isDarwin [
     libiconv
   ] ++ lib.optionals stdenv.isLinux [
@@ -42,7 +46,7 @@ in
     [target.x86_64-unknown-linux-gnu]
     linker = "clang"
     rustflags = ["-C", "link-arg=-fuse-ld=${pkgs-unstable.mold-wrapped}/bin/mold", "--cfg", "tokio_unstable"]
-    rustdocflags = ["--cfg", "tokio_unstable"] 
+    #rustdocflags = ["--cfg", "tokio_unstable"] 
   '';
 
   home.sessionVariables = {

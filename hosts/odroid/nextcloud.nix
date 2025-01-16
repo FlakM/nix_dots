@@ -10,8 +10,8 @@
 
       inherit (config.services.nextcloud.package.packages.apps) contacts calendar tasks previewgenerator notes memories cookbook mail bookmarks;
       news = pkgs.fetchNextcloudApp {
-        sha256 = "sha256-lnNkaLb6/391AqjmmwlFdbTofpN/KrRHkNRK01mj59I=";
-        url = "https://github.com/nextcloud/news/releases/download/25.0.0-alpha5/news.tar.gz";
+        sha256 = "sha256-jJmF98mNAapZPEASoH5b/hFLFhcxW5a/1q86FFMawyI=";
+        url = "https://github.com/nextcloud/news/releases/download/25.2.0/news.tar.gz";
         license = "gpl3";
       };
 
@@ -97,25 +97,25 @@
 
 
   # add systemd cron job to nextcloud-occ preview:pre-generate it should run at nigt
-  systemd.services.nextcloud-pre-generate = {
-    description = "Nextcloud OCC Preview Pre-generation";
-    wantedBy = [ "multi-user.target" ];
-    after = [ "network.target" ];
-    serviceConfig = {
-      ExecStart = "${config.services.nextcloud.occ}/bin/nextcloud-occ preview:pre-generate";
-      User = "nextcloud";
-      Group = "nextcloud";
-    };
-  };
+  #systemd.services.nextcloud-pre-generate = {
+  #  description = "Nextcloud OCC Preview Pre-generation";
+  #  wantedBy = [ "multi-user.target" ];
+  #  after = [ "network.target" ];
+  #  serviceConfig = {
+  #    ExecStart = "${config.services.nextcloud.occ}/bin/nextcloud-occ preview:pre-generate";
+  #    User = "nextcloud";
+  #    Group = "nextcloud";
+  #  };
+  #};
 
-  systemd.timers.nextcloudPreGenerateTimer = {
-    wantedBy = [ "timers.target" ];
-    partOf = [ "nextcloud-pre-generate.service" ];
-    timerConfig = {
-      OnCalendar = "daily";
-      Persistent = true;
-    };
-  };
+  #systemd.timers.nextcloudPreGenerateTimer = {
+  #  wantedBy = [ "timers.target" ];
+  #  partOf = [ "nextcloud-pre-generate.service" ];
+  #  timerConfig = {
+  #    OnCalendar = "daily";
+  #    Persistent = true;
+  #  };
+  #};
 
 
 

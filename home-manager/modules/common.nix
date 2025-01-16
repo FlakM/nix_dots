@@ -13,7 +13,6 @@
     unzip
     zip
 
-    xsel
 
     bat
     fd

@@ -183,7 +183,7 @@ in
   };
 
   programs.swaylock = {
-    enable = true;
+    enable = false;
     settings = {
       color = "000000";
       font-size = 24;
@@ -195,7 +195,7 @@ in
   };
 
   services.hypridle = {
-    enable = true;
+    enable = false;
     settings = {
       general = {
         after_sleep_cmd = "${pkgs.sway}/bin/swaymsg \"output * toggle\"";

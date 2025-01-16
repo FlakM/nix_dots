@@ -1,4 +1,14 @@
-{ pkgs, ... }: {
+{ pkgs, pkgs-default, ... }: {
+
+  nixpkgs.overlays = [
+    (
+      self: super: {
+        audiobookshelf = super.audiobookshelf.override {
+          ffmpeg-full = super.ffmpeg;
+        };
+      }
+    )
+  ];
 
   services.audiobookshelf = {
     enable = true;
@@ -7,7 +17,6 @@
 
   services.nginx = {
     enable = true;
-
     virtualHosts = {
       "audiobookshelf.house.flakm.com" = {
         useACMEHost = "house.flakm.com";
@@ -25,11 +34,5 @@
   };
 
   users.groups.deluge.members = [ "audiobookshelf" ];
-  systemd.services.audiobookshelf.serviceConfig = {
-    Environment = [
-      "FFMPEG_PATH=${pkgs.ffmpeg}/bin/ffmpeg"
-      "FFPROBE_PATH=${pkgs.ffmpeg}/bin/ffprobe"
-    ];
-  };
 
 }
