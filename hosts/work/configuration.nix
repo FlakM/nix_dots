@@ -29,6 +29,11 @@
     iconv
     age
     mariadb
+
+    pkgs-unstable.terraform
+
+    # proxy for intercepting traffic
+    mitmproxy
   ];
 
 
@@ -71,8 +76,7 @@
     "flakm"
   ];
 
-
-  environment.pathsToLink = [ "/share/zsh" ];
+  #environment.pathsToLink = [ "/share/zsh" ];
 
 
 

@@ -67,6 +67,10 @@ in
     # yaml
     yaml-language-server
 
+    # golang & terraform
+    gopls
+    terraform-lsp
+
     # for linux only
   ] ++ lib.optionals stdenv.isLinux [
     # for debugging
@@ -167,6 +171,8 @@ in
 
       # fast switching between tabs:
       harpoon2
+
+
     ] ++ lib.optionals (pkgs.stdenv.system != "aarch64-linux") [
       #vim-go
     ]
@@ -223,6 +229,7 @@ in
           "local bashdb_path = nil")
 
         (builtins.readFile ./config/bash.lua)
+        (builtins.readFile ./config/golang.lua)
 
 
 

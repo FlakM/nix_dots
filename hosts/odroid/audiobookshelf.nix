@@ -1,7 +1,9 @@
 { pkgs, ... }: {
 
-  services.audiobookshelf.enable = true;
-  services.audiobookshelf.openFirewall = true;
+  services.audiobookshelf = {
+    enable = true;
+    openFirewall = true;
+  };
 
   services.nginx = {
     enable = true;
@@ -23,4 +25,11 @@
   };
 
   users.groups.deluge.members = [ "audiobookshelf" ];
+  systemd.services.audiobookshelf.serviceConfig = {
+    Environment = [
+      "FFMPEG_PATH=${pkgs.ffmpeg}/bin/ffmpeg"
+      "FFPROBE_PATH=${pkgs.ffmpeg}/bin/ffprobe"
+    ];
+  };
+
 }
