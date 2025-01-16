@@ -431,18 +431,11 @@ in
     '';
   };
 
-  wayland.windowManager.hyprland = {
-    enable = true;
-    systemd = {
-      enable = true;
-      variables = [ "--all" ];
-      enableXdgAutostart = true;
-    };
-  };
+  wayland.windowManager.hyprland.enable = true;
 
   wayland.windowManager.hyprland.extraConfig = ''
     # See https://wiki.hyprland.org/Configuring/Monitors/
-    #monitor=,highres,auto,1.5
+    #monitor=,highres,auto,1.4
 
     env = GDK_SCALE,1.5
     env = XCURSOR_SIZE,32
@@ -458,7 +451,8 @@ in
         kb_variant =
         kb_model =
         kb_rules =
-        kb_options=ctrl:nocaps
+        # both left windows and ctrl should be ctrl (caps lock is ctrl)
+        kb_options = altwin:ctrl_win,ctrl:nocaps
     
         follow_mouse = 1
     
@@ -546,6 +540,7 @@ in
 
     bind = $mainMod, D, exec, tofi-drun --drun-launch=true
     bind = $mainMod, N, exec, ${config.home.homeDirectory}/.config/theme-switch.sh 
+    bind = $mainMod, RETURN, exec, ghostty -e "zsh --login -c 'if command -v tmux >/dev/null 2>&1; then tmux attach || tmux; else zsh; fi'"
 
     # workspaces
     # binds $mainMod + [shift +] {1..10} to [move to] workspace {1..10}

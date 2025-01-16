@@ -30,6 +30,7 @@
     ./modules/k8s.nix
 
     ./modules/zed.nix
+    ./modules/ghostty.nix
   ];
 
 

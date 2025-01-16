@@ -52,6 +52,8 @@
     ./modules/jira_cli.nix
 
     ./modules/scala.nix
+
+    ./modules/ghostty.nix
   ];
 
   xdg.enable = true;
@@ -60,7 +62,7 @@
 
   wayland.windowManager.hyprland.settings = {
     # Monitor settings
-    monitor = [ ",highres,auto,1.25" "headless,highres,auto,1.6" ];
+    monitor = [ ",highres,auto,1.1" "headless,highres,auto,1.6" ];
     master = {
       orientation = "center";
       always_center_master = true;

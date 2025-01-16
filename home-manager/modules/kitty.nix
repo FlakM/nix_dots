@@ -39,7 +39,7 @@ in
           light
         fi
       fi
-      pkill -SIGUSR1 kitty || pkill -a -SIGUSR1 kitty
+      pkill -SIGUSR1 kitty || pkill -a -SIGUSR1 kitty || true
 
 
     '';
