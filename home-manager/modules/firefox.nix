@@ -28,7 +28,7 @@
       isDefault = true;
 
       settings = {
-        "layout.css.devPixelsPerPx" = "1.5";
+        #"layout.css.devPixelsPerPx" = "1.1";
       };
 
       userChrome = ''
