@@ -34,6 +34,11 @@
 
     # proxy for intercepting traffic
     mitmproxy
+
+    # for scopes service
+    pkg-config
+    oniguruma
+    openssl
   ];
 
 
@@ -59,11 +64,6 @@
     enable = true;
     enableCompletion = true;
   };
-
-  environment.shells = with pkgs; [
-    zsh
-    bashInteractive
-  ];
 
 
   users.users.flakm = {

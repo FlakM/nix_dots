@@ -34,6 +34,17 @@ in
     gnumake
     rust-jemalloc-sys
     protobuf
+
+    # framework for managing multiple git hooks
+    pre-commit
+
+    vscode
+
+
+    # library for regular expressions
+    oniguruma
+    openssl
+    pkg-config
   ] ++ lib.optionals stdenv.isDarwin [
     libiconv
   ] ++ lib.optionals stdenv.isLinux [

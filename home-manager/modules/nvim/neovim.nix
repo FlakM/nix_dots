@@ -38,7 +38,7 @@ in
     lldb
 
     # for creating diagrams
-    graphviz 
+    graphviz
 
     # bash lsp
     pkgs-unstable.nodePackages.bash-language-server
@@ -169,9 +169,12 @@ in
       vim-dadbod-ui
 
 
-      # fast switching between tabs:
-      harpoon2
+      # fast switching between marks:
+      marks-nvim
 
+      # copy to clipboard git links
+      vim-fugitive
+      vim-rhubarb
 
     ] ++ lib.optionals (pkgs.stdenv.system != "aarch64-linux") [
       #vim-go
@@ -220,8 +223,9 @@ in
         (builtins.readFile ./config/protols.lua)
         (builtins.readFile ./config/node.lua)
         (builtins.readFile ./config/lua.lua)
-        (builtins.readFile ./config/harpoon.lua)
+        (builtins.readFile ./config/marks.lua)
         (builtins.readFile ./config/yaml.lua)
+        (builtins.readFile ./config/git.lua)
 
         (if stdenv.isLinux then
           "local bashdb_path = \"${pkgs.bashdb}/bin/bashdb\""

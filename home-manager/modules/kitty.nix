@@ -51,15 +51,16 @@ in
     enable = true;
     shellIntegration.enableZshIntegration = true;
 
-    extraConfig = "
-    include current-theme.conf
-    # Allow neovim jump to last cursor position
-    map ctrl+shift+o no_op
-    ";
+    extraConfig = ''
+      include current-theme.conf
+      # Allow neovim jump to last cursor position
+      map ctrl+shift+o no_op
+      copy_on_select clipboard
+    '';
 
     font = {
       name = "FiraCode Nerd Font Mono";
-      package = pkgs.nerdfonts;
+      package = (pkgs.nerdfonts.override { fonts = [ "FiraCode" ]; });
     };
   };
 

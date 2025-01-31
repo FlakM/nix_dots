@@ -96,20 +96,7 @@ function switch_theme()
 end
 
 
-function openUrl()
-    local file = vim.fn.expand("<cWORD>")
-    local result = "silent! xdg-open " .. file
-    if
-        string.match(file, "https") == "https"
-        or string.match(file, "http") == "http"
-    then
-        vim.cmd(result)
-    else
-        return print("💁 Woops is not url gais 🙅")
-    end
-end
 
-vim.keymap.set("n", '<leader><CR>', ':lua openUrl()<CR>', {noremap = true, desc = "OpenUrl Undercurword", silent = true })
-vim.keymap.set("i", '<leader><CR>', '<Esc>:lua openUrl()<CR>', {noremap = true, desc = "OpenUrl Undercurword", silent = true })
-
-
+-- Jump to start and end of line using the home row keys
+vim.keymap.set({ "n", "v", "o" }, "L", "g$", { noremap = true, silent = true })
+vim.keymap.set({ "n", "v", "o" }, "H", "g^", { noremap = true, silent = true })

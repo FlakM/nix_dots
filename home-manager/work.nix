@@ -30,7 +30,6 @@
     ./modules/k8s.nix
 
     ./modules/zed.nix
-    ./modules/ghostty.nix
   ];
 
 
@@ -48,6 +47,10 @@
         sopsFile = ../secrets/dbs.yaml;
         path = "${config.home.homeDirectory}/.dbs.lua";
       };
+
+      "jfrog_env" = {
+        path = "${config.home.homeDirectory}/.jfrog.env";
+      };
     };
   };
 
@@ -57,6 +60,7 @@
     homeDirectory = "/Users/flakm";
     stateVersion = "24.05";
   };
+
 
 
   # copied from https://github.com/LnL7/nix-darwin/issues/214#issuecomment-2050027696
@@ -69,7 +73,7 @@
       app_target_base="${config.home.homeDirectory}/Applications"
       app_target="$app_target_base/$moniker"
       mkdir -p "$app_target"
-      ${pkgs.rsync}/bin/rsync $rsyncArgs "$apps_source/" "$app_target" || true
+      ${pkgs.rsync}/bin/rsync $rsyncArgs "$apps_source/" "$app_target" 2>/dev/null || true
     '';
   };
 

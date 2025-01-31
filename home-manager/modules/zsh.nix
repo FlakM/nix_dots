@@ -48,7 +48,7 @@
       bindkey  "^[[1;3C" forward-word
       bindkey  "^[[1;eD" backward-word
 
-      export PKG_CONFIG_PATH="${pkgs.openssl.dev}/lib/pkgconfig"
+      export PKG_CONFIG_PATH="${pkgs.openssl.dev}/lib/pkgconfig:${pkgs.oniguruma.dev}/lib/pkgconfig:$PKG_CONFIG_PATH"
       export PKG="/lib/pkgconfig"
 
       function changelog() {
@@ -89,7 +89,10 @@
       
 
 
-      source ~/.zshrc_local
+      source ~/.zshrc_local || true
+      source ~/.jfrog.env || true
+      
+      source ~/.sdkman/bin/sdkman-init.sh || true
 
 
       # for home.sessionVariables to work

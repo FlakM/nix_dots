@@ -44,7 +44,7 @@ require("obsidian").setup({
 })
 
 
-map("n", "<leader>d", [[<cmd>ObsidianDailies<CR>]])
+map("n", "<leader>D", [[<cmd>ObsidianDailies<CR>]])
 
 -- set conceallevel to 2
 vim.cmd("set conceallevel=2")
