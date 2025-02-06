@@ -61,6 +61,8 @@
         config = {
           allowUnfree = true;
           allowUnfreePredicate = (_: true);
+          permittedInsecurePackages = [ "dotnet-sdk-6.0.428" "aspnetcore-runtime-6.0.36" ];
+
         };
         overlays = [
           # workaround for bug https://github.com/LnL7/nix-darwin/issues/1041

@@ -1,5 +1,5 @@
 # configuration in this file only applies to exampleHost host.
-{ pkgs, pkgs-unstable, ... }: {
+{ pkgs, pkgs-unstable, inputs, ... }: {
 
 
   disabledModules = [ "services/web-apps/mealie.nix" ];
@@ -27,6 +27,9 @@
     ./mealie.nix
 
     ../../shared/immich.nix
+
+
+    inputs.nixos-hardware.nixosModules.hardkernel-odroid-h3
   ];
 
 
@@ -35,8 +38,10 @@
 
 
   users.users.flakm = {
-    extraGroups = [ "deluge" "nextcloud" ];
+    extraGroups = [ "deluge" "nextcloud" "sabnzbd" "sonarr" "jellyseerr" "flakm" ];
   };
+
+
 
   systemd.services.mount-atuin = {
     description = "Mount Atuin ZFS Volume";
@@ -66,6 +71,9 @@
     wireguard-tools
     transmission
     unrar
+
+    # for monitoring gpu (quicksync)
+    intel-gpu-tools
   ];
 
   # Let's open the UDP port with which the network is tunneled through
