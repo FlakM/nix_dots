@@ -35,7 +35,7 @@ outer.right =      6
 # Main mode bindings
 [mode.main.binding]
 # Switch themes
-alt-n = 'exec-and-forget /run/current-system/sw/bin/zsh -c ~/.nix-profile/bin/apply-theme'
+ctrl-alt-n = 'exec-and-forget /run/current-system/sw/bin/zsh -c ~/.nix-profile/bin/apply-theme'
 
 # Launch applications
 alt-shift-enter = 'exec-and-forget /run/current-system/sw/bin/zsh -c kitty'
@@ -53,10 +53,10 @@ alt-period = 'layout tiling floating'
 alt-f = 'fullscreen'
 
 # Focus movement
-alt-h = 'focus left'
-alt-j = 'focus down'
-alt-k = 'focus up'
-alt-l = 'focus right'
+ctrl-shift-h = 'focus left'
+ctrl-shift-j = 'focus down'
+ctrl-shift-k = 'focus up'
+ctrl-shift-l = 'focus right'
 
 # Window movement
 alt-ctrl-h = 'move left'

@@ -1,14 +1,77 @@
-# My dotfiles using nix flakes
+# My dotfiles using nix flakes with home manager
 
 ![Screenshot of two appliactions open terminal on the left and firefox on the right](./screen.png)
 
-Higlights:
+The why for this repo is to have a reproducible setup for my different machines.
+I have a linux machines and work macs. Since they cannot share all of the software like DMs I try to keep the configuration as close as possible to avoid context switching. It results in some overhead and strange key combinations but I think it is worth it.
 
-- hyprland for eye candy
-- direnv integration for per project goodness
-- custom neovim configuration for rust/nix development
-- multiple hosts from same flake (x86 and arm m1 mac)
-- zfs on root
+My hardware setup is a ultra wide monitor with a kvm connected to two machines.
+
+## Features
+
+This is a set of very opinionated configurations. The mix of shortcuts is a result of fighting with different operating machines and picking the lowest common denominator.
+
+1. Window managment with `hyprland` and `aerospace`. Meant to jump quickly between stable "activities" like coding, browsing, notes etc.
+    - `alt + NUM` go to workspace
+    - `alt + shift + NUM` move windows to workspace
+    - `ctrl + shift + h/j/k/l` move focus
+    - `ctrl + alt + shift + h/j/k/l` resize windows
+    - `ctrl + alt + h/j/k/l` move windows
+    - `alt + [NUM]` move windows to workspace
+    - pin applications to workspaces:
+        - 1: terminals (kitty)
+        - 2: browser (firefox)
+        - 3: notes
+        - 0: slack 
+2. `neovim` as main editor living mostly in long lived `tmux` sessions
+    - pretty default settings (disabled arrow keys, line numbers, relative numbers)
+    - debugging support 
+    - `ctrl + w + h/j/k/l` move between splits
+    - `ctrl + w + v/s` split windows (vertical/horizontal)
+    - `ctrl + w + o` close other windows
+    - `leader + c + g` for copying url to git code to share (works in both visual and normal mode)
+    - `leader + f` for fuzzy finding files
+    - `leader + f + g` for grepping in files
+    - `leader + f + m` for fuzzy searching marks
+    - `ctrl + s` for accepting AI code completions
+    - `leader + c + f` copy relative file path
+    - `leader + c + t` copy file name
+    - LSP shortcuts defined in [lsp-config.lua](./home-manager/modules/nvim/config/lsp-config.lua)
+        - `gd` for going to definition 
+        - `gtd` for going to type definition
+        - `gr` for references
+        - `gi` for implementation
+        - `gds`/`gws` for document/workspace symbols
+        - `leader + FF` for formatting
+        - `leader + ca` for code actions
+        - `]c` and `[c` for next/previous diagnostic
+        - `leader + rn` for renaming
+        - `leader + l` for enabling inlay hints (useful for rust)
+3. `tmux` for managing terminals
+    - `tmux new-session -c ~ -s main` for creating new session
+    - `ctrl + b + c` for creating new window
+    - `ctrl + b + NUM` for moving between windows [1-9]
+    - `ctrl + b + ,` for renaming window
+    - `ctrl + b + %` for splitting window
+    - `ctrl + b + h/j/k/l` for moving between splits
+    - `ctrl + b + [h/j/k/l]` for resizing splits
+    - `ctrl + b + z` for zooming in/out
+    - `ctrl + b + d` for detaching
+    - `ctrl + b + [` for scrolling
+    - `ctrl + b + r` for reloading config
+    - `ctrl + b + s/w` for quick switching between sessions/windows
+4. terminal emulator with `zsh`
+    - `atuin` for magic history search
+        - `ctrl + r` for searching history, press again to change search type (session, host etc)
+        - `up` in zsh for history session in current session
+    - `zoxide` for jumping between directories. Write `z pattern` to jump to directory containing `pattern`
+    - `starship` for nicer prompt
+    - `vim mode` in `zsh`
+        - press `esc` to enter normal mode
+        - enter `v` in normal mode to enter visual mode using default `$EDITOR` - useful for editing long commands
+        - normal vim navigation works in normal mode
+
+
 
 
 ## How to use

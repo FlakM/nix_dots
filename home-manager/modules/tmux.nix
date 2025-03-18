@@ -11,6 +11,9 @@
 
     extraConfig = ''
       # Start windows and pane numbering with index 1 instead of 0
+      set-option -g default-shell /run/current-system/sw/bin/zsh
+      set-option -g default-command /run/current-system/sw/bin/zsh
+
       set -g base-index 1
       setw -g pane-base-index 1
 

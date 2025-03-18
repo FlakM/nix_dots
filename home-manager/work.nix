@@ -30,6 +30,12 @@
     ./modules/k8s.nix
 
     ./modules/zed.nix
+
+    ./modules/sql.nix
+
+    #./modules/neomutt.nix
+    ./modules/aerc.nix
+
   ];
 
 
@@ -50,6 +56,15 @@
 
       "jfrog_env" = {
         path = "${config.home.homeDirectory}/.jfrog.env";
+      };
+
+
+      "neomutt_flakm" = {
+        path = "${config.home.homeDirectory}/.neomutt_flakm";
+      };
+
+      "neomutt_gmail" = {
+        path = "${config.home.homeDirectory}/.neomutt_gmail";
       };
     };
   };

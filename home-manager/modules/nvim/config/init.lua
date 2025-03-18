@@ -2,11 +2,11 @@ local api = vim.api
 local cmd = vim.cmd
 
 local function map(mode, lhs, rhs, opts)
-  local options = { noremap = true }
-  if opts then
-    options = vim.tbl_extend("force", options, opts)
-  end
-  api.nvim_set_keymap(mode, lhs, rhs, options)
+    local options = { noremap = true }
+    if opts then
+        options = vim.tbl_extend("force", options, opts)
+    end
+    api.nvim_set_keymap(mode, lhs, rhs, options)
 end
 
 -- open in a dark mode
@@ -19,12 +19,12 @@ vim.cmd 'colorscheme edge'
 
 -- for showing lsp init process status
 require("fidget").setup {
-  -- options
+    -- options
 }
 
 -- for showing git blame
 require('gitblame').setup {
-     --Note how the `gitblame_` prefix is omitted in `setup`
+    --Note how the `gitblame_` prefix is omitted in `setup`
     enabled = false,
 }
 
@@ -32,15 +32,15 @@ require('gitblame').setup {
 --
 -- nvim-tree section
 --
-require'nvim-tree'.setup {
-  view = {
-    width = 50,
-  },
-  hijack_cursor = true,
-  update_focused_file = {
-    enable = true,
-  },
-} 
+require 'nvim-tree'.setup {
+    view = {
+        width = 50,
+    },
+    hijack_cursor = true,
+    update_focused_file = {
+        enable = true,
+    },
+}
 
 
 map("n", "<C-n>", [[<cmd>NvimTreeToggle<CR>]])
@@ -65,37 +65,39 @@ map("n", "<leader>fb", [[<cmd>Telescope buffers<CR>]])
 map("n", "<leader>fh", [[<cmd>Telescope help_tags<CR>]])
 
 
--- Replace visually selected text with contents of register without yanking 
+-- Replace visually selected text with contents of register without yanking
 -- https://superuser.com/questions/321547/how-do-i-replace-paste-yanked-text-in-vim-without-yanking-the-deleted-lines
 map("v", "<leader>p", [["_dP]])
 
 
 if vim.fn.filereadable(vim.fn.expand("~/.config/current-color_scheme")) == 1 then
-  local file = io.open(vim.fn.expand("~/.config/current-color_scheme"), "r")
-  local theme = file:read()
-  if theme == "prefer-light" then
-      vim.g.background = "light"
-      vim.cmd("set background=light")
-  else
-      vim.g.background = "dark"
-      vim.cmd("set background=dark")
-  end
-  file:close()
+    local file = io.open(vim.fn.expand("~/.config/current-color_scheme"), "r")
+    local theme = file:read()
+    if theme == "prefer-light" then
+        vim.g.background = "light"
+        vim.cmd("set background=light")
+        -- set visual selection color to pink
+        vim.api.nvim_set_hl(0, "Visual", { bg = "#ffc0cb", fg = "NONE" })
+    else
+        vim.g.background = "dark"
+        vim.cmd("set background=dark")
+    end
+    file:close()
 end
 
 
 function switch_theme()
-  -- toggle background if dark or not set
-  if vim.g.background == "dark" or vim.g.background == nil then
-    vim.g.background = "light"
-    vim.cmd("set background=light")
-  else
-    vim.g.background = "dark"
-    vim.cmd("set background=dark")
-  end
+    -- toggle background if dark or not set
+    if vim.g.background == "dark" or vim.g.background == nil then
+        vim.g.background = "light"
+        vim.cmd("set background=light")
+        -- set visual selection color to pink
+        vim.api.nvim_set_hl(0, "Visual", { bg = "#ffc0cb", fg = "NONE" })
+    else
+        vim.g.background = "dark"
+        vim.cmd("set background=dark")
+    end
 end
-
-
 
 -- Jump to start and end of line using the home row keys
 vim.keymap.set({ "n", "v", "o" }, "L", "g$", { noremap = true, silent = true })

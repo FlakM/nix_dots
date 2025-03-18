@@ -53,7 +53,7 @@
 
     ./modules/scala.nix
 
-    ./modules/ghostty.nix
+    #./modules/ghostty.nix
   ];
 
   xdg.enable = true;

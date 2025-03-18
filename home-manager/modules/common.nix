@@ -31,8 +31,10 @@
     # tools for debugging grpc services
     grpcurl
     grpc-client-cli
+
+    gnuplot
   ] ++ lib.optionals stdenv.isDarwin [
-    coreutils # provides `dd` with --status=progress
+    coreutils-full # provides `dd` with --status=progress
   ] ++ lib.optionals stdenv.isLinux [
     iputils # provides `ping`, `ifconfig`, ...
     libuuid # `uuidgen` (already pre-installed on mac)
