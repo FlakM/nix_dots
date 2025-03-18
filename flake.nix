@@ -37,6 +37,19 @@
     };
 
     nix-homebrew.url = "github:zhaofengli-wip/nix-homebrew";
+    # Optional: Declarative tap management
+    homebrew-core = {
+      url = "github:homebrew/homebrew-core";
+      flake = false;
+    };
+    homebrew-cask = {
+      url = "github:homebrew/homebrew-cask";
+      flake = false;
+    };
+    homebrew-bundle = {
+      url = "github:homebrew/homebrew-bundle";
+      flake = false;
+    };
 
   };
   outputs =
@@ -51,6 +64,9 @@
     , nur
     , sops-nix
     , nix-homebrew
+    , homebrew-core
+    , homebrew-cask
+    , homebrew-bundle
     , ...
     }@inputs:
     let
@@ -186,6 +202,9 @@
             pkgs-unstable = pkgs-unstable "aarch64-darwin";
             pkgs-master = pkgs-master "aarch64-darwin";
             pkgs = pkgs-stable "aarch64-darwin";
+
+            # make all inputs availabe in other nix files
+            inherit inputs;
           };
           modules = [
             ./configuration.nix
@@ -216,6 +235,9 @@
             pkgs-unstable = pkgs-unstable "aarch64-darwin";
             pkgs-master = pkgs-master "aarch64-darwin";
             pkgs = pkgs-stable "aarch64-darwin";
+
+            # make all inputs availabe in other nix files
+            inherit inputs;
           };
           modules = [
             ./configuration.nix

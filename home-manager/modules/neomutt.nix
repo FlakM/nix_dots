@@ -7,45 +7,55 @@ let
   list-empty-mailboxes = pkgs.writeScriptBin "list-empty-mailboxes" ''
     find ${config.accounts.email.maildirBasePath}/$1 -type d -exec bash -c 'd1=("$1"/cur/); d2=("$1"/*/); [[ ! -e "$d1" && -e "$d2" ]]' _ {} \; -printf "%p "
   '';
-  cat-cred = pkgs.writeScriptBin "cat-cred" ''
-    ${../../mutt_oauth2.py} /tmp/maciej.flak@modivo.com
+
+  pick-mailbox = pkgs.writeScriptBin "pick-mailbox" ''
+    fzf_command='fzf --height ~100%'
+    fd_command="fd . ${config.home.homeDirectory}/mail/ --type d --max-depth 1"
+    
+    folder="$($fd_command | $fzf_command)"
+    
+    # Get the basename; this will be used to locate the account config.
+    basefolder=$(basename "$folder")
+    
+    # Construct the push command: unmailboxes, then source the config, then sync and change folder.
+    echo "push '<enter-command>unmailboxes *<enter><enter-command>source ~/.config/neomutt/$basefolder<enter><sync-mailbox><change-folder>$folder/Inbox<enter>'"
   '';
+
   autodiscoverMailboxes = path: "mailboxes `${list-mailboxes}/bin/list-mailboxes ${path}`";
   colorscheme = (import ./neomutt_colorscheme.nix).colorscheme;
-  smokeOutBugs = true;
 in
 {
   home.packages = [
     list-mailboxes
     list-empty-mailboxes
-    cat-cred
   ];
 
+  imports = [
+    ./mailcap.nix
+  ];
+
+  # inspired by 
+  # https://github.com/RaitoBezarius/nixos-home/blob/master/emails/neomutt.nix
   programs.neomutt = {
     enable = true;
-    package = pkgs.enableDebugging ((pkgs.neomutt.override {
-      enableLua = true;
-      enableZstd = true;
-      enableMixmaster = true;
-    }).overrideAttrs (old: {
-      # Undefined behavior + address sanitizer.
-      configureFlags = old.configureFlags ++ lib.optional smokeOutBugs "--asan --ubsan";
-    }));
     sidebar.width = 40;
     sidebar.enable = true;
     sidebar.shortPath = true;
     sidebar.format = "%D%> %?N?%N/?%S";
     vimKeys = true;
     sort = "reverse-date";
+
     extraConfig = ''
       bind index,pager K sidebar-prev       
       bind index,pager J sidebar-next       
-      bind index,pager \CO sidebar-open       # Ctrl-Shift-O - Open Highlighted Mailbox
       bind index,pager B sidebar-toggle-visible
+      bind index,pager \CO sidebar-open       # Ctrl-Shift-O - Open Highlighted Mailbox
+
       bind pager ,g group-reply
 
       # Move message(s) to Spam by pressing "S"
       macro index S "<tag-prefix><enter-command>unset resolve<enter><tag-prefix><clear-flag>N<tag-prefix><enter-command>set resolve<enter><tag-prefix><save-message>=spam<enter>" "file as Spam"
+
       macro pager S "<save-message>=spam<enter>" "file as Spam"
       # Return to Inbox by pressing "."
       macro index . "<change-folder>=INBOX<enter>" "INBOX"
@@ -76,6 +86,8 @@ in
 
       auto_view text/html image/*
 
+      macro index <F1> ":source ${pick-mailbox}/bin/pick-mailbox|<enter>" "Pick a mailbox"
+      
       ${colorscheme}
     '';
   };
@@ -87,51 +99,6 @@ in
 
   services.imapnotify.enable = true;
 
-  accounts.email = {
-    maildirBasePath = "mail";
-    accounts = {
-      "me@flakm.com" = {
-        realName = "Maciek Flak";
-        neomutt = {
-          enable = true;
-          extraConfig = ''
-            ${autodiscoverMailboxes "me@flakm.com"}
-            named-mailboxes ENS-Inbox +Inbox
-            folder-hook . "set sort=reverse-date ; set sort_aux=date"
-          '';
-        };
-        primary = true;
-        address = "me@flakm.com";
-        flavor = "fastmail.com";
-        signature = {
-          showSignature = "append";
-          text = ''
-            Regards,
-            Maciek Flak
-          '';
-        };
-        imap = {
-          host = "imap.fastmail.com";
-          tls.enable = true;
-        };
-        smtp = {
-          host = "smtp.fastmail.com";
-          port = 587;
-          tls.enable = true;
-          tls.useStartTls = true;
-        };
-
-        mbsync = {
-          enable = true;
-          create = "both";
-        };
-        msmtp.enable = true;
-
-        passwordCommand = "gpg --decrypt /var/secrets/me@fastmail_pass";
-      };
-
-    };
-  };
 
 
 

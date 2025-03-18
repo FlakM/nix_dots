@@ -46,7 +46,7 @@ in
     openssl
     pkg-config
   ] ++ lib.optionals stdenv.isDarwin [
-    libiconv
+    #libiconv
   ] ++ lib.optionals stdenv.isLinux [
     gdb
     heaptrack

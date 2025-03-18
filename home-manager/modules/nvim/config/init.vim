@@ -152,8 +152,6 @@ set listchars=nbsp:¬,extends:»,precedes:«,trail:•
 " =============================================================================
 " # Keyboard shortcuts
 " =============================================================================
-" ; as :
-nnoremap ; :
 
 " Ctrl+j and Ctrl+k as Esc
 " Ctrl-j is a little awkward unfortunately:
@@ -385,6 +383,5 @@ require'nvim-treesitter.configs'.setup {
 }
 EOF
 
-
-imap <silent><script><expr> <C-J> copilot#Accept("\<CR>")
+imap <silent><script><expr> <C-S> copilot#Accept("\<CR>")
 let g:copilot_no_tab_map = v:true

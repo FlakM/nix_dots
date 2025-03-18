@@ -53,10 +53,8 @@
 
     ./modules/scala.nix
 
-    ./modules/ghostty.nix
-
-
     ./modules/aws.nix
+    #./modules/ghostty.nix
   ];
 
   xdg.enable = true;

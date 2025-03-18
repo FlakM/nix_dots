@@ -539,8 +539,8 @@ in
     bind=$mainMod,F,fullscreen 
 
     bind = $mainMod, D, exec, tofi-drun --drun-launch=true
-    bind = $mainMod, N, exec, ${config.home.homeDirectory}/.config/theme-switch.sh 
-    bind = $mainMod, RETURN, exec, ghostty -e "zsh --login -c 'if command -v tmux >/dev/null 2>&1; then tmux attach || tmux; else zsh; fi'"
+    bind = ALT_CTRL, N, exec, ${config.home.homeDirectory}/.config/theme-switch.sh 
+    bind = $mainMod SHIFT, RETURN, exec, kitty
 
     # workspaces
     # binds $mainMod + [shift +] {1..10} to [move to] workspace {1..10}
@@ -560,10 +560,10 @@ in
     # ...
 
     # Focus movement
-    bind=$mainMod,h,movefocus,l
-    bind=$mainMod,l,movefocus,r
-    bind=$mainMod,k,movefocus,u
-    bind=$mainMod,j,movefocus,d
+    bind=CTRL SHIFT,h,movefocus,l
+    bind=CTRL SHIFT,l,movefocus,r
+    bind=CTRL SHIFT,k,movefocus,u
+    bind=CTRL SHIFT,j,movefocus,d
 
     # Window movement
     bind = $mainMod CTRL, H, movewindow, l

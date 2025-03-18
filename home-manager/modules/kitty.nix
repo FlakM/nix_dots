@@ -12,11 +12,13 @@ in
       function dark() {
         echo "dark"
         ${kitty}/bin/kitten themes --config-file-name=my "GitHub Dark High Contrast"
+        cat "${config.home.homeDirectory}/Library/Preferences/aerc/stylesets/dark" > "${config.home.homeDirectory}/Library/Preferences/aerc/stylesets/current"
       }
 
       function light() {
         echo "light"
         ${kitty}/bin/kitten themes --config-file-name=my "Pencil Light"
+        cat "${config.home.homeDirectory}/Library/Preferences/aerc/stylesets/light" > "${config.home.homeDirectory}/Library/Preferences/aerc/stylesets/current"
       }
 
 
@@ -55,6 +57,8 @@ in
       include current-theme.conf
       # Allow neovim jump to last cursor position
       map ctrl+shift+o no_op
+      map ctrl+shift+n no_op
+      map ctrl+shift+p no_op
       copy_on_select clipboard
     '';
 

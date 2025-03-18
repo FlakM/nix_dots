@@ -1,4 +1,11 @@
-{ pkgs, inputs, lib, pkgs-unstable, pkgs-master, config, ... }:
+{ pkgs
+, inputs
+, lib
+, pkgs-unstable
+, pkgs-master
+, config
+, ...
+}:
 {
 
   imports = [
@@ -9,7 +16,13 @@
     enable = true;
     enableRosetta = true;
     user = "flakm";
-    autoMigrate = true;
+    #autoMigrate = true;
+    taps = {
+      "homebrew/homebrew-core" = inputs.homebrew-core;
+      "homebrew/homebrew-cask" = inputs.homebrew-cask;
+      "homebrew/homebrew-bundle" = inputs.homebrew-bundle;
+    };
+    mutableTaps = true;
   };
 
   system.stateVersion = 5;
@@ -26,6 +39,9 @@
     spotify
 
     protobuf
+    buf
+    grpc-gateway
+
     iconv
     age
     mariadb
@@ -39,6 +55,7 @@
     pkg-config
     oniguruma
     openssl
+
   ];
 
 
@@ -101,14 +118,17 @@
 
   homebrew = {
     enable = true;
+
     casks = [
       "aerospace"
       "anki"
       "docker"
     ];
+
     taps = [
       "nikitabobko/tap"
     ];
+
     onActivation.cleanup = "zap";
   };
 
