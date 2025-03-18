@@ -54,6 +54,9 @@
     ./modules/scala.nix
 
     ./modules/ghostty.nix
+
+
+    ./modules/aws.nix
   ];
 
   xdg.enable = true;
@@ -119,6 +122,11 @@
     max-cache-ttl 7200
     pinentry-program ${pkgs.pinentry-tty}/bin/pinentry-tty
   '';
+
+
+  home.packages = with pkgs; [
+    openrgb-with-all-plugins
+  ];
 
 
 
