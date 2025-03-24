@@ -89,10 +89,11 @@
       
 
 
-      source ~/.zshrc_local || true
-      source ~/.jfrog.env || true
-      
-      source ~/.sdkman/bin/sdkman-init.sh || true
+      source ~/.zshrc_local 2>/dev/null || true
+      source ~/.jfrog.env 2>/dev/null || true
+
+      # silent import if it not exists
+      source ~/.sdkman/bin/sdkman-init.sh 2>/dev/null || true
 
 
       # for home.sessionVariables to work

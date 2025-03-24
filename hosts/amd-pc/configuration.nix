@@ -10,7 +10,7 @@ in
   imports = [
     ../../shared/wireguard.nix
     ../../shared/gpg.nix
-    ../../shared/k3s/server.nix
+    #../../shared/k3s/server.nix
     ../../shared/syncthing.nix
     ./zfs_replication.nix
     ./postgres.nix

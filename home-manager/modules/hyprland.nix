@@ -195,26 +195,9 @@ in
   };
 
   services.hypridle = {
-    enable = false;
-    settings = {
-      general = {
-        after_sleep_cmd = "${pkgs.sway}/bin/swaymsg \"output * toggle\"";
-        ignore_dbus_inhibit = false;
-        lock_cmd = "${pkgs.swaylock}/bin/swaylock";
-      };
-
-      listener = [
-        {
-          timeout = 900;
-          on-timeout = "${pkgs.swaylock}/bin/swaylock";
-        }
-        {
-          timeout = 1200;
-          on-timeout = "${pkgs.swaylock}/bin/swaylock";
-          on-resume = "${pkgs.sway}/bin/swaymsg \"output * toggle\"";
-        }
-      ];
-    };
+    enable = true;
+    #settings = {
+    #};
   };
 
 
@@ -227,7 +210,7 @@ in
 
     enable = true;
     systemd = {
-      enable = false;
+      enable = true;
     };
     settings.mainBar = {
       layer = "top"; # Waybar at top layer
@@ -529,7 +512,9 @@ in
 
     exec-once=[workspace 9 silent] thunderbird
     exec-once=[workspace 10 silent] slack
-    exec-once=waybar
+
+    # started by systemd
+    #exec-once=waybar
 
     # See https://wiki.hyprland.org/Configuring/Keywords/ for more
     $mainMod = ALT

@@ -17,7 +17,7 @@ in
 
       function light() {
         echo "light"
-        ${kitty}/bin/kitten themes --config-file-name=my "Pencil Light"
+        ${kitty}/bin/kitten themes --config-file-name=my "Bluloco Light"
         cat "${config.home.homeDirectory}/Library/Preferences/aerc/stylesets/light" > "${config.home.homeDirectory}/Library/Preferences/aerc/stylesets/current"
       }
 

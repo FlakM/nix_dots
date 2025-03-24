@@ -81,7 +81,10 @@
         config = {
           allowUnfree = true;
           allowUnfreePredicate = (_: true);
-          permittedInsecurePackages = [ "dotnet-sdk-6.0.428" "aspnetcore-runtime-6.0.36" ];
+          permittedInsecurePackages = [
+            "dotnet-sdk-6.0.428"
+            "aspnetcore-runtime-6.0.36"
+          ];
 
         };
         overlays = [
@@ -105,14 +108,27 @@
       pkgs-unstable = system: import nixpkgs-unstable {
         inherit system;
         allowUnfree = true;
+
+        permittedInsecurePackages = [
+          "electron-32.3.3"
+        ];
         config = {
           allowUnfree = true;
           allowUnfreePredicate = (_: true);
+
+          permittedInsecurePackages = [
+            "dotnet-sdk-6.0.428"
+            "aspnetcore-runtime-6.0.36"
+          ];
         };
       };
       pkgs-master = system: import nixpkgs-master {
         inherit system;
         allowUnfree = true;
+
+        permittedInsecurePackages = [
+          "electron-32.3.3"
+        ];
         config = {
           allowUnfree = true;
           allowUnfreePredicate = (_: true);
@@ -171,6 +187,8 @@
           pkgs-unstable = pkgs-unstable system;
           pkgs-master = pkgs-master system;
         }; # this is the important part
+
+
 
         modules = [
           ./home-manager/${hostName}.nix
