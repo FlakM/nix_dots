@@ -8,7 +8,6 @@
     ./modules/zsh.nix
     ./modules/tmux.nix
 
-    ./modules/modivo.nix
     ./modules/atuin.nix
     ./modules/kitty.nix
     ./modules/starship.nix
