@@ -86,11 +86,11 @@ This is a set of very opinionated configurations. The mix of shortcuts is a resu
 
 ### On remote machine ie odroid
 
-1. Build locally and send paths over ssh and switch `nixos-rebuild switch --target-host flakm@192.168.0.102  --use-remote-sudo --flake ~/programming/flakm/nix_dots#odroid`
+1. Build locally and send paths over ssh and switch `nixos-rebuild switch --target-host flakm@odroid  --use-remote-sudo --flake ~/programming/flakm/nix_dots#odroid`
 2. Build locally home manager: `home-manager --flake ~/programming/flakm/nix_dots#flakm@odroid build`
-3. Ship over ssh: `nix copy --to ssh://flakm@192.168.0.102 ./result`
-4. Commit & push to remote branch
-5. Apply changes: `ssh flakm@192.168.0.102 "home-manager --flake github:flakm/nix_dots#flakm@odroid switch"`
+3. Ship over ssh: `nix copy --to ssh://flakm@odroid ./result`
+4. Commit & push changes
+5. Apply changes: `ssh flakm@odroid -c "home-manager --flake github:flakm/nix_dots#flakm@odroid switch"`
 
 ### On mac m1
 

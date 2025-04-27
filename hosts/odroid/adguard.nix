@@ -15,6 +15,18 @@
       filtering = {
         rewrites = [
           {
+            domain = "odroid";
+            answer = "192.168.0.102";
+          }
+          {
+            domain = "amd-pc";
+            answer = "192.168.0.249";
+          }
+          {
+            domain = "amd";
+            answer = "192.168.0.249";
+          }
+          {
             domain = "jellyfin.house.flakm.com";
             answer = "192.168.0.102";
           }
