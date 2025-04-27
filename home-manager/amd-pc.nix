@@ -21,6 +21,10 @@
       ''
     );
 
+  # Ensure cargo tools are in the PATH
+  home.sessionPath = [
+    "${config.home.homeDirectory}/.cargo/bin"
+  ];
 
   imports = [
     ./modules/home-manager.nix

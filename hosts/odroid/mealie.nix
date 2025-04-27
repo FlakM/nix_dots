@@ -1,4 +1,4 @@
-{ pkgs, lib, config, inputs, pkgs-unstable, ... }:
+{ pkgs, lib, config, inputs, pkgs-unstable, pkgs-master, ... }:
 let
   port = 9999;
   domain = "mealie.house.flakm.com";
@@ -8,7 +8,7 @@ in
 
   services.mealie = {
     enable = true;
-    package = pkgs-unstable.mealie;
+    #package = pkgs-master.mealie;
     port = port;
     settings = {
       BASE_URL = domain;
