@@ -56,6 +56,7 @@ in
     typescript-language-server
     nodePackages.prettier
     vscode-langservers-extracted
+    eslint
 
     # lua
     lua-language-server
@@ -71,6 +72,7 @@ in
     gopls
     terraform-lsp
 
+
     # for linux only
   ] ++ lib.optionals stdenv.isLinux [
     # for debugging
@@ -79,7 +81,7 @@ in
 
   programs.neovim = {
     enable = true;
-    package = pkgs-unstable.neovim-unwrapped;
+#    package = neovim-unwrapped;
     plugins = with pkgs.vimPlugins; [
       # VIM enhancments
       editorconfig-vim
@@ -161,7 +163,8 @@ in
       # notes plugins for obsidian
       obsidian-nvim
 
-      null-ls-nvim
+      none-ls-nvim
+
 
       # database access
       vim-dadbod

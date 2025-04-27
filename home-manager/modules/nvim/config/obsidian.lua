@@ -19,6 +19,13 @@ require("obsidian").setup({
 
     notes_subdir = "daily",
     mappings = {
+        -- Show backlinks for the current note. Mnemonic: go to references
+        ["gr"] = {
+          action = function()
+              vim.api.nvim_command("ObsidianBacklinks")
+          end,
+          opts = { buffer = true },
+        },
        -- Overrides the 'gf' mapping to work on markdown/wiki links within your vault.
        ["gd"] = {
          action = function()
@@ -45,6 +52,9 @@ require("obsidian").setup({
 
 
 map("n", "<leader>D", [[<cmd>ObsidianDailies<CR>]])
+map("n", "<leader>1", [[<cmd>ObsidianYesterday<CR>]])
+map("n", "<leader>2", [[<cmd>ObsidianToday<CR>]])
+map("n", "<leader>3", [[<cmd>ObsidianTomorrow<CR>]])
 
 -- set conceallevel to 2
 vim.cmd("set conceallevel=2")

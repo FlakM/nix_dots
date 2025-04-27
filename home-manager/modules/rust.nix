@@ -45,8 +45,10 @@ in
     oniguruma
     openssl
     pkg-config
+    libiconv
   ] ++ lib.optionals stdenv.isDarwin [
-    #libiconv
+    libiconv
+
   ] ++ lib.optionals stdenv.isLinux [
     gdb
     heaptrack
@@ -58,6 +60,9 @@ in
     #linker = "clang"
     #rustflags = ["-C", "link-arg=-fuse-ld=${pkgs-unstable.mold-wrapped}/bin/mold", "--cfg", "tokio_unstable"]
     #rustdocflags = ["--cfg", "tokio_unstable"] 
+    [target.aarch64-apple-darwin]
+    rustflags = ["-L", "${pkgs.libiconv}/lib"]
+    linker = "clang"
   '';
 
   home.sessionVariables = {
