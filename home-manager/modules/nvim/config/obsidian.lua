@@ -14,6 +14,10 @@ require("obsidian").setup({
         {
             name = "work",
             path = "~/programming/flakm/obsidian/work"
+        },
+        {
+            name = "house",
+            path = "~/programming/flakm/obsidian/house/house"
         }
     },
 
