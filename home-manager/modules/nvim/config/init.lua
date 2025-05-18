@@ -60,7 +60,10 @@ map("n", "<leader>n", [[<cmd>NvimTreeFindFile<CR>]])
 --
 -- Find files using Telescope command-line sugar.
 map("n", "<leader>ff", [[<cmd>Telescope find_files<CR>]])
-map("n", "<leader>fg", [[<cmd>Telescope live_grep<CR>]])
+--map("n", "<leader>fg", [[<cmd>Telescope live_grep<CR>]])
+map("n", "<leader>fg", ":lua require('telescope').extensions.live_grep_args.live_grep_args()<CR>")
+
+
 map("n", "<leader>fb", [[<cmd>Telescope buffers<CR>]])
 map("n", "<leader>fh", [[<cmd>Telescope help_tags<CR>]])
 

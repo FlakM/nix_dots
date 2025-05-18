@@ -8,12 +8,13 @@ in
 
   services.mealie = {
     enable = true;
-    #package = pkgs-master.mealie;
+    package = pkgs-unstable.mealie;
     port = port;
     settings = {
       BASE_URL = domain;
     };
     credentialsFile = "/var/lib/mealie/open_api_key";
+    database.createLocally = true;
   };
 
   sops.defaultSopsFile = ../../secrets/secrets.yaml;
@@ -25,6 +26,7 @@ in
       owner = "mealie";
     };
   };
+
 
   users.users.mealie = {
     isSystemUser = true;

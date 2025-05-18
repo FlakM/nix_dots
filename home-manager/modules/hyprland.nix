@@ -194,11 +194,6 @@ in
     };
   };
 
-  services.hypridle = {
-    enable = true;
-    #settings = {
-    #};
-  };
 
 
 
@@ -414,171 +409,260 @@ in
     '';
   };
 
-  wayland.windowManager.hyprland.enable = true;
+  wayland.windowManager.hyprland = {
+    enable = true;
+    systemd = {
+      enable = true;
+      variables = [ "--all" ];
+      enableXdgAutostart = true; # 🔑 start XDG‐autostart apps
+    };
+  };
+
+
+
+  programs.hyprlock = {
+    enable = true;
+    settings =
+      {
+        general = {
+          after_sleep_cmd = "hyprctl dispatch dpms on";
+          ignore_dbus_inhibit = false;
+          lock_cmd = "hyprlock";
+          # show a blurred screenshot background
+          blur-background = "yes";
+          blur-radius = 15;
+          font = "FiraCode Nerd Font";
+          disable_loading_bar = true;
+          grace = 300;
+          hide_cursor = true;
+          no_fade_in = false;
+        };
+        background = [
+          {
+            path = "screenshot";
+            blur_passes = 3;
+            blur_size = 8;
+          }
+        ];
+
+
+        label =
+          {
+            # hourly clock
+            text = "cmd[update:1000] date +\"%-I:%M %p\"";
+            position = "top";
+          };
+
+        input-field = [
+          {
+            size = "400, 50";
+            position = "0, -80";
+            monitor = "";
+            dots_center = true;
+            fade_on_empty = false;
+            font_color = "rgb(202, 211, 245)";
+            inner_color = "rgb(91, 96, 120)";
+            outer_color = "rgb(24, 25, 38)";
+            outline_thickness = 5;
+            placeholder_text = "Password...";
+            shadow_passes = 2;
+          }
+        ];
+
+
+        listener = [
+          {
+            timeout = 900;
+            on-timeout = "hyprlock";
+          }
+          {
+            timeout = 1200;
+            on-timeout = "hyprctl dispatch dpms off";
+            on-resume = "hyprctl dispatch dpms on";
+          }
+        ];
+      };
+  };
+
+
+  services.hypridle = {
+    enable = true;
+    settings = {
+      general = {
+        lock_cmd = "pidof hyprlock || hyprlock";
+      };
+      listener = [
+        {
+          timeout = 900;
+          on-timeout = "hyprlock";
+        }
+      ];
+    };
+
+  };
 
   wayland.windowManager.hyprland.extraConfig = ''
-    # See https://wiki.hyprland.org/Configuring/Monitors/
-    #monitor=,highres,auto,1.4
+        # See https://wiki.hyprland.org/Configuring/Monitors/
+        #monitor=,highres,auto,1.4
+        monitor=FALLBACK,highres,auto,1.0
 
-    env = GDK_SCALE,1.5
-    env = XCURSOR_SIZE,32
+        env = GDK_SCALE,1.5
+        env = XCURSOR_SIZE,32
 
-    # unscale XWayland
-    xwayland {
-      force_zero_scaling = true
-    }
+        # unscale XWayland
+        xwayland {
+          force_zero_scaling = true
+        }
 
-    # For all categories, see https://wiki.hyprland.org/Configuring/Variables/
-    input {
-        kb_layout = pl
-        kb_variant =
-        kb_model =
-        kb_rules =
-        # both left windows and ctrl should be ctrl (caps lock is ctrl)
-        kb_options = altwin:ctrl_win,ctrl:nocaps
+        # For all categories, see https://wiki.hyprland.org/Configuring/Variables/
+        input {
+            kb_layout = pl
+            kb_variant =
+            kb_model =
+            kb_rules =
+            # both left windows and ctrl should be ctrl (caps lock is ctrl)
+            kb_options = altwin:ctrl_win,ctrl:nocaps
     
-        follow_mouse = 1
+            follow_mouse = 1
     
-        touchpad {
-            natural_scroll = no
+            touchpad {
+                natural_scroll = no
+            }
+    
+            sensitivity = 0 # -1.0 - 1.0, 0 means no modification.
         }
     
-        sensitivity = 0 # -1.0 - 1.0, 0 means no modification.
-    }
+        general {
+            # See https://wiki.hyprland.org/Configuring/Variables/ for more
+            gaps_in = 5
+            gaps_out = 5
+            border_size = 4
+            col.active_border = rgba(33ccffee) rgba(00ff99ee) 45deg
+            col.inactive_border = rgba(595959aa)
     
-    general {
-        # See https://wiki.hyprland.org/Configuring/Variables/ for more
-        gaps_in = 5
-        gaps_out = 5
-        border_size = 4
-        col.active_border = rgba(33ccffee) rgba(00ff99ee) 45deg
-        col.inactive_border = rgba(595959aa)
+        }
     
-    }
+        animations {
+            enabled = yes
     
-    animations {
-        enabled = yes
+            # Some default animations, see https://wiki.hyprland.org/Configuring/Animations/ for more
     
-        # Some default animations, see https://wiki.hyprland.org/Configuring/Animations/ for more
+            bezier = myBezier, 0.05, 0.9, 0.1, 1.05
     
-        bezier = myBezier, 0.05, 0.9, 0.1, 1.05
+            animation = windows, 1, 7, myBezier
+            animation = windowsOut, 1, 7, default, popin 80%
+            animation = border, 1, 10, default
+            animation = borderangle, 1, 8, default
+            animation = fade, 1, 7, default
+            animation = workspaces, 1, 6, default
+        }
     
-        animation = windows, 1, 7, myBezier
-        animation = windowsOut, 1, 7, default, popin 80%
-        animation = border, 1, 10, default
-        animation = borderangle, 1, 8, default
-        animation = fade, 1, 7, default
-        animation = workspaces, 1, 6, default
-    }
+        dwindle {
+            # See https://wiki.hyprland.org/Configuring/Dwindle-Layout/ for more
+            pseudotile = yes # master switch for pseudotiling. Enabling is bound to mainMod + P in the keybinds section below
+            preserve_split = yes # you probably want this
+        }
     
-    dwindle {
-        # See https://wiki.hyprland.org/Configuring/Dwindle-Layout/ for more
-        pseudotile = yes # master switch for pseudotiling. Enabling is bound to mainMod + P in the keybinds section below
-        preserve_split = yes # you probably want this
-    }
+        gestures {
+            # See https://wiki.hyprland.org/Configuring/Variables/ for more
+            workspace_swipe = off
+        }
     
-    gestures {
-        # See https://wiki.hyprland.org/Configuring/Variables/ for more
-        workspace_swipe = off
-    }
+        # Example windowrule v1
+        # windowrule = float, ^(kitty)$
+        # Example windowrule v2
+        # windowrulev2 = float,class:^(kitty)$,title:^(kitty)$
+        # See https://wiki.hyprland.org/Configuring/Window-Rules/ for more
+
+
+        # https://wiki.hyprland.org/Useful-Utilities/Clipboard-Managers/#cliphist
+        exec-once = wl-paste --type text --watch cliphist store #Stores only text data
+        exec-once = wl-paste --type image --watch cliphist store #Stores only image data
+        exec-once = ${configure-gtk-dark}/bin/configure-gtk-dark
+
+
+        windowrule = workspace 2, ^(.*Mozilla Firefox.*)$
+        #exec-once=dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
+        exec-once=[workspace 1 silent] kitty
+        exec-once=[workspace 2 silent] firefox
+
+
+        exec-once=[workspace 3 silent] obsidian
+        exec-once=[workspace 3 silent] kitty --title "obsidian" --directory /home/flakm/programming/flakm/obsidian/work -- bash -c "tmux new-session -d -s obsidian 'nvim' && tmux attach-session -t obsidian"
+        windowrulev2 = float, kitty:title:obsidian
+        windowrulev2 = fullscreen, kitty:title:obsidian
+
+        exec-once=[workspace 4 silent] spotify
+        exec-once=[workspace 6 silent] kdeconnect-app
+        exec-once=[workspace 4 silent] spotify
+
+        exec-once=[workspace 9 silent] thunderbird
+        exec-once=[workspace 10 silent] slack
+
+
+        # See https://wiki.hyprland.org/Configuring/Keywords/ for more
+        $mainMod = ALT
+
+        bind=ALT_SHIFT,Q,killactive,
     
-    # Example windowrule v1
-    # windowrule = float, ^(kitty)$
-    # Example windowrule v2
-    # windowrulev2 = float,class:^(kitty)$,title:^(kitty)$
-    # See https://wiki.hyprland.org/Configuring/Window-Rules/ for more
+        bind=$mainMod,F,fullscreen 
 
+        bind = $mainMod, D, exec, tofi-drun --drun-launch=true
+        bind = ALT_CTRL, N, exec, ${config.home.homeDirectory}/.config/theme-switch.sh 
+        bind = $mainMod SHIFT, RETURN, exec, kitty
 
-    # https://wiki.hyprland.org/Useful-Utilities/Clipboard-Managers/#cliphist
-    exec-once = wl-paste --type text --watch cliphist store #Stores only text data
-    exec-once = wl-paste --type image --watch cliphist store #Stores only image data
-    exec-once = ${configure-gtk-dark}/bin/configure-gtk-dark
+        # workspaces
+        # binds $mainMod + [shift +] {1..10} to [move to] workspace {1..10}
+        ${builtins.concatStringsSep "\n" (builtins.genList (
+    x: let
+    ws = let
+    c = (x + 1) / 10;
+    in
+    builtins.toString (x + 1 - (c * 10));
+    in ''
+              bind = $mainMod, ${ws}, workspace, ${toString (x + 1)}
+              bind = $mainMod SHIFT, ${ws}, movetoworkspace, ${toString (x + 1)}
+            ''
+    )
+    10)}
 
+        # ...
 
-    windowrule = workspace 2, ^(.*Mozilla Firefox.*)$
-    #exec-once=dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
-    exec-once=[workspace 1 silent] kitty
-    exec-once=[workspace 2 silent] firefox
+        # Focus movement
+        bind=CTRL SHIFT,h,movefocus,l
+        bind=CTRL SHIFT,l,movefocus,r
+        bind=CTRL SHIFT,k,movefocus,u
+        bind=CTRL SHIFT,j,movefocus,d
 
+        # Window movement
+        bind = $mainMod CTRL, H, movewindow, l
+        bind = $mainMod CTRL, L, movewindow, r
+        bind = $mainMod CTRL, K, movewindow, u
+        bind = $mainMod CTRL, J, movewindow, d
 
-    exec-once=[workspace 3 silent] obsidian
-    exec-once=[workspace 3 silent] kitty --title "obsidian" --directory /home/flakm/programming/flakm/obsidian/work -- bash -c "tmux new-session -d -s obsidian 'nvim' && tmux attach-session -t obsidian"
-    windowrulev2 = float, kitty:title:obsidian
-    windowrulev2 = fullscreen, kitty:title:obsidian
+        # Resize windows
+        bind = $mainMod CTRL SHIFT, l, resizeactive, 100 0
+        bind = $mainMod CTRL SHIFT, h, resizeactive, -100 0
+        bind = $mainMod CTRL SHIFT, k, resizeactive, 0 -100
+        bind = $mainMod CTRL SHIFT, j, resizeactive, 0 100
 
-    exec-once=[workspace 4 silent] spotify
-    exec-once=[workspace 6 silent] kdeconnect-app
-    exec-once=[workspace 4 silent] spotify
-
-    exec-once=[workspace 9 silent] thunderbird
-    exec-once=[workspace 10 silent] slack
-
-    # started by systemd
-    #exec-once=waybar
-
-    # See https://wiki.hyprland.org/Configuring/Keywords/ for more
-    $mainMod = ALT
-
-    bind=ALT_SHIFT,Q,killactive,
-    
-    bind=$mainMod,F,fullscreen 
-
-    bind = $mainMod, D, exec, tofi-drun --drun-launch=true
-    bind = ALT_CTRL, N, exec, ${config.home.homeDirectory}/.config/theme-switch.sh 
-    bind = $mainMod SHIFT, RETURN, exec, kitty
-
-    # workspaces
-    # binds $mainMod + [shift +] {1..10} to [move to] workspace {1..10}
-    ${builtins.concatStringsSep "\n" (builtins.genList (
-        x: let
-          ws = let
-            c = (x + 1) / 10;
-          in
-            builtins.toString (x + 1 - (c * 10));
-        in ''
-          bind = $mainMod, ${ws}, workspace, ${toString (x + 1)}
-          bind = $mainMod SHIFT, ${ws}, movetoworkspace, ${toString (x + 1)}
-        ''
-      )
-      10)}
-
-    # ...
-
-    # Focus movement
-    bind=CTRL SHIFT,h,movefocus,l
-    bind=CTRL SHIFT,l,movefocus,r
-    bind=CTRL SHIFT,k,movefocus,u
-    bind=CTRL SHIFT,j,movefocus,d
-
-    # Window movement
-    bind = $mainMod CTRL, H, movewindow, l
-    bind = $mainMod CTRL, L, movewindow, r
-    bind = $mainMod CTRL, K, movewindow, u
-    bind = $mainMod CTRL, J, movewindow, d
-
-    # Resize windows
-    bind = $mainMod CTRL SHIFT, l, resizeactive, 100 0
-    bind = $mainMod CTRL SHIFT, h, resizeactive, -100 0
-    bind = $mainMod CTRL SHIFT, k, resizeactive, 0 -100
-    bind = $mainMod CTRL SHIFT, j, resizeactive, 0 100
-
-    bind = CTRL SHIFT, V, exec, cliphist list | tofi | cliphist decode | wl-copy
-    bind = CTRL SHIFT, P, exec, wl-paste
+        bind = CTRL SHIFT, V, exec, cliphist list | tofi | cliphist decode | wl-copy
+        bind = CTRL SHIFT, P, exec, wl-paste
 
 
 
-    # print screen full screen
-    bind=,Print,exec,grimblast --scale 2 --wait 2 copy screen
-    # print screen selection range
-    bind=SHIFT,Print,exec,grimblast --scale 2 --wait 2 copy area
+        # print screen full screen
+        bind=,Print,exec,grimblast --scale 2 --wait 2 copy screen
+        # print screen selection range
+        bind=SHIFT,Print,exec,grimblast --scale 2 --wait 2 copy area
 
-    #bind=$mainMod SHIFT, L, exec, swaylock
+        bind=$mainMod SHIFT, L, exec, hyprlock
 
 
-    # volume button that allows press and hold, volume limited to 150%
-    binde=, XF86AudioRaiseVolume, exec, wpctl set-volume -l 1.5 50 5%+
-    binde=, XF86AudioLowerVolume, exec, wpctl set-volume -l 1.5 50 5%-
-    bind=, XF86AudioMute, exec, wpctl set-mute 50 toggle
+        # volume button that allows press and hold, volume limited to 150%
+        binde=, XF86AudioRaiseVolume, exec, wpctl set-volume -l 1.5 50 5%+
+        binde=, XF86AudioLowerVolume, exec, wpctl set-volume -l 1.5 50 5%-
+        bind=, XF86AudioMute, exec, wpctl set-mute 50 toggle
 
   '';
 

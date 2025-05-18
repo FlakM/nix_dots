@@ -2,7 +2,7 @@
 { pkgs, pkgs-unstable, inputs, ... }: {
 
 
-  #disabledModules = [ "services/web-apps/mealie.nix" ];
+  # disabledModules = [ "services/web-apps/mealie.nix" ];
 
   imports = [
     ./nextcloud.nix
@@ -23,10 +23,14 @@
     #../../shared/oom_killer.nix
     #./smokeping.nix
 
-    #"${pkgs-unstable.path}/nixos/modules/services/web-apps/mealie.nix"
-    ./mealie.nix
+    #   "${pkgs-unstable.path}/nixos/modules/services/web-apps/mealie.nix"
+    #   ./mealie.nix
 
     ../../shared/immich.nix
+
+    #./zabbix.nix
+
+    ./uptime-kuma.nix
 
 
     inputs.nixos-hardware.nixosModules.hardkernel-odroid-h3

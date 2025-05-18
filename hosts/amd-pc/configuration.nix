@@ -63,6 +63,7 @@ in
   programs.hyprland = {
     enable = true;
     systemd.setPath.enable = true;
+    withUWSM = true;
   };
 
   services.redis.servers."".enable = false;
@@ -86,6 +87,7 @@ in
 
 
   security.rtkit.enable = true;
+  security.pam.services.hyprlock = { }; # allow hyprlock to authenticate
 
   services.blueman.enable = true;
 
@@ -433,4 +435,5 @@ in
   services.gnome.gnome-keyring.enable = true;
   security.pam.services.sddm.enableGnomeKeyring = true;
 
+  security.pam.services.hyprlock = {};
 }

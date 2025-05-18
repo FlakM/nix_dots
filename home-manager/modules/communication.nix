@@ -23,6 +23,7 @@ in
     #element-desktop
     discord
     pkgs-master.signal-desktop
+    pkgs-master.slack
     zulip-term
     #zulip
   ];

@@ -140,6 +140,8 @@ in
       nvim-bqf
       telescope-nvim
       telescope-fzy-native-nvim
+      # customize live grep
+      telescope-live-grep-args-nvim
 
       # Tree viewer
       nvim-tree-lua
