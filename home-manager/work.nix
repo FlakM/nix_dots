@@ -12,7 +12,7 @@
     ./modules/git.nix
     ./modules/gpg_home.nix
 
-    ./modules/productivity.nix
+    #./modules/productivity.nix
 
     ./modules/yubikey.nix
 
@@ -29,12 +29,15 @@
 
     ./modules/k8s.nix
 
-    ./modules/zed.nix
+    #./modules/zed.nix
 
     ./modules/sql.nix
 
     #./modules/neomutt.nix
-    ./modules/aerc.nix
+
+    # TODO figure out why notmuch is not building
+    # it's failing on emacs build
+    #./modules/aerc.nix
 
   ];
 

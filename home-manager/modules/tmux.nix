@@ -5,6 +5,12 @@
     tmux
   ];
 
+  home.sessionVariables =
+    {
+      TMUX_FZF_OPTIONS = "-p -w 90% -h 60% -m";
+    };
+
+
   programs.tmux = {
     enable = true;
     clock24 = true;
@@ -34,10 +40,17 @@
       bind l select-pane -R
 
       set -s set-clipboard on
+
+      run-shell ${pkgs.tmuxPlugins.fuzzback}/share/tmux-plugins/fuzzback/fuzzback.tmux
+      set -g @fuzzback-popup 1
+
+      bind-key "l" run-shell -b "${pkgs.tmuxPlugins.tmux-fzf}/share/tmux-plugins/tmux-fzf/scripts/session.sh switch"
+
+      
     '';
 
     shell = "${pkgs.zsh}/bin/zsh";
-    plugins = with pkgs.tmuxPlugins; [ sensible yank ];
+    plugins = with pkgs.tmuxPlugins; [ sensible yank fuzzback tmux-fzf ];
 
   };
 

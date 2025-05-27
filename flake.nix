@@ -6,17 +6,17 @@
       url = "github:nix-community/fenix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
     nixpkgs-unstable.url = "nixpkgs/nixos-unstable";
     nixpkgs-master.url = "github:NixOS/nixpkgs/master";
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
     home-manager = {
-      url = "github:nix-community/home-manager/release-24.11";
+      url = "github:nix-community/home-manager/release-25.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
     darwin = {
-      url = "github:lnl7/nix-darwin/nix-darwin-24.11";
+      url = "github:lnl7/nix-darwin/nix-darwin-25.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -210,8 +210,8 @@
       formatter.x86_64-linux = pkgs-default.nixpkgs-fmt;
       formatter.aarch64-darwin = (pkgs-stable "aarch64-darwin").nixpkgs-fmt;
 
-      fonts.fonts = with nixpkgs; [
-        (nerdfonts.override { fonts = [ "FiraCode" ]; })
+      fonts.packages =  [
+        nixpkgs.nerd-fonts.fira-code
       ];
 
       # NixOS configuration entrypoint

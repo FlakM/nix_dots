@@ -20,7 +20,7 @@ in
 
   home.packages = with pkgs; [
     # for copilot
-    nodejs
+    #nodejs
     go
     gopls
 
@@ -66,7 +66,7 @@ in
     nixpkgs-fmt
 
     # yaml
-    yaml-language-server
+    #yaml-language-server
 
     # golang & terraform
     gopls
@@ -81,7 +81,7 @@ in
 
   programs.neovim = {
     enable = true;
-#    package = neovim-unwrapped;
+    #package = pkgs-unstable.neovim-unwrapped;
     plugins = with pkgs.vimPlugins; [
       # VIM enhancments
       editorconfig-vim
@@ -105,8 +105,7 @@ in
       vim-terraform
 
       #Theme
-      pkgs-unstable.vimPlugins.material-nvim
-      pkgs-unstable.vimPlugins.edge
+      edge
 
       vim-one
 
@@ -117,11 +116,11 @@ in
 
       # LSP support & completion
       plenary-nvim
-      pkgs-unstable.vimPlugins.nvim-dap
-      pkgs-unstable.vimPlugins.nvim-dap-ui
-      pkgs-unstable.vimPlugins.nvim-nio
+      nvim-dap
+      nvim-dap-ui
+      nvim-nio
 
-      pkgs-unstable.vimPlugins.fidget-nvim
+      fidget-nvim
 
       git-blame-nvim
 
@@ -149,8 +148,6 @@ in
       vim-gitgutter
 
       rustaceanvim
-
-      one-nvim
 
       copilot-vim
 
@@ -229,7 +226,7 @@ in
         (builtins.readFile ./config/node.lua)
         (builtins.readFile ./config/lua.lua)
         (builtins.readFile ./config/marks.lua)
-        (builtins.readFile ./config/yaml.lua)
+        #(builtins.readFile ./config/yaml.lua)
         (builtins.readFile ./config/git.lua)
 
         (if stdenv.isLinux then

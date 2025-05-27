@@ -3,7 +3,6 @@
 
   home.packages = [
     pkgs-master.dbeaver-bin
-    pkgs.pgadmin4-desktopmode
   ];
 
 }

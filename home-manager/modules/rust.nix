@@ -6,7 +6,7 @@ in
 
   home.packages = with pkgs; [
     #    rustup
-    mold
+    #mold
     clang
     #gcc
     #openssl
@@ -18,8 +18,6 @@ in
     #    rust-analyzer-unwrapped
     #    rustfmt
     #    clippy
-
-    rustfilt
 
     fenix.latest.rust-analyzer
 
@@ -55,10 +53,10 @@ in
   ];
 
 
+  #rustflags = ["-C", "link-arg=-fuse-ld=${pkgs-unstable.mold-wrapped}/bin/mold", "--cfg", "tokio_unstable"]
   home.file.".cargo/config.toml".text = ''
     [target.x86_64-unknown-linux-gnu]
     #linker = "clang"
-    #rustflags = ["-C", "link-arg=-fuse-ld=${pkgs-unstable.mold-wrapped}/bin/mold", "--cfg", "tokio_unstable"]
     #rustdocflags = ["--cfg", "tokio_unstable"] 
     [target.aarch64-apple-darwin]
     rustflags = ["-L", "${pkgs.libiconv}/lib"]

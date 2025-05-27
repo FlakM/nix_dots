@@ -3,8 +3,8 @@
 
 
   system.stateVersion = 5;
+  system.primaryUser = "flakm";
 
-  services.nix-daemon.enable = true;
   services.karabiner-elements.enable = true;
 
   environment.systemPackages = with pkgs; [
@@ -16,10 +16,10 @@
   ];
 
 
-
-  fonts.packages = with pkgs; [
-    (nerdfonts.override { fonts = [ "FiraCode" ]; })
+  fonts.packages =  [
+    pkgs.nerd-fonts.fira-code
   ];
+
 
   programs.zsh = {
     enable = true;
@@ -50,16 +50,16 @@
   services.tailscale.enable = true;
 
 
-  system.activationScripts.postUserActivation.text = ''
-    rsyncArgs="--archive --checksum --chmod=-w --copy-unsafe-links --delete"
-    apps_source="${config.system.build.applications}/Applications"
-    moniker="Nix Trampolines"
-    app_target_base="$HOME/Applications"
-    app_target="$app_target_base/$moniker"
-    mkdir -p "$app_target"
-    # shellcheck disable=SC2086
-    ${pkgs.rsync}/bin/rsync $rsyncArgs "$apps_source/" "$app_target"
-  '';
+  #system.activationScripts.postUserActivation.text = ''
+  #  rsyncArgs="--archive --checksum --chmod=-w --copy-unsafe-links --delete"
+  #  apps_source="${config.system.build.applications}/Applications"
+  #  moniker="Nix Trampolines"
+  #  app_target_base="$HOME/Applications"
+  #  app_target="$app_target_base/$moniker"
+  #  mkdir -p "$app_target"
+  #  # shellcheck disable=SC2086
+  #  ${pkgs.rsync}/bin/rsync $rsyncArgs "$apps_source/" "$app_target"
+  #'';
 
 }
 
