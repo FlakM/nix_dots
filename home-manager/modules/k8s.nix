@@ -1,7 +1,7 @@
 { pkgs, config, lib, pkgs-master, pkgs-unstable, ... }: {
 
   home.packages = with pkgs; [
-    pkgs-unstable.teleport
+    teleport_16
     kubectx
   ];
 

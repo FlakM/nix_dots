@@ -60,7 +60,6 @@ in
     #rustdocflags = ["--cfg", "tokio_unstable"] 
     [target.aarch64-apple-darwin]
     rustflags = ["-L", "${pkgs.libiconv}/lib"]
-    linker = "clang"
   '';
 
   home.sessionVariables = {

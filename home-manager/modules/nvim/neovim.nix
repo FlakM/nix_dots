@@ -15,7 +15,7 @@ in
   home.sessionVariables = {
     EDITOR = "nvim";
     VISUAL = "nvim";
-    NVIM_LISTEN_ADDRESS = "/tmp/nvimsocket";
+    #NVIM_LISTEN_ADDRESS = "/tmp/nvimsocket";
   };
 
   home.packages = with pkgs; [
