@@ -416,6 +416,8 @@ in
       variables = [ "--all" ];
       enableXdgAutostart = true; # 🔑 start XDG‐autostart apps
     };
+    package = null;
+    portalPackage = null;
   };
 
 

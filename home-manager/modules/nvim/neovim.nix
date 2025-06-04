@@ -20,9 +20,11 @@ in
 
   home.packages = with pkgs; [
     # for copilot
-    #nodejs
+    nodejs_20
     go
     gopls
+
+    pyright
 
     nil
 
@@ -242,7 +244,7 @@ in
         # of on linux
 
 
-        #(builtins.readFile ./config/python-config.vim)
+        (builtins.readFile ./config/python.lua)
         #(builtins.readFile ./config/go-config.vim)
       ]
 
