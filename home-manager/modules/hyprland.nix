@@ -80,8 +80,7 @@ in
 
   xdg = {
     portal = {
-      enable = true;
-
+      #enable = true;
 
       config = {
         common = {

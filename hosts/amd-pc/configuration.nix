@@ -213,7 +213,7 @@ in
     nix-index
 
 
-    okular
+    #okular
 
     qemu_full
     virt-manager
@@ -394,8 +394,8 @@ in
 
 
   fonts.fontDir.enable = true;
-  fonts.packages = with pkgs; [
-    (nerdfonts.override { fonts = [ "FiraCode" ]; })
+  fonts.packages =  [
+    pkgs.nerd-fonts.fira-code
   ];
 
 
