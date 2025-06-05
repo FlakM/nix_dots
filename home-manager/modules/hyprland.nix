@@ -569,12 +569,6 @@ in
             workspace_swipe = off
         }
     
-        # Example windowrule v1
-        # windowrule = float, ^(kitty)$
-        # Example windowrule v2
-        # windowrulev2 = float,class:^(kitty)$,title:^(kitty)$
-        # See https://wiki.hyprland.org/Configuring/Window-Rules/ for more
-
 
         # https://wiki.hyprland.org/Useful-Utilities/Clipboard-Managers/#cliphist
         exec-once = wl-paste --type text --watch cliphist store #Stores only text data
@@ -582,7 +576,7 @@ in
         exec-once = ${configure-gtk-dark}/bin/configure-gtk-dark
 
 
-        windowrule = workspace 2, ^(.*Mozilla Firefox.*)$
+        windowrule = workspace 2,title:^(Firefox)(.*)$
         #exec-once=dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
         exec-once=[workspace 1 silent] kitty
         exec-once=[workspace 2 silent] firefox

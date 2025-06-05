@@ -73,7 +73,6 @@
     master = {
       orientation = "center";
       slave_count_for_center_master = 0;
-      always_center_master = true;
       mfact = 0.55;
     };
 
