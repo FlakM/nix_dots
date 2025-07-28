@@ -25,7 +25,7 @@ require("fidget").setup {
 -- for showing git blame
 require('gitblame').setup {
     --Note how the `gitblame_` prefix is omitted in `setup`
-    enabled = false,
+    enabled = true,
 }
 
 

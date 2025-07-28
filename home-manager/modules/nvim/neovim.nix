@@ -74,6 +74,8 @@ in
     gopls
     terraform-lsp
 
+    # https://github.com/mrcjkb/rustaceanvim?tab=readme-ov-file#using-codelldb-for-debugging
+    vscode-extensions.vadimcn.vscode-lldb
 
     # for linux only
   ] ++ lib.optionals stdenv.isLinux [
@@ -180,6 +182,7 @@ in
       vim-fugitive
       vim-rhubarb
 
+
     ] ++ lib.optionals (pkgs.stdenv.system != "aarch64-linux") [
       #vim-go
     ]
@@ -216,7 +219,7 @@ in
         ""
         "lua << EOF"
         (builtins.readFile ./config/lsp-config.lua)
-        "local dap_path  = \"${pkgs.lldb}/bin/lldb-vscode\""
+        "local dap_path  = \"${pkgs-unstable.vscode-extensions.vadimcn.vscode-lldb}/share/vscode/extensions/vadimcn.vscode-lldb/\""
         (builtins.readFile ./config/rust-config.lua)
         "EOF"
 

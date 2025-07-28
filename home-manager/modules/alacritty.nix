@@ -140,7 +140,7 @@ in
 
       function dark() {
         cat ~/.config/alacritty/dark_alacritty.toml > ~/.config/alacritty/alacritty.toml
-        echo "dark-mode" > ~/.config/delta/theme
+        echo "dark-mode --dark " > ~/.config/delta/theme
       }
 
       function light() {

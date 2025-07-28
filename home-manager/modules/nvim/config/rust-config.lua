@@ -27,6 +27,23 @@ map("n", "<leader>e", function()
     vim.cmd.RustLsp('renderDiagnostic')
 end)
 
+-- Update this path
+local extension_path = dap_path
+
+local codelldb_path = extension_path .. 'adapter/codelldb'
+local liblldb_path = extension_path .. 'lldb/lib/liblldb'
+local this_os = vim.uv.os_uname().sysname;
+
+-- The path is different on Windows
+if this_os:find "Windows" then
+    codelldb_path = extension_path .. "adapter\\codelldb.exe"
+    liblldb_path = extension_path .. "lldb\\bin\\liblldb.dll"
+else
+    -- The liblldb extension is .so for Linux and .dylib for MacOS
+    liblldb_path = liblldb_path .. (this_os == "Linux" and ".so" or ".dylib")
+end
+
+local cfg = require('rustaceanvim.config')
 
 
 vim.g.rustaceanvim = {
@@ -70,19 +87,25 @@ vim.g.rustaceanvim = {
     },
     -- DAP configuration
     dap = {
+        adapter = cfg.get_codelldb_adapter(codelldb_path, liblldb_path),
     },
 }
 
-
+dap.adapters.codelldb = {
+  type = "executable",
+  command = codelldb_path,
+  -- On windows you may have to uncomment this:
+  -- detached = false,
+}
 
 -- print dap_path
 -- the adapters are setup according to https://github.com/mfussenegger/nvim-dap/wiki/Debug-Adapter-installation
 --
-dap.adapters.lldb = {
-    name = 'lldb',
-    type = 'executable',
-    command = dap_path,
-}
+--dap.adapters.lldb = {
+--    name = 'lldb',
+--    type = 'executable',
+--    command = dap_path,
+--}
 
 
 require("dapui").setup()
@@ -98,59 +121,67 @@ dap.listeners.before.event_exited["dapui_config"] = function()
     dapui.close()
 end
 
-dap.configurations.rust = {
-    {
-        name = 'Launch',
-        type = 'lldb',
-        request = 'launch',
-        program = function()
-            return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
-        end,
-        cwd = '${workspaceFolder}',
-        stopOnEntry = false,
-        args = {},
-        initCommands = function()
-            -- Find out where to look for the pretty printer Python module
-            local rustc_sysroot = vim.fn.trim(vim.fn.system('rustc --print sysroot'))
-
-            local script_import = 'command script import "' .. rustc_sysroot .. '/lib/rustlib/etc/lldb_lookup.py"'
-            local commands_file = rustc_sysroot .. '/lib/rustlib/etc/lldb_commands'
-
-            local commands = {}
-            local file = io.open(commands_file, 'r')
-            if file then
-                for line in file:lines() do
-                    table.insert(commands, line)
-                end
-                file:close()
-            end
-            table.insert(commands, 1, script_import)
-
-            return commands
-        end,
-
-        -- gather the environment variables from the shell
-        env = function()
-            local variables = {}
-            for k, v in pairs(vim.fn.environ()) do
-                table.insert(variables, string.format("%s=%s", k, v))
-            end
-            return variables
-        end,
-        -- 💀
-        -- if you change `runInTerminal` to true, you might need to change the yama/ptrace_scope setting:
-        --
-        --    echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope
-        --
-        -- Otherwise you might get the following error:
-        --
-        --    Error on launch: Failed to attach to the target process
-        --
-        -- But you should be aware of the implications:
-        -- https://www.kernel.org/doc/html/latest/admin-guide/LSM/Yama.html
-        -- runInTerminal = false,
-    },
-}
+-- dap.configurations.rust = {
+--     {
+--         -- ... the previous config goes here ...,
+--         name = 'Launch',
+--         type = 'lldb',
+--         request = 'launch',
+--         program = function()
+--             return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+--         end,
+--         cwd = '${workspaceFolder}',
+--         stopOnEntry = false,
+--         args = {},
+--         runInTerminal = false,
+--         initCommands = function()
+--             -- Find out where to look for the pretty printer Python module.
+--             local rustc_sysroot = vim.fn.trim(vim.fn.system 'rustc --print sysroot')
+--             assert(
+--                 vim.v.shell_error == 0,
+--                 'failed to get rust sysroot using `rustc --print sysroot`: '
+--                 .. rustc_sysroot
+--             )
+--             local script_file = rustc_sysroot .. '/lib/rustlib/etc/lldb_lookup.py'
+--             local commands_file = rustc_sysroot .. '/lib/rustlib/etc/lldb_commands'
+-- 
+--             -- The following is a table/list of lldb commands, which have a syntax
+--             -- similar to shell commands.
+--             --
+--             -- To see which command options are supported, you can run these commands
+--             -- in a shell:
+--             --
+--             --   * lldb --batch -o 'help command script import'
+--             --   * lldb --batch -o 'help command source'
+--             --
+--             -- Commands prefixed with `?` are quiet on success (nothing is written to
+--             -- debugger console if the command succeeds).
+--             --
+--             -- Prefixing a command with `!` enables error checking (if a command
+--             -- prefixed with `!` fails, subsequent commands will not be run).
+--             --
+--             -- NOTE: it is possible to put these commands inside the ~/.lldbinit
+--             -- config file instead, which would enable rust types globally for ALL
+--             -- lldb sessions (i.e. including those run outside of nvim). However,
+--             -- that may lead to conflicts when debugging other languages, as the type
+--             -- formatters are merely regex-matched against type names. Also note that
+--             -- .lldbinit doesn't support the `!` and `?` prefix shorthands.
+--             return {
+--                 ([[!command script import '%s']]):format(script_file),
+--                 ([[command source '%s']]):format(commands_file),
+--             }
+--         end,
+--         env = function()
+--             local variables = {}
+--             for k, v in pairs(vim.fn.environ()) do
+--                 table.insert(variables, string.format("%s=%s", k, v))
+--             end
+--             return variables
+--         end,
+-- 
+--         -- ...,
+--     },
+-- }
 
 -- This is your opts table
 require("telescope").setup {

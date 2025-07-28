@@ -29,7 +29,7 @@ in
       fi
 
       if [ "$color" = "dark" ]; then
-        echo "dark-mode" > ~/.config/delta/theme
+        echo "dark-mode --dark" > ~/.config/delta/theme
         dark
       elif [ "$color" = "light" ]; then
         echo "light-mode" > ~/.config/delta/theme

@@ -37,7 +37,9 @@
 
     # TODO figure out why notmuch is not building
     # it's failing on emacs build
-    #./modules/aerc.nix
+    ./modules/aerc.nix
+
+    ./modules/ai.nix
 
   ];
 

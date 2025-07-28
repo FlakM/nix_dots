@@ -98,7 +98,7 @@
       name = "Adwaita";
     };
     font = {
-      name = "Sans";
+      name = "FiraCode";
       size = 11;
     };
   };
