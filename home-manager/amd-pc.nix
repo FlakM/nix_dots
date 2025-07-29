@@ -60,7 +60,8 @@
     ./modules/scala.nix
 
     ./modules/aws.nix
-    #./modules/ghostty.nix
+
+    ./modules/ai.nix
   ];
 
   xdg.enable = true;

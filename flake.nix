@@ -177,10 +177,6 @@
 
                 # pull just averaged_perceptron_tagger_eng from pkgs-unstable
                 (self: super: {
-                  nltk-data = super.nltk-data // {
-                    averaged_perceptron_tagger_eng =
-                      pkgs-unstable.nltk-data.averaged_perceptron_tagger_eng;
-                  };
                 })
 
               ];

@@ -8,7 +8,7 @@ in
 
   services.mealie = {
     enable = true;
-    package = pkgs-unstable.mealie;
+#    package = pkgs-unstable.mealie;
     port = port;
     settings = {
       BASE_URL = domain;

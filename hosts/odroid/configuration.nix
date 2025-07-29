@@ -24,7 +24,7 @@
     #./smokeping.nix
 
     #   "${pkgs-unstable.path}/nixos/modules/services/web-apps/mealie.nix"
-    #   ./mealie.nix
+       ./mealie.nix
 
     ../../shared/immich.nix
 
