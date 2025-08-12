@@ -41,7 +41,8 @@
       ".local_ignore"
       ".claude"
       "**/.claude/"
-
+      "CLAUDE.md"
+      "PLAN.md"
     ];
 
     extraConfig = {

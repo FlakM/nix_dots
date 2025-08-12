@@ -15,16 +15,17 @@
 
   # Add nix-homebrew configuration
   nix-homebrew = {
+    mutableTaps = false;
     enable = true;
     enableRosetta = true;
     user = "flakm";
-    #autoMigrate = true;
+    autoMigrate = true;
     taps = {
       "homebrew/homebrew-core" = inputs.homebrew-core;
       "homebrew/homebrew-cask" = inputs.homebrew-cask;
       "homebrew/homebrew-bundle" = inputs.homebrew-bundle;
     };
-    mutableTaps = true;
+    #mutableTaps = true;
   };
 
   system.stateVersion = 5;
@@ -119,17 +120,20 @@
   homebrew = {
     enable = true;
 
-    casks = [
-      "aerospace"
-      "anki"
+    brews = [
       "docker"
     ];
 
+    casks = [
+      "aerospace"
+    ];
+    user = "flakm";
     taps = [
       "nikitabobko/tap"
     ];
 
-    onActivation.cleanup = "zap";
+    #mutableTaps = false;
+    #onActivation.cleanup = "zap";
   };
 
 
