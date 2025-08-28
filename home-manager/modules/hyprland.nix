@@ -110,6 +110,7 @@ in
     # https://wiki.hyprland.org/Configuring/Environment-variables/
     MOZ_ENABLE_WAYLAND = 1; # Firefox Wayland
     MOZ_DBUS_REMOTE = 1; # Firefox wayland
+    MOZ_USE_XINPUT2 = 1; # Firefox smooth scrolling
     GDK_BACKEND = "wayland";
 
     NIXOS_OZONE_WL = "1"; # hint electron apps to use wayland
@@ -504,13 +505,12 @@ in
 
   wayland.windowManager.hyprland.extraConfig = ''
         # See https://wiki.hyprland.org/Configuring/Monitors/
-        #monitor=,highres,auto,1.4
+        monitor=DP-1,5120x1440@143.98,0x0,1.0
         monitor=FALLBACK,highres,auto,1.0
 
-        env = GDK_SCALE,1.5
         env = XCURSOR_SIZE,32
 
-        # unscale XWayland
+        # toolkit-specific scaling
         xwayland {
           force_zero_scaling = true
         }

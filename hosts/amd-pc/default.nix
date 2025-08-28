@@ -51,7 +51,6 @@
   networking.hostId = "c5c1b353";
   networking.hostName = "amd-pc";
   time.timeZone = "Europe/Warsaw";
-
   imports = [
     (modulesPath + "/installer/scan/detected.nix")
     ./configuration.nix

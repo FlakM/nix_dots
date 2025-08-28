@@ -6,7 +6,7 @@ in
 
   home.packages = with pkgs; [
     #    rustup
-    #mold
+    pkgs-unstable.mold-wrapped
     clang
     #gcc
     #openssl
@@ -56,8 +56,7 @@ in
   #rustflags = ["-C", "link-arg=-fuse-ld=${pkgs-unstable.mold-wrapped}/bin/mold", "--cfg", "tokio_unstable"]
   home.file.".cargo/config.toml".text = ''
     [target.x86_64-unknown-linux-gnu]
-    #linker = "clang"
-    #rustdocflags = ["--cfg", "tokio_unstable"] 
+    rustflags = ["-C", "linker=clang", "-C", "link-arg=-fuse-ld=mold"]
     [target.aarch64-apple-darwin]
     rustflags = ["-L", "${pkgs.libiconv}/lib"]
   '';

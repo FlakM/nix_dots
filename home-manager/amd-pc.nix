@@ -70,7 +70,7 @@
 
   wayland.windowManager.hyprland.settings = {
     # Monitor settings
-    monitor = [ ",highres,auto,1.066667" "headless,highres,auto,1.6" ];
+    monitor = [ ",highres,auto,1" "headless,highres,auto,1.6" ];
     master = {
       orientation = "center";
       slave_count_for_center_master = 0;

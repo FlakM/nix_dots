@@ -28,7 +28,8 @@
       isDefault = true;
 
       settings = {
-        #"layout.css.devPixelsPerPx" = "1.1";
+        # DPI and scaling
+        #"layout.css.devPixelsPerPx" = "1.6";
       };
 
       userChrome = ''
