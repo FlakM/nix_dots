@@ -153,7 +153,7 @@ in
     cliphist # clipboard history
 
     hyprland-protocols
-
+    hyprpaper # wallpaper utility
 
     grim
     swappy
@@ -180,6 +180,30 @@ in
       ${apply-theme-script}
     '';
     executable = true;
+  };
+
+  # hyprpaper configuration
+  xdg.configFile."hypr/hyprpaper.conf" = {
+    text = let
+      wallpaperPath = "${config.home.homeDirectory}/.config/wallpaper.png";
+    in ''
+      # Preload wallpaper
+      preload = ${wallpaperPath}
+      
+      # Set wallpaper for monitor
+      wallpaper = DP-1,${wallpaperPath}
+      
+      # Enable splash text
+      splash = false
+      
+      # Enable IPC for runtime control
+      ipc = on
+    '';
+  };
+
+  # Manage wallpaper file
+  xdg.configFile."wallpaper.png" = {
+    source = "${inputs.self}/wallpapers/wallpaper.png";
   };
 
   programs.swaylock = {
@@ -574,6 +598,7 @@ in
         exec-once = wl-paste --type text --watch cliphist store #Stores only text data
         exec-once = wl-paste --type image --watch cliphist store #Stores only image data
         exec-once = ${configure-gtk-dark}/bin/configure-gtk-dark
+        exec-once = hyprpaper
 
 
         windowrule = workspace 2,title:^(Firefox)(.*)$
@@ -603,7 +628,8 @@ in
         bind=$mainMod,F,fullscreen 
 
         bind = $mainMod, D, exec, tofi-drun --drun-launch=true
-        bind = ALT_CTRL, N, exec, ${config.home.homeDirectory}/.config/theme-switch.sh 
+        bind = ALT_CTRL, N, exec, ${config.home.homeDirectory}/.config/theme-switch.sh
+        bind = $mainMod SHIFT, W, exec, hyprctl hyprpaper wallpaper "DP-1,${config.home.homeDirectory}/.config/wallpaper.png" 
         bind = $mainMod SHIFT, RETURN, exec, kitty
 
         # workspaces
