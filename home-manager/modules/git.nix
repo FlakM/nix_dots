@@ -6,6 +6,7 @@
     git-crypt
     pkgs-unstable.delta
     as-tree
+    gh
   ];
 
   programs.git = {

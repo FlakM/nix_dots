@@ -109,9 +109,9 @@ in
   #  displayManager.sddm.enable = true;
   #};
 
-  services.displayManager.sddm = {
+  services.xserver.displayManager.gdm = {
     enable = true;
-    wayland.enable = true;
+    wayland = true;
   };
 
   services.libinput.enable = true;
@@ -249,7 +249,7 @@ in
 
     glibc
 
-    xfce.thunar
+    kdePackages.dolphin
     lxqt.lxqt-policykit
 
     # fun

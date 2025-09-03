@@ -27,15 +27,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    ghostty = {
-      url = "github:ghostty-org/ghostty";
-      inputs = {
-        nixpkgs-stable.follows = "nixpkgs";
-        nixpkgs-unstable.follows = "nixpkgs-unstable";
-      };
-
-    };
-
+    hyprland.url = "git+https://github.com/hyprwm/Hyprland?submodules=1";
     nix-homebrew.url = "github:zhaofengli-wip/nix-homebrew";
     # Optional: Declarative tap management
     homebrew-core = {
@@ -63,6 +55,7 @@
     , fenix
     , nur
     , sops-nix
+    , hyprland
     , nix-homebrew
     , homebrew-core
     , homebrew-cask

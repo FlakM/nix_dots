@@ -13,17 +13,11 @@ in
 
   home.packages = with pkgs; [
     mumble
-    #pkgs-unstable.teams-for-linux
-    (google-chrome.override {
-      commandLineArgs = [
-        "--enable-features=UseOzonePlatform"
-        "--ozone-platform=wayland"
-      ];
-    })
+    google-chrome
     #element-desktop
     discord
-    pkgs-master.signal-desktop
-    pkgs-master.slack
+    signal-desktop
+    slack
     zulip-term
     #zulip
   ];

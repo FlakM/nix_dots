@@ -100,13 +100,46 @@ in
     pulse.enable = true;
     wireplumber.enable = true;
     jack.enable = true;
+
+    # Configure default HDMI audio for LG monitor
+    wireplumber.configPackages = [
+      (pkgs.writeTextDir "share/wireplumber/main.lua.d/51-hdmi-audio.lua" ''
+        -- Force HDMI card profile to be active
+        rule = {
+          matches = {
+            {
+              { "device.name", "equals", "alsa_card.pci-0000_18_00.1" },
+            },
+          },
+          apply_properties = {
+            ["device.profile"] = "output:hdmi-stereo-extra2",
+            ["api.acp.auto-profile"] = "false",
+          },
+        }
+        table.insert(alsa_monitor.rules, rule)
+
+        -- Set HDMI as default sink with high priority
+        default_sink_rule = {
+          matches = {
+            {
+              { "node.name", "equals", "alsa_output.pci-0000_18_00.1.hdmi-stereo-extra2" },
+            },
+          },
+          apply_properties = {
+            ["node.priority.driver"] = 2000,
+            ["node.priority.session"] = 2000,
+          },
+        }
+        table.insert(alsa_monitor.rules, default_sink_rule)
+      '')
+    ];
   };
 
   services.libinput.enable = true;
 
-  services.displayManager.sddm = {
+  services.xserver.displayManager.gdm = {
     enable = true;
-    wayland.enable = true;
+    wayland = true;
   };
 
 
@@ -115,22 +148,6 @@ in
     #xkb.options = "lv3:lalt_switch caps:swapescape";
     xkb.options = "caps:swapescape";
   };
-
-
-  boot.initrd.kernelModules = [ "amdgpu" ];
-  boot.kernelParams = [ "amdgpu.sg_display=0" ];
-
-  boot.kernelModules = [ "kvm-amd" ];
-
-  # configured according too:
-  # https://github.com/iovisor/bcc/blob/6d3d8a2aca2772dbd91644462852206387e296f2/INSTALL.md?plain=1#L29
-  boot.kernelPatches = [{
-    name = "bcc-configuration";
-    patch = null;
-    extraConfig = ''
-      IKHEADERS y
-    '';
-  }];
 
 
 
@@ -144,9 +161,16 @@ in
   services.dbus.enable = true;
 
 
+  boot.kernelParams = [
+    "video=DP-1:5120x1440@144"
+  ];
+
   hardware = {
     graphics = {
       enable = true;
+      enable32Bit = true;
+      #package = pkgs-unstable.mesa;
+      #package32 = pkgs-unstable.pkgsi686Linux.mesa;
     };
     bluetooth = {
       enable = true;
@@ -175,7 +199,7 @@ in
   # enable the tailscale daemon; this will do a variety of tasks:
   # 1. create the TUN network device
   # 2. setup some IP routes to route through the TUN
-  services.tailscale.enable = true;
+  services.tailscale.enable = false;
 
   users.groups.plugdev = { };
 
@@ -210,8 +234,7 @@ in
   # $ nix search wget
   environment.systemPackages = with pkgs; [
     nix-index
-
-
+    amdgpu_top
     #okular
 
     qemu_full
@@ -264,8 +287,6 @@ in
     aspellDicts.en
     aspellDicts.en-computers
 
-    tailscale
-
     qt6.full
 
     libsForQt5.qtstyleplugins
@@ -281,7 +302,7 @@ in
 
     glibc
 
-    xfce.thunar
+    kdePackages.dolphin
     lxqt.lxqt-policykit
 
     # fun
@@ -424,15 +445,12 @@ in
       text = builtins.readFile ./69-probe-rs.rules;
       destination = "/etc/udev/rules.d/69-probe-rs.rules";
     })
-
-
   ];
-
 
 
   # enable gnome keyring for nextcloud-client to store the password
   services.gnome.gnome-keyring.enable = true;
-  security.pam.services.sddm.enableGnomeKeyring = true;
+  security.pam.services.gdm.enableGnomeKeyring = true;
 
   security.pam.services.hyprlock = {};
 }

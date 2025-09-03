@@ -90,17 +90,17 @@ in
         };
         hyprland = {
           default = [
-            "gtk"
             "hyprland"
+            "gtk"
           ];
         };
       };
 
       xdgOpenUsePortal = true;
 
-      extraPortals = with pkgs; [
-        xdg-desktop-portal-hyprland
-        xdg-desktop-portal-gtk
+      extraPortals = [
+        inputs.hyprland.packages.${pkgs.system}.xdg-desktop-portal-hyprland
+        pkgs.xdg-desktop-portal-gtk
       ];
     };
   };
@@ -111,6 +111,7 @@ in
     MOZ_ENABLE_WAYLAND = 1; # Firefox Wayland
     MOZ_DBUS_REMOTE = 1; # Firefox wayland
     MOZ_USE_XINPUT2 = 1; # Firefox smooth scrolling
+    MOZ_WAYLAND_USE_VAAPI = 1; # Firefox hardware acceleration
     GDK_BACKEND = "wayland";
 
     NIXOS_OZONE_WL = "1"; # hint electron apps to use wayland
@@ -139,7 +140,8 @@ in
 
   home.packages = with pkgs; [
     tofi # launcher
-    dunst # notifications
+    swaynotificationcenter # modern notifications
+    libnotify # provides notify-send for testing
     playerctl # media status for waybar
     shotman # screenshot
     dconf
@@ -147,6 +149,8 @@ in
     configure-gtk-dark
     configure-gtk-light
     wl-clipboard
+    wl-clip-persist # better clipboard persistence
+    wtype # for typing clipboard content
 
     #unstable.xdg-utils
     handlr
@@ -160,6 +164,7 @@ in
     slurp
 
     pkgs-unstable.grimblast
+    brightnessctl # brightness control
   ];
 
 
@@ -204,6 +209,247 @@ in
   # Manage wallpaper file
   xdg.configFile."wallpaper.png" = {
     source = "${inputs.self}/wallpapers/wallpaper.png";
+  };
+
+  # SwayNotificationCenter configuration
+  xdg.configFile."swaync/config.json" = {
+    text = builtins.toJSON {
+      positionX = "center";
+      positionY = "top";
+      layer = "overlay";
+      control-center-layer = "top";
+      layer-shell = true;
+      cssPriority = "application";
+      control-center-margin-top = 60;
+      control-center-margin-bottom = 20;
+      control-center-margin-right = 40;
+      control-center-margin-left = 40;
+      notification-2fa-command = true;
+      notification-inline-replies = false;
+      notification-icon-size = 80;
+      notification-body-image-height = 120;
+      notification-body-image-width = 240;
+      timeout = 10;
+      timeout-low = 5;
+      timeout-critical = 0;
+      fit-to-screen = false;
+      control-center-width = 700;
+      control-center-height = 800;
+      notification-window-width = 800;
+      notification-window-height = -1;
+      keyboard-shortcuts = true;
+      image-visibility = "when-available";
+      transition-time = 200;
+      hide-on-clear = false;
+      hide-on-action = true;
+      script-fail-notify = true;
+    };
+  };
+
+  xdg.configFile."swaync/style.css" = {
+    text = ''
+      * {
+        font-family: "FiraCode Nerd Font";
+        font-weight: bold;
+        font-size: 16px;
+      }
+
+      /* Notification window styling - AUTO SIZING */
+      .notification-row {
+        outline: none;
+        margin: 15px;
+      }
+
+      .notification-row:focus,
+      .notification-row:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+      }
+
+      /* Individual notification styling - AUTO SIZING */
+      .notification {
+        background: rgba(16, 16, 24, 0.9);
+        border: 3px solid rgba(51, 204, 255, 0.4);
+        border-radius: 24px;
+        margin: 15px auto;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 
+                    0 0 0 1px rgba(255, 255, 255, 0.05);
+        transition: all 0.3s ease;
+        opacity: 0.95;
+      }
+
+      .notification:hover {
+        background: rgba(20, 20, 32, 0.92);
+        border-color: rgba(51, 204, 255, 0.6);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 
+                    0 0 30px rgba(51, 204, 255, 0.15),
+                    0 0 0 1px rgba(255, 255, 255, 0.08),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        opacity: 1.0;
+      }
+
+      /* Notification header - BIGGER TEXT */
+      .notification-content .notification-header {
+        margin-bottom: 12px;
+      }
+
+      .notification-content .notification-header .notification-title {
+        color: #ffffff;
+        font-size: 20px;
+        font-weight: bold;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+      }
+
+      .notification-content .notification-header .notification-time {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 14px;
+        opacity: 0.8;
+      }
+
+      /* Notification body - LARGER & MORE READABLE */
+      .notification-content .notification-body {
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 16px;
+        line-height: 1.5;
+        margin-top: 12px;
+        font-weight: normal;
+      }
+
+      /* Notification icon - MUCH BIGGER */
+      .notification-icon {
+        margin-right: 20px;
+        min-width: 80px;
+        min-height: 80px;
+      }
+
+      .notification-icon image {
+        border-radius: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      }
+
+      /* Close button */
+      .close-button {
+        background: rgba(255, 80, 80, 0.8);
+        border: 2px solid rgba(255, 100, 100, 0.4);
+        border-radius: 50%;
+        color: white;
+        transition: all 0.3s ease;
+      }
+
+      .close-button:hover {
+        background: rgba(255, 60, 60, 0.9);
+        border-color: rgba(255, 80, 80, 0.6);
+        box-shadow: 0 4px 12px rgba(255, 60, 60, 0.3);
+        opacity: 1.0;
+      }
+
+      /* Control Center */
+      .control-center {
+        background: rgba(12, 12, 20, 0.95);
+        border: 3px solid rgba(51, 204, 255, 0.3);
+        border-radius: 20px;
+        margin: 16px;
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+      }
+
+      .control-center .notification-row:first-child > .notification {
+        margin-top: 16px;
+      }
+
+      .control-center .notification-row:last-child > .notification {
+        margin-bottom: 16px;
+      }
+
+      /* Control center header */
+      .control-center-list-placeholder {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 18px;
+        margin: 24px;
+        text-align: center;
+      }
+
+      /* Urgency-specific styling - MORE DRAMATIC */
+      .notification.critical {
+        border-color: rgba(255, 80, 80, 0.6);
+        background: rgba(32, 16, 16, 0.9);
+        box-shadow: 0 8px 32px rgba(255, 80, 80, 0.2), 
+                    0 0 0 1px rgba(255, 100, 100, 0.1),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      }
+
+      .notification.critical:hover {
+        border-color: rgba(255, 80, 80, 0.8);
+        background: rgba(40, 20, 20, 0.95);
+        box-shadow: 0 12px 40px rgba(255, 80, 80, 0.3),
+                    0 0 30px rgba(255, 80, 80, 0.2);
+      }
+
+      .notification.low {
+        border-color: rgba(150, 150, 150, 0.3);
+        background: rgba(20, 20, 20, 0.8);
+        opacity: 0.85;
+      }
+
+      /* Action buttons */
+      .notification-action {
+        background: rgba(51, 204, 255, 0.2);
+        border: 2px solid rgba(51, 204, 255, 0.4);
+        border-radius: 12px;
+        color: white;
+        font-weight: bold;
+        margin: 4px;
+        transition: all 0.3s ease;
+      }
+
+      .notification-action:hover {
+        background: rgba(51, 204, 255, 0.3);
+        border-color: rgba(51, 204, 255, 0.6);
+        box-shadow: 0 4px 12px rgba(51, 204, 255, 0.2);
+      }
+
+      /* Progress bars - MORE VISIBLE */
+      .notification-progress {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 8px;
+        margin: 12px 0;
+        overflow: hidden;
+        height: 8px;
+      }
+
+      .notification-progress-bar {
+        background: linear-gradient(90deg, #33ccff, #00ff99);
+        height: 100%;
+        border-radius: 8px;
+        transition: width 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+        box-shadow: 0 0 8px rgba(51, 204, 255, 0.4);
+      }
+
+      /* Additional modern effects */
+      .notification-content {
+        position: relative;
+      }
+
+      .notification-content::before {
+        content: "";
+        position: absolute;
+        top: -1px;
+        left: -1px;
+        right: -1px;
+        bottom: -1px;
+        background: linear-gradient(45deg, 
+                    rgba(51, 204, 255, 0.1), 
+                    rgba(0, 255, 153, 0.1), 
+                    rgba(51, 204, 255, 0.1));
+        border-radius: 28px;
+        z-index: -1;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .notification:hover .notification-content::before {
+        opacity: 1;
+      }
+    '';
   };
 
   programs.swaylock = {
@@ -440,8 +686,8 @@ in
       variables = [ "--all" ];
       enableXdgAutostart = true; # 🔑 start XDG‐autostart apps
     };
-    package = null;
-    portalPackage = null;
+    package = inputs.hyprland.packages.${pkgs.system}.hyprland;
+    portalPackage = inputs.hyprland.packages.${pkgs.system}.xdg-desktop-portal-hyprland;
   };
 
 
@@ -529,14 +775,16 @@ in
 
   wayland.windowManager.hyprland.extraConfig = ''
         # See https://wiki.hyprland.org/Configuring/Monitors/
-        monitor=DP-1,5120x1440@143.98,0x0,1.0
-        monitor=FALLBACK,highres,auto,1.0
 
         env = XCURSOR_SIZE,32
 
         # toolkit-specific scaling
         xwayland {
           force_zero_scaling = true
+        }
+
+        debug {
+            disable_logs = false
         }
 
         # For all categories, see https://wiki.hyprland.org/Configuring/Variables/
@@ -560,11 +808,10 @@ in
         general {
             # See https://wiki.hyprland.org/Configuring/Variables/ for more
             gaps_in = 5
-            gaps_out = 5
-            border_size = 4
+            gaps_out = 10
+            border_size = 2
             col.active_border = rgba(33ccffee) rgba(00ff99ee) 45deg
             col.inactive_border = rgba(595959aa)
-    
         }
     
         animations {
@@ -582,23 +829,30 @@ in
             animation = workspaces, 1, 6, default
         }
     
+        decoration {
+            rounding = 10
+            blur {
+                enabled = true
+                size = 8
+                passes = 1
+            }
+        }
+    
         dwindle {
             # See https://wiki.hyprland.org/Configuring/Dwindle-Layout/ for more
             pseudotile = yes # master switch for pseudotiling. Enabling is bound to mainMod + P in the keybinds section below
             preserve_split = yes # you probably want this
         }
     
-        gestures {
-            # See https://wiki.hyprland.org/Configuring/Variables/ for more
-            workspace_swipe = off
-        }
-    
 
         # https://wiki.hyprland.org/Useful-Utilities/Clipboard-Managers/#cliphist
         exec-once = wl-paste --type text --watch cliphist store #Stores only text data
         exec-once = wl-paste --type image --watch cliphist store #Stores only image data
+        # Ensure proper clipboard daemon for better browser integration
+        exec-once = wl-clip-persist --clipboard regular --selection primary
         exec-once = ${configure-gtk-dark}/bin/configure-gtk-dark
         exec-once = hyprpaper
+        exec-once = swaync
 
 
         windowrule = workspace 2,title:^(Firefox)(.*)$
@@ -606,6 +860,10 @@ in
         exec-once=[workspace 1 silent] kitty
         exec-once=[workspace 2 silent] firefox
 
+        # Transparency via Hyprland
+        # windowrulev2 = opacity 0.90, class:^(kitty)$
+        windowrulev2 = opacity 0.90, class:^(firefox)$
+        windowrulev2 = opacity 0.80, class:^(spotify)$
 
         exec-once=[workspace 3 silent] obsidian
         exec-once=[workspace 3 silent] kitty --title "obsidian" --directory /home/flakm/programming/flakm/obsidian/work -- bash -c "tmux new-session -d -s obsidian 'nvim' && tmux attach-session -t obsidian"
@@ -628,6 +886,7 @@ in
         bind=$mainMod,F,fullscreen 
 
         bind = $mainMod, D, exec, tofi-drun --drun-launch=true
+        bind = $mainMod, E, exec, dolphin
         bind = ALT_CTRL, N, exec, ${config.home.homeDirectory}/.config/theme-switch.sh
         bind = $mainMod SHIFT, W, exec, hyprctl hyprpaper wallpaper "DP-1,${config.home.homeDirectory}/.config/wallpaper.png" 
         bind = $mainMod SHIFT, RETURN, exec, kitty
@@ -667,23 +926,41 @@ in
         bind = $mainMod CTRL SHIFT, k, resizeactive, 0 -100
         bind = $mainMod CTRL SHIFT, j, resizeactive, 0 100
 
-        bind = CTRL SHIFT, V, exec, cliphist list | tofi | cliphist decode | wl-copy
-        bind = CTRL SHIFT, P, exec, wl-paste
-
+        # Clipboard history (most common pattern from GitHub dotfiles)
+        bind = SUPER, V, exec, cliphist list | tofi | cliphist decode | wl-paste --type text --primary --clipboard
+        
+        
+        # Super (Windows key) shortcuts for terminal compatibility
+        bind = SUPER, C, exec, wtype -M ctrl -M shift c -m shift -m ctrl # copy (works in terminals)
+        
+        # Paste from history using cliphist
+        bind = CTRL SHIFT, V, exec, cliphist list | tofi | cliphist decode | wl-copy | wl-paste
 
 
         # print screen full screen
         bind=,Print,exec,grimblast --scale 2 --wait 2 copy screen
         # print screen selection range
         bind=SHIFT,Print,exec,grimblast --scale 2 --wait 2 copy area
+        # save screenshot to Pictures with timestamp
+        bind=$mainMod,Print,exec,grimblast --scale 2 --wait 2 save area ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png
 
         bind=$mainMod SHIFT, L, exec, hyprlock
+        bind = $mainMod, N, exec, swaync-client -t -sw
 
 
         # volume button that allows press and hold, volume limited to 150%
-        binde=, XF86AudioRaiseVolume, exec, wpctl set-volume -l 1.5 50 5%+
-        binde=, XF86AudioLowerVolume, exec, wpctl set-volume -l 1.5 50 5%-
-        bind=, XF86AudioMute, exec, wpctl set-mute 50 toggle
+        binde=, XF86AudioRaiseVolume, exec, wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+
+        binde=, XF86AudioLowerVolume, exec, wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%-
+        bind=, XF86AudioMute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
+        
+        # media controls
+        bind=, XF86AudioPlay, exec, playerctl play-pause
+        bind=, XF86AudioNext, exec, playerctl next
+        bind=, XF86AudioPrev, exec, playerctl previous
+        
+        # brightness controls
+        binde=, XF86MonBrightnessUp, exec, brightnessctl set 10%+
+        binde=, XF86MonBrightnessDown, exec, brightnessctl set 10%-
 
   '';
 
