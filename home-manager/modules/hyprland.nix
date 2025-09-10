@@ -698,6 +698,7 @@ in
       {
         general = {
           after_sleep_cmd = "hyprctl dispatch dpms on";
+          before_sleep_cmd = "hyprctl dispatch dpms on";
           ignore_dbus_inhibit = false;
           lock_cmd = "hyprlock";
           # show a blurred screenshot background
@@ -705,7 +706,7 @@ in
           blur-radius = 15;
           font = "FiraCode Nerd Font";
           disable_loading_bar = true;
-          grace = 300;
+          grace = 2;
           hide_cursor = true;
           no_fade_in = false;
         };
@@ -742,17 +743,7 @@ in
         ];
 
 
-        listener = [
-          {
-            timeout = 900;
-            on-timeout = "hyprlock";
-          }
-          {
-            timeout = 1200;
-            on-timeout = "hyprctl dispatch dpms off";
-            on-resume = "hyprctl dispatch dpms on";
-          }
-        ];
+        listener = [];
       };
   };
 
@@ -762,11 +753,19 @@ in
     settings = {
       general = {
         lock_cmd = "pidof hyprlock || hyprlock";
+        before_sleep_cmd = "loginctl lock-session";
+        after_sleep_cmd = "hyprctl dispatch dpms on";
+        ignore_dbus_inhibit = false;
       };
       listener = [
         {
-          timeout = 900;
+          timeout = 300;  # 5 minutes - lock screen
           on-timeout = "hyprlock";
+        }
+        {
+          timeout = 600;  # 10 minutes - turn off displays
+          on-timeout = "hyprctl dispatch dpms off";
+          on-resume = "hyprctl dispatch dpms on";
         }
       ];
     };
@@ -785,6 +784,14 @@ in
 
         debug {
             disable_logs = false
+        }
+
+        misc {
+            mouse_move_enables_dpms = true
+            key_press_enables_dpms = true
+            disable_hyprland_logo = true
+            disable_splash_rendering = true
+            force_default_wallpaper = 0
         }
 
         # For all categories, see https://wiki.hyprland.org/Configuring/Variables/
@@ -809,7 +816,7 @@ in
             # See https://wiki.hyprland.org/Configuring/Variables/ for more
             gaps_in = 5
             gaps_out = 10
-            border_size = 2
+            border_size = 5
             col.active_border = rgba(33ccffee) rgba(00ff99ee) 45deg
             col.inactive_border = rgba(595959aa)
         }
@@ -940,7 +947,7 @@ in
         # print screen full screen
         bind=,Print,exec,grimblast --scale 2 --wait 2 copy screen
         # print screen selection range
-        bind=SHIFT,Print,exec,grimblast --scale 2 --wait 2 copy area
+        bind=SHIFT,Print,exec,grimblast --scale 2 copy area
         # save screenshot to Pictures with timestamp
         bind=$mainMod,Print,exec,grimblast --scale 2 --wait 2 save area ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png
 

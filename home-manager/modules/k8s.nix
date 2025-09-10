@@ -3,6 +3,7 @@
   home.packages = with pkgs; [
     teleport_16
     kubectx
+    kubectl
   ];
 
   programs.k9s = {

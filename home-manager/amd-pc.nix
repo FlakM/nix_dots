@@ -62,6 +62,8 @@
     ./modules/aws.nix
 
     ./modules/ai.nix
+
+    ./modules/k8s.nix
   ];
 
   xdg.enable = true;
@@ -111,7 +113,7 @@
       gtk.enable = true;
       package = pkgs.bibata-cursors;
       name = "Bibata-Modern-Amber";
-      size = 24;
+      size = 48;
     };
     stateVersion = "23.05";
 
@@ -131,6 +133,7 @@
 
   home.packages = with pkgs; [
     openrgb-with-all-plugins
+    pritunl-client
   ];
 
 
