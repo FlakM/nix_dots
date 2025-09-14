@@ -15,6 +15,7 @@
     ./zfs_replication.nix
     ./acme.nix
     ./adguard.nix
+    ./paperless.nix
     #../../shared/k3s.nix
     #../../shared/wireguard.nix
     ../../shared/netdata.nix
