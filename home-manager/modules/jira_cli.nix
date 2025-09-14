@@ -2,13 +2,13 @@
 {
 
   home.packages = with pkgs; [
-    jira-cli-go
+    pkgs-unstable.jira-cli-go
 
     pkgs-unstable.chatgpt-cli
     shellcheck
   ];
 
-  home.file.".jira/.config.yml" = {
+  home.file.".jira/.config.yml_old" = {
     text = ''
       board:
           id: 1740

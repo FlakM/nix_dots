@@ -1,23 +1,31 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with Maciek's NixOS configuration repository.
 
-## Repository Structure
+## Repository Overview
 
-This is a NixOS/nix-darwin configuration repository using flakes and home-manager for reproducible system configuration across multiple hosts (Linux and macOS).
+A comprehensive NixOS/nix-darwin flake configuration for multiple machines with extensive home-manager integration. Uses bleeding-edge packages (nixpkgs 25.05) and modular architecture for consistent cross-platform development environments.
 
-### Key Directories:
-- `flake.nix` - Main flake configuration defining system builds
-- `home-manager/` - Home-manager configurations per host
-- `hosts/` - Host-specific system configurations (dell-xps, amd-pc, odroid, air, work)
-- `modules/` - Reusable NixOS modules
-- `secrets/` - SOPS-encrypted secrets
+### Core Architecture:
+- **Multi-channel setup**: stable (25.05), unstable, and master nixpkgs channels
+- **Flake inputs**: Hyprland (latest git), fenix (Rust), sops-nix, darwin, home-manager
+- **Cross-platform**: NixOS (Linux) + nix-darwin (macOS) with shared modules
+- **Secrets management**: SOPS with Yubikey integration
 
-### Host Architecture:
-- **Linux hosts**: dell-xps, amd-pc, odroid (x86_64-linux)
-- **macOS hosts**: air, work (aarch64-darwin using nix-darwin)
+### Host Configuration:
+- **amd-pc**: Primary Linux workstation (x86_64-linux) - main development machine
+- **dell-xps**: Laptop Linux system (x86_64-linux)
+- **odroid**: Server/homelab system (x86_64-linux) - self-hosted services
+- **air**: macOS laptop (aarch64-darwin)
+- **work**: macOS work machine (aarch64-darwin)
 
-Each host has both system config in `hosts/` and user config in `home-manager/`.
+### Directory Structure:
+- `flake.nix` - Main flake with multi-channel inputs and outputs
+- `hosts/*/` - Per-host NixOS/darwin system configurations  
+- `home-manager/*/` - Per-host user environment configurations
+- `home-manager/modules/` - Modular application configurations (40+ modules)
+- `modules/` - Reusable NixOS system modules
+- `secrets/` - SOPS-encrypted secrets (requires Yubikey)
 
 ## Development Commands
 

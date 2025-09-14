@@ -21,9 +21,9 @@
       ''
     );
 
-  # Ensure cargo tools are in the PATH
+  # Ensure cargo and go tools are in the PATH
   home.sessionPath = [
-    "${config.home.homeDirectory}/.cargo/bin"
+    "${config.home.homeDirectory}/.cargo/bin:${config.home.homeDirectory}/go/bin:/usr/local/bin/"
   ];
 
   imports = [
