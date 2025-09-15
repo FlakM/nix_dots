@@ -1,4 +1,13 @@
 { pkgs, config, inputs, ... }: {
+  
+  # SOPS secret for Samba password
+  sops.defaultSopsFile = ../../secrets/secrets.yaml;
+  sops.secrets.samba_flakm_password = {
+    mode = "0440";
+    owner = "root";
+    group = "root";
+    restartUnits = [ "samba-setup-flakm.service" ];
+  };
 
   networking.firewall.enable = true;
   networking.firewall.allowPing = true;
@@ -13,7 +22,6 @@
   ];
   services.samba = {
     enable = true;
-    securityType = "user";
     settings = {
       global = {
         workgroup = "WORKGROUP";
@@ -27,8 +35,6 @@
         "guest account" = "nobody";
         "map to guest" = "bad user";
       };
-    };
-    shares = {
       smolnica = {
         path = "/var/data/smolnica";
         browseable = "no";
@@ -61,6 +67,46 @@
         "force user" = "kleszczow";
         "force group" = "kleszczow";
       };
+
+      paperless-consume = {
+        path = "/var/lib/paperless/consume";
+        browseable = "yes";
+        "read only" = "no";
+        "guest ok" = "no";
+        "valid users" = "flakm";
+        "create mask" = "0664";
+        "directory mask" = "0775";
+        "force user" = "paperless";
+        "force group" = "paperless";
+        comment = "Paperless document consumption directory";
+      };
+    };
+  };
+
+  # Systemd service to automatically set Samba password for flakm user
+  systemd.services.samba-setup-flakm = {
+    description = "Set up Samba password for flakm user";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "samba-smbd.service" "local-fs.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      User = "root";
+      ExecStart = pkgs.writeShellScript "setup-samba-flakm" ''
+        set -e
+        # Wait for samba services to be ready
+        sleep 2
+        
+        # Set Samba password for flakm user using SOPS secret
+        if [ -f "${config.sops.secrets.samba_flakm_password.path}" ]; then
+          password=$(cat "${config.sops.secrets.samba_flakm_password.path}")
+          echo -e "$password\n$password" | ${pkgs.samba}/bin/smbpasswd -a -s flakm
+          echo "Samba password set for flakm user from SOPS secret"
+        else
+          echo "SOPS secret file not found: ${config.sops.secrets.samba_flakm_password.path}"
+          exit 1
+        fi
+      '';
     };
   };
 }

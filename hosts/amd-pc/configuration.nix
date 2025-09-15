@@ -73,6 +73,12 @@ in
       owner = "flakm";
       group = "users";
     };
+    samba_flakm_password = {
+      mode = "0440";
+      owner = "flakm";
+      group = "users";
+      restartUnits = [ "create-samba-credentials.service" ];
+    };
   };
 
   # The global useDHCP flag is deprecated, therefore explicitly set to false here.
@@ -90,7 +96,7 @@ in
 
   services.blueman.enable = true;
 
-  hardware.pulseaudio.enable = false;
+  services.pulseaudio.enable = false;
 
   services.pipewire = {
     enable = true;
@@ -247,6 +253,7 @@ in
     linuxHeaders
 
     xfce.xfce4-pulseaudio-plugin
+    cifs-utils  # For mounting Samba shares
 
     adwaita-icon-theme
     gnome-themes-extra
@@ -395,7 +402,7 @@ in
   # mDNS/DNS-SD protocols (Multicast DNS / DNS Service Discovery),
   services.avahi = {
     enable = true;
-    nssmdns = true;
+    nssmdns4 = true;
     openFirewall = true;
   };
 
@@ -489,4 +496,52 @@ in
   security.pam.services.hyprlock = { };
 
   services.bpftune.enable = true;
+
+  # Paperless consume directory mount
+  fileSystems."/mnt/paperless-consume" = {
+    device = "//192.168.0.102/paperless-consume";
+    fsType = "cifs";
+    options = [
+      "credentials=/var/secrets/samba-credentials"
+      "uid=1000"
+      "gid=100"
+      "file_mode=0664"
+      "dir_mode=0775"
+      "noauto"
+      "user"
+      "x-systemd.automount"
+      "x-systemd.mount-timeout=10"
+      "x-systemd.idle-timeout=60"
+    ];
+  };
+
+  # Create credentials file from SOPS secret
+  systemd.services.create-samba-credentials = {
+    description = "Create Samba credentials file from SOPS secret";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "local-fs.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      User = "root";
+      ExecStart = pkgs.writeShellScript "create-samba-credentials" ''
+        set -e
+        mkdir -p /var/secrets
+        
+        if [ -f "${config.sops.secrets.samba_flakm_password.path}" ]; then
+          cat > /var/secrets/samba-credentials << EOF
+username=flakm
+password=$(cat "${config.sops.secrets.samba_flakm_password.path}")
+domain=WORKGROUP
+EOF
+          chmod 600 /var/secrets/samba-credentials
+          echo "Samba credentials file created from SOPS secret"
+        else
+          echo "SOPS secret file not found: ${config.sops.secrets.samba_flakm_password.path}"
+          exit 1
+        fi
+      '';
+    };
+  };
+
 }

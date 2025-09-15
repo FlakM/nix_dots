@@ -41,6 +41,18 @@
   networking.hostName = "odroid";
   networking.domain = "house.flakm.com";
 
+  # Explicit ZFS filesystem declarations for paperless
+  fileSystems."/var/lib/paperless" = {
+    device = "rpool/nixos/var/lib/paperless/app";
+    fsType = "zfs";
+    options = [ "zfsutil" ];
+  };
+
+  fileSystems."/var/lib/containers/storage/volumes/paperless-ai-data/_data" = {
+    device = "rpool/nixos/var/lib/paperless/ai";
+    fsType = "zfs";
+    options = [ "zfsutil" ];
+  };
 
   users.users.flakm = {
     extraGroups = [ "deluge" "nextcloud" "sabnzbd" "sonarr" "jellyseerr" "flakm" ];
@@ -73,7 +85,7 @@
 
     wgnord
     wireguard-tools
-    transmission
+    transmission_3
     unrar
 
     # for monitoring gpu (quicksync)

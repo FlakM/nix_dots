@@ -13,7 +13,7 @@ in
     settings = {
       BASE_URL = domain;
     };
-    credentialsFile = "/var/lib/mealie/open_api_key";
+    credentialsFile = config.sops.secrets.open_api_key.path;
     database.createLocally = true;
   };
 
@@ -21,7 +21,6 @@ in
   sops.secrets = {
     open_api_key = {
       restartUnits = [ "mealie.service" ];
-      path = "/var/lib/mealie/open_api_key";
       mode = "0440";
       owner = "mealie";
     };
