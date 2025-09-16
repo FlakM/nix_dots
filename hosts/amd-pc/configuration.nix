@@ -191,6 +191,7 @@ in
 
   virtualisation.docker = {
     enable = true;
+    storageDriver = "zfs";
     daemon.settings = {
       bip = "172.26.0.1/16";
       default-address-pools = [
@@ -198,6 +199,10 @@ in
           base = "172.26.0.1/16";
           size = 24;
         }
+      ];
+      storage-driver = "zfs";
+      storage-opts = [
+        "zfs.fsname=rpool/docker"
       ];
     };
   };
