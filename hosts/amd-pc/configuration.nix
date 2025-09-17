@@ -202,8 +202,15 @@ in
       ];
       storage-driver = "zfs";
       storage-opts = [
-        "zfs.fsname=rpool/docker"
+        "zfs.fsname=rpool/docker-optimized"
       ];
+      default-ulimits = {
+        nofile = {
+          Name = "nofile";
+          Soft = 1000000;
+          Hard = 1000000;
+        };
+      };
     };
   };
 
@@ -258,7 +265,7 @@ in
     linuxHeaders
 
     xfce.xfce4-pulseaudio-plugin
-    cifs-utils  # For mounting Samba shares
+    cifs-utils # For mounting Samba shares
 
     adwaita-icon-theme
     gnome-themes-extra
@@ -530,21 +537,21 @@ in
       RemainAfterExit = true;
       User = "root";
       ExecStart = pkgs.writeShellScript "create-samba-credentials" ''
-        set -e
-        mkdir -p /var/secrets
+                set -e
+                mkdir -p /var/secrets
         
-        if [ -f "${config.sops.secrets.samba_flakm_password.path}" ]; then
-          cat > /var/secrets/samba-credentials << EOF
-username=flakm
-password=$(cat "${config.sops.secrets.samba_flakm_password.path}")
-domain=WORKGROUP
-EOF
-          chmod 600 /var/secrets/samba-credentials
-          echo "Samba credentials file created from SOPS secret"
-        else
-          echo "SOPS secret file not found: ${config.sops.secrets.samba_flakm_password.path}"
-          exit 1
-        fi
+                if [ -f "${config.sops.secrets.samba_flakm_password.path}" ]; then
+                  cat > /var/secrets/samba-credentials << EOF
+        username=flakm
+        password=$(cat "${config.sops.secrets.samba_flakm_password.path}")
+        domain=WORKGROUP
+        EOF
+                  chmod 600 /var/secrets/samba-credentials
+                  echo "Samba credentials file created from SOPS secret"
+                else
+                  echo "SOPS secret file not found: ${config.sops.secrets.samba_flakm_password.path}"
+                  exit 1
+                fi
       '';
     };
   };
