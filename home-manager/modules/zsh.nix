@@ -82,9 +82,38 @@
 
       function zvm_config() {
         ZVM_LAZY_KEYBINDINGS=false
+        ZVM_SYSTEM_CLIPBOARD_ENABLED=true
+        ZVM_CLIPBOARD_COPY_CMD='wl-copy'
+        ZVM_CLIPBOARD_PASTE_CMD='wl-paste -n'
       }
-      zvm_after_init_commands+=(my_init)
 
+      function zvm_after_init() {
+        my_init
+
+        # Create safe paste widget
+        function safe-paste-widget() {
+          local content
+          content=$(wl-paste 2>/dev/null) || return
+          # Replace with literal insertion without execution
+          LBUFFER="$LBUFFER$content"
+          zle redisplay
+        }
+        zle -N safe-paste-widget
+
+        # Bind Alt+Shift+V to safe paste
+        bindkey -M viins '^[[1;4V' safe-paste-widget  # Alt+Shift+V
+        bindkey -M vicmd '^[[1;4V' safe-paste-widget
+
+        # Try to make Shift+Insert safer by using our custom widget
+        bindkey -M viins '^[[2;2~' safe-paste-widget  # Shift+Insert
+        bindkey -M vicmd '^[[2;2~' safe-paste-widget
+
+        # Enhanced bracketed paste mode for safe multiline pasting
+        autoload -Uz bracketed-paste-magic
+        zle -N bracketed-paste bracketed-paste-magic
+        bindkey -M viins '^[[200~' bracketed-paste-magic
+        bindkey -M vicmd '^[[200~' bracketed-paste-magic
+      }
       source ${pkgs.zsh-vi-mode}/share/zsh-vi-mode/zsh-vi-mode.plugin.zsh
       
 

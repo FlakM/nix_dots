@@ -2,15 +2,14 @@
 
 {
   boot.extraModulePackages = with pkgs; [
-    linuxKernel.packages.linux_6_6.turbostat
+    config.boot.kernelPackages.turbostat
   ];
-
 
   boot.kernelModules = [ "msr" ];
 
   environment.systemPackages = with pkgs; [
-    # turbostat
-    linuxKernel.packages.linux_6_6.turbostat
+    # turbostat - use matching kernel version
+    config.boot.kernelPackages.turbostat
     linuxPackages.perf
 
     bcc

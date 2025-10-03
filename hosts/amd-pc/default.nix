@@ -47,7 +47,15 @@
     };
   };
   boot.initrd.availableKernelModules = [ "xhci_pci" "ahci" "nvme" "usb_storage" "sd_mod" "sdhci_pci" ];
-  boot.kernelParams = [ ];
+  boot.kernelModules = [ "kvm-amd" ];
+  boot.kernelParams = [ 
+    "amd_pstate=guided"
+    "amd_iommu=on"
+    "iommu=pt"
+  ];
+  
+  # AMD CPU microcode updates
+  hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
   networking.hostId = "c5c1b353";
   networking.hostName = "amd-pc";
   time.timeZone = "Europe/Warsaw";

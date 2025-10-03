@@ -59,7 +59,11 @@ in
       map ctrl+shift+o no_op
       map ctrl+shift+n no_op
       map ctrl+shift+p no_op
-      copy_on_select clipboard
+      copy_on_select no
+      clipboard_control write-primary write-clipboard no-append
+      map alt+shift+c copy-to-clipboard
+      map alt+shift+v paste-from-clipboard
+      map shift+insert paste-from-clipboard
     '';
 
     font = {
@@ -71,4 +75,3 @@ in
 
 
 }
-

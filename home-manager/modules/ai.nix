@@ -1,10 +1,10 @@
-{ config, pkgs, pkgs-unstable, lib, ... }: {
+{ config, pkgs, pkgs-unstable, pkgs-master, lib, ... }: {
 
   home.packages = [
-    pkgs-unstable.claude-code
-    pkgs-unstable.codex
-    pkgs-unstable.gemini-cli
-    pkgs-unstable.cursor-cli
+    pkgs-master.claude-code
+    pkgs-master.codex
+    pkgs-master.gemini-cli
+    pkgs-master.cursor-cli
   ];
 
 }

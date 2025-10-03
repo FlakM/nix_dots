@@ -1,3 +1,16 @@
+vim.g.clipboard = {
+  name = 'wl-clipboard',
+  copy = {
+    ['+'] = 'wl-copy',
+    ['*'] = 'wl-copy',
+  },
+  paste = {
+    ['+'] = 'wl-paste',
+    ['*'] = 'wl-paste',
+  },
+  cache_enabled = 1,
+}
+
 local api = vim.api
 local cmd = vim.cmd
 

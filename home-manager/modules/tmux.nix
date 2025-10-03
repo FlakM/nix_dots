@@ -39,7 +39,16 @@
       bind k select-pane -U
       bind l select-pane -R
 
-      set -s set-clipboard on
+      # Wayland clipboard integration
+      bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel 'wl-copy'
+      bind-key -n S-Insert run "tmux set-buffer \"$(wl-paste)\"; tmux paste-buffer"
+
+      # Enable bracketed paste mode for safe multiline pasting
+      set -g set-clipboard on
+      bind ] paste-buffer -p
+
+      # Safe paste from system clipboard (Alt+Shift+P)
+      bind-key -n M-S-p run "tmux set-buffer \"$(wl-paste)\"; tmux paste-buffer -p"
 
       run-shell ${pkgs.tmuxPlugins.fuzzback}/share/tmux-plugins/fuzzback/fuzzback.tmux
       set -g @fuzzback-popup 1

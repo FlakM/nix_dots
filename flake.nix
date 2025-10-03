@@ -155,6 +155,9 @@
             # Be sure to include all other modules in ./hosts/${hostName}/default.nix
             ./hosts/${hostName}
 
+            # AMD-specific hardware optimizations for amd-pc
+            (if hostName == "amd-pc" then nixos-hardware.nixosModules.common-cpu-amd else {})
+
             # home-manager
             home-manager.nixosModules.home-manager
             {
@@ -199,7 +202,7 @@
       formatter.x86_64-linux = pkgs-default.nixpkgs-fmt;
       formatter.aarch64-darwin = (pkgs-stable "aarch64-darwin").nixpkgs-fmt;
 
-      fonts.packages =  [
+      fonts.packages = [
         nixpkgs.nerd-fonts.fira-code
       ];
 

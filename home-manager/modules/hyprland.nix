@@ -74,6 +74,7 @@ let
         dconf write /org/gnome/desktop/interface/color-scheme "'prefer-light'"
       '';
   };
+
 in
 {
 
@@ -85,11 +86,19 @@ in
       config = {
         common = {
           default = [
+            "hyprland"
             "gtk"
           ];
         };
         hyprland = {
           default = [
+            "hyprland"
+            "gtk"
+          ];
+          "org.freedesktop.impl.portal.ScreenCast" = [
+            "hyprland"
+          ];
+          "org.freedesktop.impl.portal.Request" = [
             "hyprland"
             "gtk"
           ];
@@ -115,6 +124,9 @@ in
     GDK_BACKEND = "wayland";
 
     NIXOS_OZONE_WL = "1"; # hint electron apps to use wayland
+    ELECTRON_OZONE_PLATFORM_HINT = "wayland";
+    OZONE_PLATFORM_HINT = "wayland";
+    OZONE_PLATFORM = "wayland";
 
     SDL_VIDEODRIVER = "wayland";
     _JAVA_AWT_WM_NONREPARENTING = "1";
@@ -139,33 +151,35 @@ in
 
 
   home.packages = with pkgs; [
-    tofi # launcher
-    swaynotificationcenter # modern notifications
-    libnotify # provides notify-send for testing
-    playerctl # media status for waybar
-    shotman # screenshot
-    dconf
+      tofi # launcher
+      swaynotificationcenter # modern notifications
+      rofi-wayland
+      libnotify # provides notify-send for testing
+      playerctl # media status for waybar
+      shotman # screenshot
+      dconf
 
-    configure-gtk-dark
-    configure-gtk-light
-    wl-clipboard
-    wl-clip-persist # better clipboard persistence
-    wtype # for typing clipboard content
+      configure-gtk-dark
+      configure-gtk-light
+      wl-clipboard
+      wtype # for typing clipboard content
+      xclip # for compatibility
 
-    #unstable.xdg-utils
-    handlr
-    cliphist # clipboard history
+      #unstable.xdg-utils
+      handlr
+      cliphist # clipboard history
 
-    hyprland-protocols
-    hyprpaper # wallpaper utility
+      hyprland-protocols
+      hyprpaper # wallpaper utility
 
-    grim
-    swappy
-    slurp
+      grim
+      swappy
+      slurp
 
-    pkgs-unstable.grimblast
-    brightnessctl # brightness control
-  ];
+      pkgs-unstable.grimblast
+      brightnessctl # brightness control
+      rofimoji
+    ];
 
 
   # https://github.com/hyprland-community/awesome-hyprland#runners-menus-and-application-launchers
@@ -853,10 +867,8 @@ in
     
 
         # https://wiki.hyprland.org/Useful-Utilities/Clipboard-Managers/#cliphist
-        exec-once = wl-paste --type text --watch cliphist store #Stores only text data
-        exec-once = wl-paste --type image --watch cliphist store #Stores only image data
-        # Ensure proper clipboard daemon for better browser integration
-        exec-once = wl-clip-persist --clipboard regular --selection primary
+        exec-once = wl-paste --type text --watch cliphist store
+        exec-once = wl-paste --type image --watch cliphist store
         exec-once = ${configure-gtk-dark}/bin/configure-gtk-dark
         exec-once = hyprpaper
         exec-once = swaync
@@ -893,7 +905,6 @@ in
         bind=$mainMod,F,fullscreen 
 
         bind = $mainMod, D, exec, tofi-drun --drun-launch=true
-        bind = $mainMod, E, exec, dolphin
         bind = ALT_CTRL, N, exec, ${config.home.homeDirectory}/.config/theme-switch.sh
         bind = $mainMod SHIFT, W, exec, hyprctl hyprpaper wallpaper "DP-1,${config.home.homeDirectory}/.config/wallpaper.png" 
         bind = $mainMod SHIFT, RETURN, exec, kitty
@@ -933,15 +944,11 @@ in
         bind = $mainMod CTRL SHIFT, k, resizeactive, 0 -100
         bind = $mainMod CTRL SHIFT, j, resizeactive, 0 100
 
-        # Clipboard history (most common pattern from GitHub dotfiles)
-        bind = SUPER, V, exec, cliphist list | tofi | cliphist decode | wl-paste --type text --primary --clipboard
-        
-        
-        # Super (Windows key) shortcuts for terminal compatibility
-        bind = SUPER, C, exec, wtype -M ctrl -M shift c -m shift -m ctrl # copy (works in terminals)
-        
-        # Paste from history using cliphist
-        bind = CTRL SHIFT, V, exec, cliphist list | tofi | cliphist decode | wl-copy | wl-paste
+        # Clipboard actions
+        # alt+v to open clipboard history (changed from ctrl+shift+v to avoid conflicts)
+        bind = $mainMod, V, exec, cliphist list | tofi | cliphist decode | wl-copy
+        # alt+. to open emoji picker
+        bind = $mainMod, period, exec, rofimoji | wl-copy
 
 
         # print screen full screen
