@@ -20,7 +20,7 @@ in
 
   home.packages = with pkgs; [
     # for copilot
-    nodejs_20
+    nodejs
     go
     gopls
 

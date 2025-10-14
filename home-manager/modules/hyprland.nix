@@ -81,7 +81,7 @@ in
 
   xdg = {
     portal = {
-      #enable = true;
+      enable = true;
 
       config = {
         common = {
@@ -98,9 +98,8 @@ in
           "org.freedesktop.impl.portal.ScreenCast" = [
             "hyprland"
           ];
-          "org.freedesktop.impl.portal.Request" = [
+          "org.freedesktop.impl.portal.Screenshot" = [
             "hyprland"
-            "gtk"
           ];
         };
       };
@@ -118,6 +117,15 @@ in
   home.sessionVariables = {
     # https://wiki.hyprland.org/Configuring/Environment-variables/
     MOZ_ENABLE_WAYLAND = 1; # Firefox Wayland
+
+    # PipeWire screen sharing fixes
+    PIPEWIRE_LATENCY = "512/48000";
+    PIPEWIRE_RT_PRIO = "20";
+    PIPEWIRE_BUFFER_SIZE = "512";
+
+    # Portal session fixes for Electron apps
+    XDG_RUNTIME_DIR = "/run/user/1000";
+    HYPRLAND_NO_RT = "1";
     MOZ_DBUS_REMOTE = 1; # Firefox wayland
     MOZ_USE_XINPUT2 = 1; # Firefox smooth scrolling
     MOZ_WAYLAND_USE_VAAPI = 1; # Firefox hardware acceleration
@@ -144,7 +152,7 @@ in
     BROWSER = "${pkgs.firefox}/bin/firefox";
 
     QT_AUTO_SCREEN_SCALE_FACTOR = "1";
-    QT_QPA_PLATFORM = "wayland;xcb";
+    QT_QPA_PLATFORM = "wayland";
     QT_WAYLAND_DISABLE_WINDOWDECORATION = "1";
     QT_QPA_PLATFORMTHEME = "qt5ct";
   };
@@ -806,6 +814,8 @@ in
             disable_hyprland_logo = true
             disable_splash_rendering = true
             force_default_wallpaper = 0
+            vfr = true
+            vrr = 0
         }
 
         # For all categories, see https://wiki.hyprland.org/Configuring/Variables/
@@ -873,9 +883,11 @@ in
         exec-once = hyprpaper
         exec-once = swaync
 
+        # Critical for screen sharing - update DBUS environment
+        exec-once = dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=Hyprland
+
 
         windowrule = workspace 2,title:^(Firefox)(.*)$
-        #exec-once=dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
         exec-once=[workspace 1 silent] kitty
         exec-once=[workspace 2 silent] firefox
 

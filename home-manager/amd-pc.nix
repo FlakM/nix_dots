@@ -137,5 +137,36 @@
   ];
 
 
+  sops = {
+    # It's also possible to use a ssh key, but only when it has no password:
+    age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+    defaultSopsFile = ../secrets/secrets.yaml;
+
+    secrets = {
+      "work_npmrc" = {
+        path = "${config.home.homeDirectory}/.npmrc";
+      };
+
+      "dbs" = {
+        sopsFile = ../secrets/dbs.yaml;
+        path = "${config.home.homeDirectory}/.dbs.lua";
+      };
+
+      "jfrog_env" = {
+        path = "${config.home.homeDirectory}/.jfrog.env";
+      };
+
+
+      "neomutt_flakm" = {
+        path = "${config.home.homeDirectory}/.neomutt_flakm";
+      };
+
+      "neomutt_gmail" = {
+        path = "${config.home.homeDirectory}/.neomutt_gmail";
+      };
+    };
+  };
+
+
 
 }
