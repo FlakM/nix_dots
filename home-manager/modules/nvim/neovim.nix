@@ -81,6 +81,8 @@ in
   ] ++ lib.optionals stdenv.isLinux [
     # for debugging
     bashdb
+    # clipboard support for Wayland
+    wl-clipboard
   ];
 
   programs.neovim = {

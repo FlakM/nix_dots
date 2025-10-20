@@ -138,8 +138,7 @@
 
 
   sops = {
-    # It's also possible to use a ssh key, but only when it has no password:
-    age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+    age.keyFile = "${config.home.homeDirectory}/.config/sops/age/keys.txt";
     defaultSopsFile = ../secrets/secrets.yaml;
 
     secrets = {

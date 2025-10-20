@@ -39,6 +39,10 @@
 
 
     initExtra = ''
+      # Enable bracketed paste mode for safe multiline pasting
+      autoload -Uz bracketed-paste-magic
+      zle -N bracketed-paste bracketed-paste-magic
+
       # home end
       bindkey  "^[[H"   beginning-of-line
       bindkey  "^[[F"   end-of-line

@@ -1,3 +1,7 @@
+-- Set clipboard to use system clipboard
+vim.opt.clipboard = "unnamedplus"
+
+-- Configure clipboard provider for Wayland
 vim.g.clipboard = {
   name = 'wl-clipboard',
   copy = {
@@ -5,8 +9,8 @@ vim.g.clipboard = {
     ['*'] = 'wl-copy',
   },
   paste = {
-    ['+'] = 'wl-paste',
-    ['*'] = 'wl-paste',
+    ['+'] = 'wl-paste --no-newline',
+    ['*'] = 'wl-paste --no-newline',
   },
   cache_enabled = 1,
 }
@@ -92,11 +96,13 @@ if vim.fn.filereadable(vim.fn.expand("~/.config/current-color_scheme")) == 1 the
     if theme == "prefer-light" then
         vim.g.background = "light"
         vim.cmd("set background=light")
+        vim.cmd("colorscheme edge")
         -- set visual selection color to pink
         vim.api.nvim_set_hl(0, "Visual", { bg = "#ffc0cb", fg = "NONE" })
     else
         vim.g.background = "dark"
         vim.cmd("set background=dark")
+        vim.cmd("colorscheme edge")
     end
     file:close()
 end
@@ -107,11 +113,13 @@ function switch_theme()
     if vim.g.background == "dark" or vim.g.background == nil then
         vim.g.background = "light"
         vim.cmd("set background=light")
+        vim.cmd("colorscheme edge")
         -- set visual selection color to pink
         vim.api.nvim_set_hl(0, "Visual", { bg = "#ffc0cb", fg = "NONE" })
     else
         vim.g.background = "dark"
         vim.cmd("set background=dark")
+        vim.cmd("colorscheme edge")
     end
 end
 

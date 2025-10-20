@@ -41,6 +41,7 @@
 
       # Wayland clipboard integration
       bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel 'wl-copy'
+      bind-key -T copy-mode-vi Enter send-keys -X copy-pipe-and-cancel 'wl-copy'
       bind-key -n S-Insert run "tmux set-buffer \"$(wl-paste)\"; tmux paste-buffer"
 
       # Enable bracketed paste mode for safe multiline pasting
@@ -49,6 +50,12 @@
 
       # Safe paste from system clipboard (Alt+Shift+P)
       bind-key -n M-S-p run "tmux set-buffer \"$(wl-paste)\"; tmux paste-buffer -p"
+
+      # Enable focus events for Neovim
+      set -g focus-events on
+
+      # Set escape time to avoid delay in Neovim
+      set -sg escape-time 10
 
       run-shell ${pkgs.tmuxPlugins.fuzzback}/share/tmux-plugins/fuzzback/fuzzback.tmux
       set -g @fuzzback-popup 1

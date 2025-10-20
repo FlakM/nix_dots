@@ -59,6 +59,8 @@ in
       map ctrl+shift+o no_op
       map ctrl+shift+n no_op
       map ctrl+shift+p no_op
+      # Enable bracketed paste mode for safe multiline pasting
+      paste_actions quote-urls-at-prompt
       copy_on_select no
       clipboard_control write-primary write-clipboard no-append
       map alt+shift+c copy-to-clipboard

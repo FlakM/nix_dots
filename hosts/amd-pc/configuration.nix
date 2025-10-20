@@ -65,6 +65,7 @@ in
   time.timeZone = "Europe/Warsaw";
 
   # Sops secrets configuration
+  sops.age.keyFile = "/etc/ssh/ssh_host_ed25519_key";
   sops.defaultSopsFile = ../../secrets/secrets.yaml;
   sops.secrets = {
     coralogix_blog_send_key = {
@@ -187,6 +188,20 @@ in
       enable = true;
       powerOnBoot = true;
     };
+    # MediaTek MT7922 Bluetooth controller (0e8d:0616) requires firmware from linux-firmware
+    # Without this, the controller fails with "wmt command timed out" and "Failed to send wmt patch dwnld"
+    firmware = [ pkgs.linux-firmware ];
+  };
+
+  # Ensure Bluetooth is unblocked on boot
+  systemd.services.bluetooth-unblock = {
+    description = "Unblock Bluetooth adapter";
+    wantedBy = [ "bluetooth.service" ];
+    before = [ "bluetooth.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.utillinux}/bin/rfkill unblock bluetooth";
+    };
   };
 
   virtualisation.podman = {
@@ -226,6 +241,8 @@ in
     enable = true;
     package = pkgs-unstable.tailscale;
   };
+
+  boot.kernelModules = [ "i2c-dev" ];
 
   users.groups.plugdev = { };
 

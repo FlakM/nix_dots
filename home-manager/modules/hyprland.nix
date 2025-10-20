@@ -985,8 +985,8 @@ in
         bind=, XF86AudioPrev, exec, playerctl previous
         
         # brightness controls
-        binde=, XF86MonBrightnessUp, exec, brightnessctl set 10%+
-        binde=, XF86MonBrightnessDown, exec, brightnessctl set 10%-
+        binde=SHIFT, F12, exec, ddcutil setvcp 10 + 10
+        binde=SHIFT, F11, exec, ddcutil setvcp 10 - 10
 
   '';
 

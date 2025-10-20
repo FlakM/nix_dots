@@ -4,7 +4,8 @@
 # for a more complex example.
 keys:
   - &admin_flakm DDB89AF3335111A17243467C7288322161C6A632
-  - &server_amd_pc 1ef3cbd4366ee09c589ea3dbde75d7b6fa9c8acf
+  - &server_amd_pc age1ljgtnfmy006gf6fm4zpp4pn6v4g8tkp0guxm0pm0k2zyw369n9nsf5m0g8
+  - &user_amd_pc age1mhm63u49vwnkw9whperlxj6swme4vvh9w9vcu8zng8wudjplya3s4m0jq5
   - &odroid c0ac04c3e1ea066ce8a706be994f8a1556e3127d
   - &work age1tjl5hnjj7kfrlwdzp4d64f85vmtrfgqz3f654c46nv323d6fjanqk3hrwl
 creation_rules:
@@ -12,7 +13,8 @@ creation_rules:
     key_groups:
     - pgp:
       - *admin_flakm
-      - *server_amd_pc
       - *odroid
       age:
+      - *server_amd_pc
+      - *user_amd_pc
       - *work
