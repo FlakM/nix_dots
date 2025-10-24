@@ -43,6 +43,11 @@
       flake = false;
     };
 
+    librus-notifications = {
+      url = "git+ssh://git@github.com/FlakM/czujka-librus";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
   };
   outputs =
     { self
@@ -60,6 +65,7 @@
     , homebrew-core
     , homebrew-cask
     , homebrew-bundle
+    , librus-notifications
     , ...
     }@inputs:
     let
@@ -157,6 +163,9 @@
 
             # AMD-specific hardware optimizations for amd-pc
             (if hostName == "amd-pc" then nixos-hardware.nixosModules.common-cpu-amd else {})
+
+            # librus-notifications module for odroid
+            (if hostName == "odroid" then librus-notifications.nixosModules.default else {})
 
             # home-manager
             home-manager.nixosModules.home-manager

@@ -33,6 +33,7 @@
 
     ./uptime-kuma.nix
 
+    ./librus.nix
 
     inputs.nixos-hardware.nixosModules.hardkernel-odroid-h3
   ];
