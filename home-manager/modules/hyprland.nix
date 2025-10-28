@@ -967,6 +967,8 @@ in
         bind=,Print,exec,grimblast --scale 2 --wait 2 copy screen
         # print screen selection range
         bind=SHIFT,Print,exec,grimblast --scale 2 copy area
+        # print screen with 3s delay and area selection (freeze shows animation)
+        bind=CTRL SHIFT,Print,exec,grimblast --scale 2 --freeze copy area
         # save screenshot to Pictures with timestamp
         bind=$mainMod,Print,exec,grimblast --scale 2 --wait 2 save area ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png
 

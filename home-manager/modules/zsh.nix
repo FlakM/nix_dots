@@ -4,6 +4,8 @@
   home.packages = with pkgs; [
     zsh
     eza
+    asciinema
+    asciinema-agg
   ];
 
 

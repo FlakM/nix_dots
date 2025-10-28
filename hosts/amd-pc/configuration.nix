@@ -65,7 +65,7 @@ in
   time.timeZone = "Europe/Warsaw";
 
   # Sops secrets configuration
-  sops.age.keyFile = "/etc/ssh/ssh_host_ed25519_key";
+  sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
   sops.defaultSopsFile = ../../secrets/secrets.yaml;
   sops.secrets = {
     coralogix_blog_send_key = {

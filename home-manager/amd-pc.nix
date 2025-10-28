@@ -132,7 +132,6 @@
 
 
   home.packages = with pkgs; [
-    openrgb-with-all-plugins
     pritunl-client
   ];
 
