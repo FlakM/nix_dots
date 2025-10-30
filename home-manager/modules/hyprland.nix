@@ -159,13 +159,13 @@ in
 
 
   home.packages = with pkgs; [
-      tofi # launcher
       swaynotificationcenter # modern notifications
       rofi-wayland
       libnotify # provides notify-send for testing
       playerctl # media status for waybar
       shotman # screenshot
       dconf
+      copyq
 
       configure-gtk-dark
       configure-gtk-light
@@ -175,7 +175,6 @@ in
 
       #unstable.xdg-utils
       handlr
-      cliphist # clipboard history
 
       hyprland-protocols
       hyprpaper # wallpaper utility
@@ -185,10 +184,16 @@ in
       slurp
 
       pkgs-unstable.grimblast
+      pkgs-unstable.walker # application launcher & clipboard UI
       brightnessctl # brightness control
       rofimoji
     ];
 
+  xdg.configFile."rofimoji.rc" = {
+    text = ''
+      selector-args = "-kb-custom-1 Control+1 -kb-custom-2 Control+2 -kb-custom-3 Control+3"
+    '';
+  };
 
   # https://github.com/hyprland-community/awesome-hyprland#runners-menus-and-application-launchers
   # https://github.com/Egosummiki/dotfiles/blob/master/waybar/mediaplayer.sh
@@ -471,6 +476,143 @@ in
       .notification:hover .notification-content::before {
         opacity: 1;
       }
+    '';
+  };
+
+  # Walker configuration inspired by https://benz.gitbook.io/walker/ docs
+  xdg.configFile."walker/config.toml" = {
+    text = ''
+      as_window = true
+      theme = "large"
+
+      [providers]
+      default = [
+        "desktopapplications",
+        "clipboard",
+        "calc",
+        "runner",
+        "menus",
+        "websearch",
+      ]
+      empty = ["desktopapplications", "clipboard"]
+      previews = [
+        "clipboard",
+        "files",
+        "menus",
+      ]
+      max_results = 100
+
+      [providers.clipboard]
+      time_format = "%H:%M"
+
+      [builtins.clipboard]
+      switcher_only = false
+      max_entries = 30
+      always_put_new_on_top = true
+    '';
+  };
+
+  xdg.configFile."walker/themes/large.toml" = {
+    text = ''
+      [ui.anchors]
+      bottom = false
+      left = false
+      right = false
+      top = false
+
+      [ui.window]
+      h_align = "fill"
+      v_align = "fill"
+      height = 840
+      width = 1120
+      max_width = 1600
+
+      [ui.window.box]
+      h_align = "center"
+      v_align = "center"
+      orientation = "vertical"
+      h_expand = true
+      width = 920
+
+      [ui.window.box.bar]
+      orientation = "horizontal"
+      position = "end"
+
+      [ui.window.box.bar.entry]
+      h_align = "fill"
+      h_expand = true
+
+      [ui.window.box.bar.entry.icon]
+      h_align = "center"
+      h_expand = false
+      pixel_size = 16
+
+      [ui.window.box.search]
+      orientation = "horizontal"
+      spacing = 4
+
+      [ui.window.box.search.margins]
+      bottom = 6
+
+      [ui.window.box.search.prompt]
+      name = "prompt"
+      icon = "edit-find"
+      h_align = "center"
+      v_align = "center"
+
+      [ui.window.box.search.clear]
+      name = "clear"
+      icon = "edit-clear"
+      h_align = "center"
+      v_align = "center"
+
+      [ui.window.box.search.input]
+      h_align = "fill"
+      h_expand = true
+      icons = true
+
+      [ui.window.box.search.spinner]
+      hide = true
+
+      [ui.window.box.scroll]
+      overlay_scrolling = true
+
+      [ui.window.box.scroll.list]
+      max_height = 700
+      width = 920
+
+      [ui.window.box.scroll.list.item]
+      h_align = "fill"
+      v_align = "fill"
+
+      [ui.window.box.scroll.list.item.activation_label]
+      x_align = 0.5
+      y_align = 0.5
+
+      [ui.window.box.scroll.list.item.icon]
+      h_align = "center"
+      v_align = "center"
+
+      [ui.window.box.scroll.list.item.text]
+      h_align = "start"
+      h_expand = true
+      wrap = true
+      x_align = 0
+      v_align = "center"
+    '';
+  };
+
+  xdg.configFile."walker/themes/large.css" = {
+    text = ''
+      @import url("default.css");
+
+      #input,
+      #password,
+      #typeahead {
+        background: transparent;
+      }
+
+
     '';
   };
 
@@ -876,9 +1018,9 @@ in
         }
     
 
-        # https://wiki.hyprland.org/Useful-Utilities/Clipboard-Managers/#cliphist
-        exec-once = wl-paste --type text --watch cliphist store
-        exec-once = wl-paste --type image --watch cliphist store
+        # Clipboard manager handled by CopyQ
+        exec-once = copyq --start-server
+        exec-once = walker --gapplication-service
         exec-once = ${configure-gtk-dark}/bin/configure-gtk-dark
         exec-once = hyprpaper
         exec-once = swaync
@@ -916,7 +1058,7 @@ in
     
         bind=$mainMod,F,fullscreen 
 
-        bind = $mainMod, D, exec, tofi-drun --drun-launch=true
+        bind = $mainMod, D, exec, walker --modules applications
         bind = ALT_CTRL, N, exec, ${config.home.homeDirectory}/.config/theme-switch.sh
         bind = $mainMod SHIFT, W, exec, hyprctl hyprpaper wallpaper "DP-1,${config.home.homeDirectory}/.config/wallpaper.png" 
         bind = $mainMod SHIFT, RETURN, exec, kitty
@@ -958,7 +1100,7 @@ in
 
         # Clipboard actions
         # alt+v to open clipboard history (changed from ctrl+shift+v to avoid conflicts)
-        bind = $mainMod, V, exec, cliphist list | tofi | cliphist decode | wl-copy
+        bind = $mainMod, V, exec, walker --modules clipboard
         # alt+. to open emoji picker
         bind = $mainMod, period, exec, rofimoji | wl-copy
 
