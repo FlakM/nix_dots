@@ -64,6 +64,7 @@
     ./modules/ai.nix
 
     ./modules/k8s.nix
+    ./modules/front.nix
   ];
 
   xdg.enable = true;

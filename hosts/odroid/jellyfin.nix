@@ -1,21 +1,39 @@
 { pkgs, pkgs-unstable, config, ... }: {
 
-  # TODO: enable hybrid codec support
-  #nixpkgs.config.packageOverrides = pkgs: {
-  #  vaapiIntel = pkgs.vaapiIntel.override { enableHybridCodec = true; };
-  #};
+  nixpkgs.overlays = [
+    (self: super: {
+      vaapiIntel = super.vaapiIntel.override { enableHybridCodec = true; };
+    })
+  ];
+
   hardware.graphics = {
     enable = true;
-    extraPackages = with pkgs;[ 
+    extraPackages = with pkgs;[
       intel-media-driver
       vaapiIntel
       vaapiVdpau
       libvdpau-va-gl
-      intel-compute-runtime # OpenCL filter support (hardware tonemapping and subtitle burn-in)
+      intel-compute-runtime
     ];
   };
 
-  services.jellyfin.enable = true;
+  services.jellyfin = {
+    enable = true;
+    group = "jellyfin";
+  };
+
+  users.users.jellyfin = {
+    extraGroups = [ "render" "video" ];
+  };
+
+  systemd.services.jellyfin = {
+    serviceConfig = {
+      SupplementaryGroups = [ "render" "video" ];
+      DeviceAllow = [
+        "/dev/dri/renderD128 rw"
+      ];
+    };
+  };
 
   networking.firewall.allowedTCPPorts = [ 443 8096 ];
 

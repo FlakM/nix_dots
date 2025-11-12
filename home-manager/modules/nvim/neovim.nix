@@ -51,6 +51,7 @@ in
     # protobuf support
     protols
     clang-tools # formatting is enabled when clang-format is available
+    buf # buf format for proto files
 
 
     # node
