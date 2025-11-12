@@ -1,128 +1,389 @@
--- Set clipboard to use system clipboard
-vim.opt.clipboard = "unnamedplus"
+-- Clipboard integration -----------------------------------------------------
+local opt = vim.opt
+local fn = vim.fn
+local api = vim.api
+local cmd = vim.cmd
 
--- Configure clipboard provider for Wayland
+opt.clipboard = { "unnamed", "unnamedplus" }
+
 vim.g.clipboard = {
-  name = 'wl-clipboard',
+  name = "wl-clipboard",
   copy = {
-    ['+'] = 'wl-copy',
-    ['*'] = 'wl-copy',
+    ["+"] = "wl-copy",
+    ["*"] = "wl-copy",
   },
   paste = {
-    ['+'] = 'wl-paste --no-newline',
-    ['*'] = 'wl-paste --no-newline',
+    ["+"] = "wl-paste --no-newline",
+    ["*"] = "wl-paste --no-newline",
   },
   cache_enabled = 1,
 }
 
-local api = vim.api
-local cmd = vim.cmd
-
 local function map(mode, lhs, rhs, opts)
-    local options = { noremap = true }
-    if opts then
-        options = vim.tbl_extend("force", options, opts)
-    end
-    api.nvim_set_keymap(mode, lhs, rhs, options)
+  local options = { noremap = true }
+  if opts then
+    options = vim.tbl_extend("force", options, opts)
+  end
+  api.nvim_set_keymap(mode, lhs, rhs, options)
 end
 
--- open in a dark mode
-vim.cmd 'colorscheme default'
+local keymap = vim.keymap.set
+
+-- Appearance -----------------------------------------------------------------
+vim.cmd("colorscheme default")
 vim.g.edge_style = "default"
 vim.g.edge_transparent_background = 2
-
 vim.g.mapleader = " "
-vim.cmd 'colorscheme edge'
+vim.cmd("colorscheme edge")
 
--- for showing lsp init process status
-require("fidget").setup {
-    -- options
-}
+require("lualine").setup({
+  options = { theme = "edge" },
+  sections = {
+    lualine_a = { "mode" },
+    lualine_b = { "branch", "diff", "diagnostics" },
+    lualine_c = { "buffers" },
+    lualine_x = { "encoding", "fileformat", "filetype" },
+    lualine_y = { "progress" },
+    lualine_z = { "location" },
+  },
+  inactive_sections = {
+    lualine_a = {},
+    lualine_b = {},
+    lualine_c = { "filename" },
+    lualine_x = { "location" },
+    lualine_y = {},
+    lualine_z = {},
+  },
+})
 
--- for showing git blame
-require('gitblame').setup {
-    --Note how the `gitblame_` prefix is omitted in `setup`
-    enabled = true,
-}
+require("fidget").setup({})
 
+require("gitblame").setup({
+  enabled = true,
+})
 
---
--- nvim-tree section
---
-require 'nvim-tree'.setup {
-    view = {
-        width = 50,
-    },
-    hijack_cursor = true,
-    update_focused_file = {
-        enable = true,
-    },
-}
-
+require("nvim-tree").setup({
+  view = { width = 50 },
+  hijack_cursor = true,
+  update_focused_file = { enable = true },
+})
 
 map("n", "<C-n>", [[<cmd>NvimTreeToggle<CR>]])
 map("n", "<leader>r", [[<cmd>NvimTreeRefresh<CR>]])
-
--- this is alt + 1 in my keyboard on mac
--- you can test it by running cat and pressing alt + 1
 map("n", "Ń", [[<cmd>NvimTreeFindFile<CR>]])
--- this is on dell
 map("n", "≠", [[<cmd>NvimTreeFindFile<CR>]])
-
 map("n", "<leader>n", [[<cmd>NvimTreeFindFile<CR>]])
 
-
---
--- telescope section
---
--- Find files using Telescope command-line sugar.
 map("n", "<leader>ff", [[<cmd>Telescope find_files<CR>]])
---map("n", "<leader>fg", [[<cmd>Telescope live_grep<CR>]])
 map("n", "<leader>fg", ":lua require('telescope').extensions.live_grep_args.live_grep_args()<CR>")
-
-
 map("n", "<leader>fb", [[<cmd>Telescope buffers<CR>]])
 map("n", "<leader>fh", [[<cmd>Telescope help_tags<CR>]])
 
-
--- Replace visually selected text with contents of register without yanking
--- https://superuser.com/questions/321547/how-do-i-replace-paste-yanked-text-in-vim-without-yanking-the-deleted-lines
+-- Visual replace without yanking
 map("v", "<leader>p", [["_dP]])
 
-
-if vim.fn.filereadable(vim.fn.expand("~/.config/current-color_scheme")) == 1 then
-    local file = io.open(vim.fn.expand("~/.config/current-color_scheme"), "r")
-    local theme = file:read()
-    if theme == "prefer-light" then
-        vim.g.background = "light"
-        vim.cmd("set background=light")
-        vim.cmd("colorscheme edge")
-        -- set visual selection color to pink
-        vim.api.nvim_set_hl(0, "Visual", { bg = "#ffc0cb", fg = "NONE" })
-    else
-        vim.g.background = "dark"
-        vim.cmd("set background=dark")
-        vim.cmd("colorscheme edge")
-    end
-    file:close()
+if fn.filereadable(fn.expand("~/.config/current-color_scheme")) == 1 then
+  local file = assert(io.open(fn.expand("~/.config/current-color_scheme"), "r"))
+  local theme = file:read()
+  file:close()
+  if theme == "prefer-light" then
+    vim.g.background = "light"
+    cmd("set background=light")
+    cmd("colorscheme edge")
+    api.nvim_set_hl(0, "Visual", { bg = "#ffc0cb", fg = "NONE" })
+  else
+    vim.g.background = "dark"
+    cmd("set background=dark")
+    cmd("colorscheme edge")
+  end
 end
 
-
-function switch_theme()
-    -- toggle background if dark or not set
-    if vim.g.background == "dark" or vim.g.background == nil then
-        vim.g.background = "light"
-        vim.cmd("set background=light")
-        vim.cmd("colorscheme edge")
-        -- set visual selection color to pink
-        vim.api.nvim_set_hl(0, "Visual", { bg = "#ffc0cb", fg = "NONE" })
-    else
-        vim.g.background = "dark"
-        vim.cmd("set background=dark")
-        vim.cmd("colorscheme edge")
-    end
+function _G.switch_theme()
+  if vim.g.background == "dark" or vim.g.background == nil then
+    vim.g.background = "light"
+    cmd("set background=light")
+    cmd("colorscheme edge")
+    api.nvim_set_hl(0, "Visual", { bg = "#ffc0cb", fg = "NONE" })
+  else
+    vim.g.background = "dark"
+    cmd("set background=dark")
+    cmd("colorscheme edge")
+  end
 end
 
--- Jump to start and end of line using the home row keys
-vim.keymap.set({ "n", "v", "o" }, "L", "g$", { noremap = true, silent = true })
-vim.keymap.set({ "n", "v", "o" }, "H", "g^", { noremap = true, silent = true })
+keymap({ "n", "v", "o" }, "L", "g$", { noremap = true, silent = true })
+keymap({ "n", "v", "o" }, "H", "g^", { noremap = true, silent = true })
+
+-- Core options ---------------------------------------------------------------
+vim.g.localvimrc_ask = 0
+
+opt.updatetime = 300
+opt.timeoutlen = 300
+opt.encoding = "utf-8"
+opt.scrolloff = 2
+opt.showmode = false
+opt.hidden = true
+opt.wrap = false
+opt.joinspaces = false
+opt.exrc = true
+opt.secure = true
+opt.splitright = true
+opt.splitbelow = true
+opt.formatoptions = "tcrqnb"
+opt.incsearch = true
+opt.ignorecase = true
+opt.smartcase = true
+opt.gdefault = true
+opt.synmaxcol = 500
+opt.laststatus = 2
+opt.relativenumber = true
+opt.number = true
+opt.colorcolumn = "80"
+opt.showcmd = true
+opt.mouse = "a"
+opt.shortmess:append("c")
+opt.listchars = { nbsp = "¬", extends = "»", precedes = "«", trail = "•" }
+opt.tabstop = 4
+opt.shiftwidth = 4
+opt.expandtab = true
+opt.visualbell = false
+opt.foldenable = false
+opt.backspace = { "indent", "eol", "start" }
+opt.backup = false
+opt.writebackup = false
+
+opt.diffopt:append({ "iwhite", "algorithm:patience", "indent-heuristic" })
+
+local undodir = fn.expand("~/.vimdid")
+fn.mkdir(undodir, "p")
+opt.undodir = undodir
+opt.undofile = true
+
+if fn.executable("rg") == 1 then
+  vim.o.grepprg = "rg --no-heading --vimgrep"
+  vim.o.grepformat = "%f:%l:%c:%m"
+elseif fn.executable("ag") == 1 then
+  vim.o.grepprg = "ag --nogroup --nocolor"
+end
+
+cmd([[filetype plugin indent on]])
+
+-- Search centering
+map("n", "n", "nzz")
+map("n", "N", "Nzz")
+map("n", "*", "*zz")
+map("n", "#", "#zz")
+map("n", "g*", "g*zz")
+
+map("n", "?", "?\\v")
+map("n", "/", "/\\v")
+map("c", "%s/", "%sm/")
+
+-- Clipboard helpers ----------------------------------------------------------
+local function copy_to_clipboard(val)
+  fn.setreg("+", val)
+end
+
+keymap("n", "<leader>cf", function()
+  copy_to_clipboard(fn.expand("%"))
+end, { silent = true, desc = "Copy relative path" })
+
+keymap("n", "<leader>cF", function()
+  copy_to_clipboard(fn.expand("%:p"))
+end, { silent = true, desc = "Copy absolute path" })
+
+keymap("n", "<leader>ct", function()
+  copy_to_clipboard(fn.expand("%:t"))
+end, { silent = true, desc = "Copy filename" })
+
+keymap("n", "<leader>ch", function()
+  copy_to_clipboard(fn.expand("%:p:h"))
+end, { silent = true, desc = "Copy directory" })
+
+-- Custom commands ------------------------------------------------------------
+local function list_cmd()
+  local base = fn.fnamemodify(fn.expand("%"), ":h:.:S")
+  if base == "." then
+    return "fd --type file --follow"
+  end
+  return string.format("fd --type file --follow | proximity-sort %s", fn.shellescape(fn.expand("%")))
+end
+
+api.nvim_create_user_command("Files", function(opts)
+  local source = list_cmd()
+  local spec = { source = source, options = "--tiebreak=index" }
+  fn["fzf#vim#files"](opts.args, spec, opts.bang and 1 or 0)
+end, { bang = true, nargs = "?", complete = "dir" })
+
+api.nvim_create_user_command("Rg", function(opts)
+  local pattern = opts.args ~= "" and opts.args or ""
+  local search_cmd = string.format(
+    "rg --column --line-number --no-heading --color=always %s",
+    fn.shellescape(pattern)
+  )
+  local with_preview = fn["fzf#vim#with_preview"]
+  local preview = opts.bang and with_preview("up:60%") or with_preview("right:50%:hidden", "?")
+  fn["fzf#vim#grep"](search_cmd, 1, preview, opts.bang and 1 or 0)
+end, { bang = true, nargs = "*" })
+
+-- Keymaps --------------------------------------------------------------------
+map("n", "<C-p>", "<cmd>Files<CR>")
+map("n", "<leader>;", "<cmd>Buffers<CR>")
+map("n", "<leader>w", "<cmd>w<CR>")
+keymap("n", "<leader>s", ":Rg ", { noremap = true, silent = false, desc = "Ripgrep search" })
+
+keymap("n", "<leader>o", function()
+  local dir = fn.expand("%:p:h")
+  local path = dir ~= "" and (dir .. "/") or ""
+  local escaped = fn.fnameescape(path)
+  local keys = api.nvim_replace_termcodes(":edit " .. escaped, true, false, true)
+  api.nvim_feedkeys(keys, "n", false)
+end, { desc = "Start editing file in current directory" })
+
+map("n", "<leader><leader>", "<C-^>")
+
+keymap("n", "<leader>,", function()
+  vim.wo.list = not vim.wo.list
+end, { desc = "Toggle listchars" })
+
+map("n", "<leader>q", "g<C-g>")
+map("n", "<leader>m", "ct_")
+
+local modes_with_escape = { "n", "i", "v", "s", "x", "o" }
+for _, mode in ipairs(modes_with_escape) do
+  keymap(mode, "<C-j>", "<Esc>", { noremap = true })
+  keymap(mode, "<C-k>", "<Esc>", { noremap = true })
+end
+keymap("c", "<C-j>", "<C-c>", { noremap = true })
+keymap("c", "<C-k>", "<C-c>", { noremap = true })
+keymap("l", "<C-j>", "<Esc>", { noremap = true })
+keymap("l", "<C-k>", "<Esc>", { noremap = true })
+keymap("t", "<C-j>", "<Esc>", { noremap = true })
+keymap("t", "<C-k>", "<Esc>", { noremap = true })
+
+keymap({ "n", "v" }, "<C-h>", "<cmd>nohlsearch<CR>", { silent = true })
+keymap({ "n", "v" }, "<C-f>", "<cmd>sus<CR>", { silent = true })
+keymap("i", "<C-f>", function()
+  cmd("sus")
+end, { silent = true })
+
+map("n", "<up>", "<nop>")
+map("n", "<down>", "<nop>")
+map("i", "<up>", "<nop>")
+map("i", "<down>", "<nop>")
+map("i", "<left>", "<nop>")
+map("i", "<right>", "<nop>")
+
+map("n", "<left>", "<cmd>bp<CR>")
+map("n", "<right>", "<cmd>bn<CR>")
+map("n", "j", "gj")
+map("n", "k", "gk")
+
+map("n", "<F1>", "<Esc>")
+map("v", "<F1>", "<Esc>")
+keymap("i", "<F1>", "<Esc>", { noremap = true })
+
+keymap("n", "<leader>f", "<cmd>Files<CR>", { noremap = true, silent = true })
+keymap("n", "<leader>F", "<cmd>FZF ~<CR>", { noremap = true, silent = true })
+
+-- Autocommands ---------------------------------------------------------------
+local augroup = api.nvim_create_augroup
+local autocmd = api.nvim_create_autocmd
+
+autocmd("BufRead", {
+  group = augroup("readonly_buffers", { clear = true }),
+  pattern = { "*.orig", "*.pacnew" },
+  callback = function(args)
+    vim.bo[args.buf].readonly = true
+  end,
+})
+
+autocmd("InsertLeave", {
+  callback = function()
+    opt.paste = false
+  end,
+})
+
+autocmd("BufReadPost", {
+  group = augroup("restore_cursor", { clear = true }),
+  callback = function(args)
+    local file = api.nvim_buf_get_name(args.buf)
+    if file:match("/%.git/") then
+      return
+    end
+    local mark = api.nvim_buf_get_mark(args.buf, '"')
+    local lcount = api.nvim_buf_line_count(args.buf)
+    if mark[1] > 1 and mark[1] <= lcount then
+      pcall(api.nvim_win_set_cursor, 0, mark)
+    end
+  end,
+})
+
+autocmd("BufRead", {
+  group = augroup("extra_filetypes", { clear = true }),
+  pattern = { "*.sbt", "*.sc" },
+  callback = function(args)
+    vim.bo[args.buf].filetype = "scala"
+  end,
+})
+
+autocmd("BufRead", {
+  group = augroup("custom_filetypes", { clear = true }),
+  pattern = "*.plot",
+  callback = function(args)
+    vim.bo[args.buf].filetype = "gnuplot"
+  end,
+})
+
+autocmd("BufRead", {
+  group = augroup("ld_filetype", { clear = true }),
+  pattern = "*.lds",
+  callback = function(args)
+    vim.bo[args.buf].filetype = "ld"
+  end,
+})
+
+autocmd("BufRead", {
+  group = augroup("tex_filetype", { clear = true }),
+  pattern = "*.tex",
+  callback = function(args)
+    vim.bo[args.buf].filetype = "tex"
+  end,
+})
+
+autocmd("BufRead", {
+  group = augroup("trm_filetype", { clear = true }),
+  pattern = "*.trm",
+  callback = function(args)
+    vim.bo[args.buf].filetype = "c"
+  end,
+})
+
+autocmd("VimLeave", {
+  command = "silent! wshada!",
+})
+
+autocmd("FileType", {
+  pattern = { "html", "xml", "xsl", "php" },
+  callback = function()
+    cmd("source ~/.config/nvim/scripts/closetag.vim")
+  end,
+})
+
+-- Plugins --------------------------------------------------------------------
+require("nvim-treesitter.install").compilers = { "gcc" }
+require("nvim-treesitter.configs").setup({
+  highlight = {
+    enable = true,
+    disable = {},
+    additional_vim_regex_highlighting = false,
+  },
+})
+
+cmd([[runtime! plugin/python_setup.vim]])
+
+-- Copilot --------------------------------------------------------------------
+vim.g.copilot_no_tab_map = true
+keymap("i", "<C-S>", function()
+  return fn["copilot#Accept"]("\\<CR>")
+end, { expr = true, silent = true, script = true })

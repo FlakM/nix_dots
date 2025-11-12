@@ -209,24 +209,13 @@ in
     ];
 
 
-    extraConfig =
-      (builtins.concatStringsSep "\n" [
-        "lua << EOF"
+    extraLuaConfig =
+      builtins.concatStringsSep "\n" [
         (builtins.readFile ./config/init.lua)
         (builtins.readFile ./config/databases.lua)
-
-        "EOF"
-        (builtins.readFile ./config/init.vim)
-        ""
-        ""
-        ""
-        "lua << EOF"
         (builtins.readFile ./config/lsp-config.lua)
         "local dap_path  = \"${pkgs-unstable.vscode-extensions.vadimcn.vscode-lldb}/share/vscode/extensions/vadimcn.vscode-lldb/\""
         (builtins.readFile ./config/rust-config.lua)
-        "EOF"
-
-        "lua << EOF"
         "local metals_path = \"${pkgs-unstable.metals}/bin/metals\""
         (builtins.readFile ./config/metals-config.lua)
         (builtins.readFile ./config/obsidian.lua)
@@ -236,25 +225,14 @@ in
         (builtins.readFile ./config/marks.lua)
         #(builtins.readFile ./config/yaml.lua)
         (builtins.readFile ./config/git.lua)
-
         (if stdenv.isLinux then
           "local bashdb_path = \"${pkgs.bashdb}/bin/bashdb\""
         else
           "local bashdb_path = nil")
-
         (builtins.readFile ./config/bash.lua)
         (builtins.readFile ./config/golang.lua)
-
-
-
-        # of on linux
-
-
         (builtins.readFile ./config/python.lua)
-        #(builtins.readFile ./config/go-config.vim)
-      ]
-
-      );
+      ];
 
 
   };
@@ -266,4 +244,3 @@ in
 
   home.file."${config.home.homeDirectory}/.ideavimrc".source = config.lib.file.mkOutOfStoreSymlink ./config/idea-vim-config.vim;
 }
-
