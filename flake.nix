@@ -73,64 +73,59 @@
 
       default_system = "x86_64-linux";
 
-      pkgs-stable = system: import nixpkgs {
-        inherit system;
-        # settings to nixpkgs goes to here
-        allowUnfree = true;
-        config = {
-          allowUnfree = true;
-          allowUnfreePredicate = (_: true);
-          permittedInsecurePackages = [
-            "dotnet-sdk-6.0.428"
-            "aspnetcore-runtime-6.0.36"
-          ];
+      insecureDotnet = [
+        "dotnet-sdk-6.0.428"
+        "aspnetcore-runtime-6.0.36"
+      ];
 
+      karabinerOverlay = (self: super: {
+        karabiner-elements = super.karabiner-elements.overrideAttrs (old: {
+          version = "14.13.0";
+          src = super.fetchurl {
+            inherit (old.src) url;
+            hash = "sha256-gmJwoht/Tfm5qMecmq1N6PSAIfWOqsvuHU8VDJY8bLw=";
+          };
+        });
+      });
+
+      mkPkgs =
+        nixpkgsInput:
+        { extraConfig ? { }, overlays ? [ ] }:
+        system:
+        let
+          overlayList = overlays;
+        in
+        import nixpkgsInput {
+          inherit system;
+          config = {
+            allowUnfree = true;
+            allowUnfreePredicate = (_: true);
+          } // extraConfig;
+          overlays = overlayList;
         };
-        overlays = [
-          # workaround for bug https://github.com/LnL7/nix-darwin/issues/1041
-          # it resulted in error ".... .karabiner_grabber.plist': No such file or directory"
-          (self: super: {
-            karabiner-elements = super.karabiner-elements.overrideAttrs (old: {
-              version = "14.13.0";
 
-              src = super.fetchurl {
-                inherit (old.src) url;
-                hash = "sha256-gmJwoht/Tfm5qMecmq1N6PSAIfWOqsvuHU8VDJY8bLw=";
-              };
-            });
-          })
-        ];
+      pkgs-stable = mkPkgs nixpkgs {
+        extraConfig = {
+          permittedInsecurePackages = insecureDotnet;
+        };
+        overlays = [ karabinerOverlay ];
       };
 
       pkgs-default = pkgs-stable default_system;
 
-      pkgs-unstable = system: import nixpkgs-unstable {
-        inherit system;
-        allowUnfree = true;
-
-        permittedInsecurePackages = [
-          "electron-32.3.3"
-        ];
-        config = {
-          allowUnfree = true;
-          allowUnfreePredicate = (_: true);
-
-          permittedInsecurePackages = [
-            "dotnet-sdk-6.0.428"
-            "aspnetcore-runtime-6.0.36"
+      pkgs-unstable = mkPkgs nixpkgs-unstable {
+        extraConfig = {
+          permittedInsecurePackages = insecureDotnet ++ [
+            "electron-32.3.3"
           ];
         };
       };
-      pkgs-master = system: import nixpkgs-master {
-        inherit system;
-        allowUnfree = true;
 
-        permittedInsecurePackages = [
-          "electron-32.3.3"
-        ];
-        config = {
-          allowUnfree = true;
-          allowUnfreePredicate = (_: true);
+      pkgs-master = mkPkgs nixpkgs-master {
+        extraConfig = {
+          permittedInsecurePackages = [
+            "electron-32.3.3"
+          ];
         };
       };
 
@@ -162,10 +157,10 @@
             ./hosts/${hostName}
 
             # AMD-specific hardware optimizations for amd-pc
-            (if hostName == "amd-pc" then nixos-hardware.nixosModules.common-cpu-amd else {})
+            (if hostName == "amd-pc" then nixos-hardware.nixosModules.common-cpu-amd else { })
 
             # librus-notifications module for odroid
-            (if hostName == "odroid" then librus-notifications.nixosModules.default else {})
+            (if hostName == "odroid" then librus-notifications.nixosModules.default else { })
 
             # home-manager
             home-manager.nixosModules.home-manager
@@ -181,8 +176,7 @@
 
 
                 # pull just averaged_perceptron_tagger_eng from pkgs-unstable
-                (self: super: {
-                })
+                (self: super: { })
 
               ];
             }

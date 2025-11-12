@@ -1,5 +1,5 @@
 # configuration in this file only applies to exampleHost host.
-{ pkgs, pkgs-unstable, inputs, ... }: {
+{ pkgs, pkgs-unstable, inputs, lib, ... }: {
 
 
   # disabledModules = [ "services/web-apps/mealie.nix" ];
@@ -25,7 +25,7 @@
     #./smokeping.nix
 
     #   "${pkgs-unstable.path}/nixos/modules/services/web-apps/mealie.nix"
-       ./mealie.nix
+    ./mealie.nix
 
     ../../shared/immich.nix
 
@@ -55,9 +55,14 @@
     options = [ "zfsutil" ];
   };
 
-  users.users.flakm = {
-    extraGroups = [ "deluge" "nextcloud" "sabnzbd" "sonarr" "jellyseerr" "flakm" ];
-  };
+  users.users.flakm.extraGroups = lib.mkAfter [
+    "deluge"
+    "nextcloud"
+    "sabnzbd"
+    "sonarr"
+    "jellyseerr"
+    "flakm"
+  ];
 
 
 

@@ -99,8 +99,8 @@
 
   # Ensure homebrew and cargo tools are in the PATH
   home.sessionPath = [
-    "/opt/homebrew/bin/"
-    "~/.cargo/bin"
+    "/opt/homebrew/bin"
+    "${config.home.homeDirectory}/.cargo/bin"
   ];
 
 

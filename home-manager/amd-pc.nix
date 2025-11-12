@@ -1,29 +1,11 @@
 { config, lib, pkgs, ... }:
 
 {
-
-
-
-  home.activation.linkSystemd =
-    let
-      inherit (lib) hm;
-    in
-    hm.dag.entryBefore [ "reloadSystemd" ] (
-      ''
-        find $HOME/.config/systemd/user/ \
-          -type l \
-          -exec bash -c "readlink {} | grep -q $HOME/.nix-profile/share/systemd/user/" \; \
-          -delete
-
-        find $HOME/.nix-profile/share/systemd/user/ \
-          -type f -o -type l \
-          -exec ln -s {} $HOME/.config/systemd/user/ \;
-      ''
-    );
-
   # Ensure cargo and go tools are in the PATH
   home.sessionPath = [
-    "${config.home.homeDirectory}/.cargo/bin:${config.home.homeDirectory}/go/bin:/usr/local/bin/"
+    "${config.home.homeDirectory}/.cargo/bin"
+    "${config.home.homeDirectory}/go/bin"
+    "/usr/local/bin"
   ];
 
   imports = [
