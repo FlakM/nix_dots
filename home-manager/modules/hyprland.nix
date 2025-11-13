@@ -1040,8 +1040,8 @@ in
 
         exec-once=[workspace 3 silent] obsidian
         exec-once=[workspace 3 silent] kitty --title "obsidian" --directory /home/flakm/programming/flakm/obsidian/work -- bash -c "tmux new-session -d -s obsidian 'nvim' && tmux attach-session -t obsidian"
-        windowrulev2 = float, kitty:title:obsidian
-        windowrulev2 = fullscreen, kitty:title:obsidian
+        windowrulev2 = float, title:^(obsidian)$
+        windowrulev2 = fullscreen, title:^(obsidian)$
 
         exec-once=[workspace 4 silent] spotify
         exec-once=[workspace 6 silent] kdeconnect-app

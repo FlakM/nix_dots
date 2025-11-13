@@ -18,7 +18,7 @@
     fd
     ripgrep
     fzf
-    htop
+    btop
     dnsutils
 
     neofetch

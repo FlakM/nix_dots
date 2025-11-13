@@ -428,6 +428,4 @@ cmd([[runtime! plugin/python_setup.vim]])
 
 -- Copilot --------------------------------------------------------------------
 vim.g.copilot_no_tab_map = true
-keymap("i", "<C-S>", function()
-  return fn["copilot#Accept"]("\\<CR>")
-end, { expr = true, silent = true, script = true })
+keymap("i", "<C-S>", 'copilot#Accept("")', { expr = true, silent = true, replace_keycodes = false })
