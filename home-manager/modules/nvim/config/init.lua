@@ -29,11 +29,13 @@ end
 
 local keymap = vim.keymap.set
 
+vim.g.mapleader = " "
+vim.g.maplocalleader = " "
+
 -- Appearance -----------------------------------------------------------------
 vim.cmd("colorscheme default")
 vim.g.edge_style = "default"
 vim.g.edge_transparent_background = 2
-vim.g.mapleader = " "
 vim.cmd("colorscheme edge")
 
 require("lualine").setup({
@@ -180,16 +182,58 @@ map("n", "/", "/\\v")
 map("c", "%s/", "%sm/")
 
 -- Clipboard helpers ----------------------------------------------------------
+local function project_root()
+  local bufpath = fn.expand("%:p")
+  if bufpath == "" then
+    return fn.getcwd()
+  end
+  local markers = { ".git", ".hg", "package.json", "Cargo.toml", "pyproject.toml", "go.mod" }
+  local root_file = vim.fs.find(markers, {
+    upward = true,
+    stop = vim.loop.os_homedir(),
+    path = vim.fs.dirname(bufpath),
+  })[1]
+  if root_file then
+    return vim.fs.dirname(root_file)
+  end
+  return fn.getcwd()
+end
+
+local function relative_file_from_root()
+  local abs = fn.expand("%:p")
+  if abs == "" then
+    return ""
+  end
+  local root = project_root()
+  if abs:sub(1, #root) == root then
+    local rel = abs:sub(#root + 2)
+    return rel ~= "" and rel or fn.expand("%")
+  end
+  return fn.expand("%")
+end
+
 local function copy_to_clipboard(val)
   fn.setreg("+", val)
 end
 
 keymap("n", "<leader>cf", function()
-  copy_to_clipboard(fn.expand("%"))
+  local rel = relative_file_from_root()
+  if rel ~= "" then
+    copy_to_clipboard(rel)
+    vim.notify("📋 Copied relative path: " .. rel, vim.log.levels.INFO, { title = "Clipboard" })
+  else
+    vim.notify("⚠️ No file to copy", vim.log.levels.WARN, { title = "Clipboard" })
+  end
 end, { silent = true, desc = "Copy relative path" })
 
 keymap("n", "<leader>cF", function()
-  copy_to_clipboard(fn.expand("%:p"))
+  local abs = fn.expand("%:p")
+  if abs ~= "" then
+    copy_to_clipboard(abs)
+    vim.notify("📋 Copied absolute path: " .. abs, vim.log.levels.INFO, { title = "Clipboard" })
+  else
+    vim.notify("⚠️ No file to copy", vim.log.levels.WARN, { title = "Clipboard" })
+  end
 end, { silent = true, desc = "Copy absolute path" })
 
 keymap("n", "<leader>ct", function()
