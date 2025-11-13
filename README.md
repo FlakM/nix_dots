@@ -90,7 +90,7 @@ This is a set of very opinionated configurations. The mix of shortcuts is a resu
 2. Build locally home manager: `home-manager --flake ~/programming/flakm/nix_dots#flakm@odroid build`
 3. Ship over ssh: `nix copy --to ssh://flakm@odroid ./result`
 4. Commit & push changes
-5. Apply changes: `ssh flakm@odroid -c "home-manager --flake github:flakm/nix_dots#flakm@odroid switch"`
+5. Apply changes: `ssh flakm@odroid "home-manager --flake github:flakm/nix_dots#flakm@odroid switch"`
 
 ### On mac m1
 
