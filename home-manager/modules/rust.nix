@@ -13,13 +13,15 @@ in
     #libiconv
     pkg-config
     zlib
-    #    cargo
-    #    rustc
-    #    rust-analyzer-unwrapped
-    #    rustfmt
-    #    clippy
 
     fenix.latest.rust-analyzer
+    (fenix.latest.withComponents [
+      "cargo"
+      "rustc"
+      "rust-src"
+      "rustfmt"
+      "clippy"
+    ])
 
 
 
