@@ -4,22 +4,22 @@
 
 -- Helper: Get line range for visual selection or current line
 local function get_line_range(use_visual_marks)
-  if use_visual_marks then
-    local start_line = tonumber(vim.fn.line("'<"))
-    local end_line = tonumber(vim.fn.line("'>"))
-    return math.min(start_line, end_line), math.max(start_line, end_line)
-  end
+if use_visual_marks then
+local start_line = tonumber(vim.fn.line("'<"))
+local end_line = tonumber(vim.fn.line("'>"))
+return math.min(start_line, end_line), math.max(start_line, end_line)
+end
 
-  local current = tonumber(vim.fn.line("."))
-  return current, current
+local current = tonumber(vim.fn.line("."))
+return current, current
 end
 
 -- Format line range as string (e.g., "10" or "10,20")
 local function format_range(start_line, end_line)
-  if start_line == end_line then
-    return tostring(start_line)
-  end
-  return start_line .. ',' .. end_line
+if start_line == end_line then
+return tostring(start_line)
+end
+return start_line .. ',' .. end_line
 end
 
 -- Get URL from clipboard (tries + register, falls back to ")
@@ -27,8 +27,8 @@ local function get_url_from_clipboard()
   local url = vim.fn.getreg('+')
   if url == '' then
     url = vim.fn.getreg('"')
-  end
-  return url ~= '' and url or nil
+end
+return url ~= '' and url or nil
 end
 
 -- Parse GitHub URL to extract filename and line fragment
@@ -44,15 +44,15 @@ local function parse_github_url(url)
     label = filename .. ':' .. fragment:sub(2)
   else
     label = filename .. (fragment or '')
-  end
+end
 
-  return label, url
+return label, url
 end
 
 -- Copy text to system clipboard and default register
 local function copy_to_clipboard(text)
-  vim.fn.setreg('+', text)
-  vim.fn.setreg('"', text)
+vim.fn.setreg('+', text)
+vim.fn.setreg('"', text)
 end
 
 -- Execute GBrowse command (vim-fugitive) for range
@@ -162,52 +162,52 @@ local function copy_reference_link()
     local abs_path_line = filepath .. ':' .. line_number
     vim.fn.setreg('"', abs_path_line)
 
-    vim.notify('📎 Reference copied: ' .. cword .. ' at ' .. relative_path .. ':' .. line_number, vim.log.levels.INFO, { title = 'Copy reference' })
-  end)
+vim.notify('📎 Reference copied: ' .. cword .. ' at ' .. relative_path .. ':' .. line_number, vim.log.levels.INFO, { title = 'Copy reference' })
+end)
 end
 
 vim.keymap.set('n', '<leader>cr', copy_reference_link, {
-  noremap = true,
-  silent = true,
-  desc = 'Copy reference to identifier under cursor',
+noremap = true,
+silent = true,
+desc = 'Copy reference to identifier under cursor',
 })
 
 local function get_symbol_at_cursor()
-  local current_line = vim.api.nvim_get_current_line()
-  local cursor_col = vim.api.nvim_win_get_cursor(0)[2]
+local current_line = vim.api.nvim_get_current_line()
+local cursor_col = vim.api.nvim_win_get_cursor(0)[2]
 
-  local identifier_pattern = '[%w_:]+'
-  local start_pos = cursor_col + 1
+local identifier_pattern = '[%w_:]+'
+local start_pos = cursor_col + 1
 
-  while start_pos > 1 and current_line:sub(start_pos, start_pos):match('[%w_:]') do
-    start_pos = start_pos - 1
-  end
-  if not current_line:sub(start_pos, start_pos):match('[%w_:]') then
-    start_pos = start_pos + 1
-  end
+while start_pos > 1 and current_line:sub(start_pos, start_pos):match('[%w_:]') do
+start_pos = start_pos - 1
+end
+if not current_line:sub(start_pos, start_pos):match('[%w_:]') then
+start_pos = start_pos + 1
+end
 
-  local end_pos = cursor_col + 1
-  while end_pos <= #current_line and current_line:sub(end_pos, end_pos):match('[%w_:]') do
-    end_pos = end_pos + 1
-  end
-  end_pos = end_pos - 1
+local end_pos = cursor_col + 1
+while end_pos <= #current_line and current_line:sub(end_pos, end_pos):match('[%w_:]') do
+end_pos = end_pos + 1
+end
+end_pos = end_pos - 1
 
-  if start_pos <= end_pos then
-    return current_line:sub(start_pos, end_pos)
-  end
+if start_pos <= end_pos then
+return current_line:sub(start_pos, end_pos)
+end
 
-  return vim.fn.expand('<cword>')
+return vim.fn.expand('<cword>')
 end
 
 local function get_cargo_package_name(filepath)
-  local dir = vim.fn.fnamemodify(filepath, ':h')
+local dir = vim.fn.fnamemodify(filepath, ':h')
 
-  for i = 1, 10 do
-    local cargo_toml = dir .. '/Cargo.toml'
-    if vim.fn.filereadable(cargo_toml) == 1 then
-      local lines = vim.fn.readfile(cargo_toml)
-      for _, line in ipairs(lines) do
-        local name = line:match('^name%s*=%s*"([^"]+)"')
+for i = 1, 10 do
+local cargo_toml = dir .. '/Cargo.toml'
+if vim.fn.filereadable(cargo_toml) == 1 then
+local lines = vim.fn.readfile(cargo_toml)
+for _, line in ipairs(lines) do
+local name = line:match('^name%s*=%s*"([^"]+)"')
         if name then
           return name:gsub('%-', '_'), dir
         end
@@ -567,12 +567,17 @@ local function copy_lsp_reference_as_markdown()
         for _, s in ipairs(syms) do
           local r = s.range
           if r and target_line >= r.start.line and target_line <= r['end'].line then
+            -- Check if this symbol IS the target (same name, kind, and contains target line in selection range)
+            local is_target = (s.name == sym_name and s.kind == target_kind
+                              and s.selectionRange and s.selectionRange.start.line == target_line)
+
             -- Include: modules(2), classes(5), enums(10), traits(11), enum variants(22), structs(23)
             if s.kind == 2 or s.kind == 5 or s.kind == 10 or s.kind == 11 or s.kind == 22 or s.kind == 23 then
-              if s.name == sym_name and s.kind == target_kind then
+              if is_target then
                 found_self = true
+              else
+                table.insert(path_parts, s.name)
               end
-              table.insert(path_parts, s.name)
               parent_kind = s.kind
             end
             if s.children then
@@ -616,6 +621,16 @@ local function copy_lsp_reference_as_markdown()
       local line_num = (loc.range or loc.targetRange).start.line + 1
       log_debug('Definition at: ' .. filepath .. ':' .. line_num)
 
+      -- Check if we jumped to an external crate (stdlib, dependencies)
+      local is_external = filepath:match('/%.cargo/') or filepath:match('/rustlib/src/') or filepath:match('/nix/store/.*rust.*/')
+
+      if is_external and sym and sym.kind == 8 then
+        -- For fields, we don't want to jump to type definitions in external crates
+        log_debug('Ignoring external crate jump for field: ' .. filepath)
+        vim.notify('Field type is external, use on field name instead', vim.log.levels.WARN, { title = 'Copy reference' })
+        return
+      end
+
       local temp_buf = vim.fn.bufadd(filepath)
       vim.fn.bufload(temp_buf)
       vim.cmd('split')
@@ -638,47 +653,47 @@ local function copy_lsp_reference_as_markdown()
           if vim.fn.filereadable(cargo) == 1 then
             for _, line in ipairs(vim.fn.readfile(cargo)) do
               local name = line:match('^name%s*=%s*"([^"]+)"')
-              if name then return name:gsub('%-', '_') end
-            end
-          end
-          dir = vim.fn.fnamemodify(dir, ':h')
-        end
-        return nil
-      end
+if name then return name:gsub('%-', '_') end
+end
+end
+dir = vim.fn.fnamemodify(dir, ':h')
+end
+return nil
+end
 
-      local name = sym and sym.name or vim.fn.expand('<cword>')
-      local qualified, override_kind
+local name = sym and sym.name or vim.fn.expand('<cword>')
+local qualified, override_kind
 
-      -- For macros, use the full qualified name from hover (already includes crate)
-      if sym and sym.is_macro then
-        qualified = name
-        override_kind = type_kind
-      else
-        -- For regular symbols, build qualified name from symbol tree
-        qualified, override_kind = build_qualified_name(name, symbols, pos.line, sym and sym.kind)
-        local crate_name = get_crate_name(filepath)
-        if crate_name and not qualified:find(crate_name) then
-          qualified = crate_name .. '::' .. qualified
-        end
-      end
+-- For macros, use the full qualified name from hover (already includes crate)
+if sym and sym.is_macro then
+qualified = name
+override_kind = type_kind
+else
+-- For regular symbols, build qualified name from symbol tree
+qualified, override_kind = build_qualified_name(name, symbols, pos.line, sym and sym.kind)
+local crate_name = get_crate_name(filepath)
+if crate_name and not qualified:find(crate_name) then
+qualified = crate_name .. '::' .. qualified
+end
+end
 
-      local final_kind = override_kind or type_kind
-      local display = final_kind and (final_kind .. ' ' .. qualified) or qualified
-      log_debug('Built qualified name: ' .. qualified .. ' final_kind: ' .. tostring(final_kind))
+local final_kind = override_kind or type_kind
+local display = final_kind and (final_kind .. ' ' .. qualified) or qualified
+log_debug('Built qualified name: ' .. qualified .. ' final_kind: ' .. tostring(final_kind))
 
-      if not ok then
-        log_debug('GBrowse failed, using local path')
-        local fallback = string.format('[%s](%s:%d)', display, filepath, line_num)
-        copy_to_clipboard(fallback)
-        vim.notify('📎 Local: ' .. display, vim.log.levels.INFO)
-        return
-      end
+if not ok then
+log_debug('GBrowse failed, using local path')
+local fallback = string.format('[%s](%s:%d)', display, filepath, line_num)
+copy_to_clipboard(fallback)
+vim.notify('📎 Local: ' .. display, vim.log.levels.INFO)
+return
+end
 
-      vim.defer_fn(function()
-        local url = vim.fn.getreg('+')
-        log_debug('URL from clipboard: ' .. tostring(url))
+vim.defer_fn(function()
+local url = vim.fn.getreg('+')
+log_debug('URL from clipboard: ' .. tostring(url))
 
-        if not url or url == '' or url:match('^%[') then
+if not url or url == '' or url:match('^%[') then
           vim.notify('No URL in clipboard', vim.log.levels.WARN)
           vim.fn.setreg('+', orig_clip)
           return
@@ -719,17 +734,35 @@ local function copy_lsp_reference_as_markdown()
             --   ```rust
             --   macro_rules! println
             --   ```
-            local module_path = text:match('```rust\n([%w_:]+)\n```')
-            local macro_simple_name = text:match('macro_rules!%s+([%w_]+)')
-            log_debug('Regex matches: module_path=' .. tostring(module_path) .. ' macro_simple_name=' .. tostring(macro_simple_name))
 
             local macro_name
+            local module_path, macro_simple_name
+
+            -- Pattern 1: macro_rules! name
+            macro_simple_name = text:match('macro_rules!%s+([%w_]+)')
+
+            -- Pattern 2: Full path in first code block (e.g., std::macros)
+            -- Try to match the first ```rust block
+            module_path = text:match('```[%w]*\n([%w_:]+)%s*\n```')
+
+            -- Pattern 3: Look for 'macro name' in plain text (fallback)
+            if not macro_simple_name then
+              macro_simple_name = text:match('macro%s+([%w_]+)')
+            end
+
+            log_debug('Regex matches: module_path=' .. tostring(module_path) .. ' macro_simple_name=' .. tostring(macro_simple_name))
+
+            -- Build qualified macro name
             if module_path and macro_simple_name then
               macro_name = module_path .. '::' .. macro_simple_name
               log_debug('Extracted macro: module=' .. module_path .. ' name=' .. macro_simple_name)
             elseif macro_simple_name then
               macro_name = macro_simple_name
               log_debug('Extracted macro name only: ' .. macro_simple_name)
+            elseif module_path then
+              -- Last resort: use module path if we have it
+              macro_name = module_path
+              log_debug('Using module path as macro name: ' .. module_path)
             end
 
             if macro_name then
@@ -758,3 +791,4 @@ vim.keymap.set('n', '<leader>cl', copy_lsp_reference_as_markdown, {
   silent = true,
   desc = 'Copy LSP reference as markdown [symbol](link)',
 })
+
