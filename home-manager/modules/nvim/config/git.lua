@@ -461,11 +461,15 @@ local function get_rust_analyzer_symbol_info(params, callback)
 end
 
 -- Debug logging to /tmp/nvim_lsp_ref.log
-local function log_debug(msg)
+local function log_debug(msg, data)
   local log_file = '/tmp/nvim_lsp_ref.log'
   local f = io.open(log_file, 'a')
   if f then
-    f:write(os.date('%Y-%m-%d %H:%M:%S') .. ' ' .. msg .. '\n')
+    f:write(os.date('%Y-%m-%d %H:%M:%S') .. ' ' .. msg)
+    if data then
+      f:write('\n' .. vim.inspect(data))
+    end
+    f:write('\n')
     f:close()
   end
 end
@@ -509,6 +513,9 @@ local function copy_lsp_reference_as_markdown()
   -- Step 1: Try to get symbol from documentSymbol (works for most symbols except macros)
   clients[1].request('textDocument/documentSymbol', { textDocument = params.textDocument }, function(err, symbols)
     log_debug('documentSymbol callback: err=' .. tostring(err) .. ' symbols=' .. tostring(symbols ~= nil))
+    if symbols then
+      log_debug('documentSymbol response:', symbols)
+    end
 
     if err then
       vim.notify('documentSymbol error: ' .. tostring(err), vim.log.levels.ERROR)
@@ -536,6 +543,9 @@ local function copy_lsp_reference_as_markdown()
 
     local sym = find_symbol(symbols, pos.line, pos.character)
     log_debug('Found symbol: ' .. tostring(sym and sym.name or 'nil') .. ' kind: ' .. tostring(sym and sym.kind or 'nil'))
+    if sym then
+      log_debug('Symbol details:', sym)
+    end
 
     local type_kind = symbol_kind_to_type(sym and sym.kind)
     log_debug('Type kind: ' .. tostring(type_kind))
@@ -588,6 +598,9 @@ local function copy_lsp_reference_as_markdown()
     local function proceed_with_definition()
     vim.lsp.buf_request(0, 'textDocument/definition', params, function(def_err, result)
       log_debug('definition callback: err=' .. tostring(def_err) .. ' result=' .. tostring(result ~= nil))
+      if result then
+        log_debug('definition response:', result)
+      end
 
       if def_err then
         vim.notify('definition error: ' .. tostring(def_err), vim.log.levels.ERROR)
@@ -651,6 +664,7 @@ local function copy_lsp_reference_as_markdown()
 
       local final_kind = override_kind or type_kind
       local display = final_kind and (final_kind .. ' ' .. qualified) or qualified
+      log_debug('Built qualified name: ' .. qualified .. ' final_kind: ' .. tostring(final_kind))
 
       if not ok then
         log_debug('GBrowse failed, using local path')
@@ -684,6 +698,9 @@ local function copy_lsp_reference_as_markdown()
     if is_likely_macro then
       vim.lsp.buf_request(0, 'textDocument/hover', params, function(hover_err, hover_result)
         log_debug('Macro hover callback: err=' .. tostring(hover_err))
+        if hover_result then
+          log_debug('hover response:', hover_result)
+        end
 
         if not hover_err and hover_result and hover_result.contents then
           local contents = hover_result.contents
@@ -693,7 +710,7 @@ local function copy_lsp_reference_as_markdown()
                         (type(contents[1]) == 'string' and contents[1] or contents[1].value))
 
           if text then
-            log_debug('Hover text: ' .. text:sub(1, 200))
+            log_debug('Hover text (full):', text)
             -- Extract macro name from hover text
             -- Format is typically:
             --   ```rust
@@ -704,6 +721,7 @@ local function copy_lsp_reference_as_markdown()
             --   ```
             local module_path = text:match('```rust\n([%w_:]+)\n```')
             local macro_simple_name = text:match('macro_rules!%s+([%w_]+)')
+            log_debug('Regex matches: module_path=' .. tostring(module_path) .. ' macro_simple_name=' .. tostring(macro_simple_name))
 
             local macro_name
             if module_path and macro_simple_name then
