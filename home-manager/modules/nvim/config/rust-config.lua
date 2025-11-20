@@ -1,6 +1,11 @@
 local map = vim.keymap.set
 local dap = require('dap')
 
+local rust_analyzer_path = vim.fn.exepath("rust-analyzer")
+if rust_analyzer_path == "" then
+    rust_analyzer_path = "rust-analyzer"
+end
+
 -- Toggle runnables
 map("n", "<leader>dr", function()
     vim.cmd.RustLsp('debug')
@@ -45,13 +50,13 @@ end
 
 local cfg = require('rustaceanvim.config')
 
-
 vim.g.rustaceanvim = {
     -- Plugin configuration
     tools = {
     },
     -- LSP configuration
     server = {
+        cmd = { "lspmux", "client", "--server-path", rust_analyzer_path },
         on_attach = function(client, bufnr)
             -- you can also put keymaps in here
         end,

@@ -3,6 +3,31 @@ local cmd = vim.cmd
 local map = vim.keymap.set
 local builtin = require('telescope.builtin')
 
+local lsp_lines = require("lsp_lines")
+lsp_lines.setup()
+
+vim.diagnostic.config({
+    virtual_text = false,
+    virtual_lines = true,
+    signs = {
+        priority = 20,
+    },
+    underline = true,
+    severity_sort = true,
+})
+
+vim.api.nvim_set_hl(0, "DiagnosticVirtualTextError", { fg = "#ff4d4d", bg = "NONE" })
+vim.api.nvim_set_hl(0, "DiagnosticSignError", { fg = "#ff4d4d", bg = "NONE" })
+vim.api.nvim_set_hl(0, "DiagnosticSignWarn", { fg = "#fabd2f", bg = "NONE" })
+vim.api.nvim_set_hl(0, "DiagnosticSignInfo", { fg = "#83a598", bg = "NONE" })
+vim.api.nvim_set_hl(0, "DiagnosticSignHint", { fg = "#b8bb26", bg = "NONE" })
+
+local diagnostic_signs = { Error = "●", Warn = "●", Hint = "●", Info = "●" }
+for type, icon in pairs(diagnostic_signs) do
+    local hl = "DiagnosticSign" .. type
+    vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
+end
+
 --LSP mappings
 -- go to definition
 map("n", "gd", function()
@@ -94,8 +119,10 @@ end)
 
 -- Toggle inlay hints
 map("n", "<leader>l", function()
-    vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
-end)
+    local enabled = vim.lsp.inlay_hint.is_enabled()
+    vim.lsp.inlay_hint.enable(not enabled)
+    lsp_lines.toggle()
+end, { desc = "Toggle inlay hints and diagnostics" })
 
 -- Example mappings for usage with nvim-dap. If you don't use that, you can skip these
 

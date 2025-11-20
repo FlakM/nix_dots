@@ -10,6 +10,16 @@ let
       hash = "sha256-SVEJG+2oVqJKaH4+jDp2ZpbJIWIL4nqGkH0cN9pCa6M=";
     };
   };
+  servicePath = lib.concatStringsSep ":" (
+    (config.home.sessionPath or [])
+    ++ [
+      "${config.home.homeDirectory}/.nix-profile/bin"
+      "/run/wrappers/bin"
+      "/etc/profiles/per-user/${config.home.username}/bin"
+      "/nix/var/nix/profiles/default/bin"
+      "/run/current-system/sw/bin"
+    ]
+  );
 in
 {
   home.sessionVariables = {
@@ -84,6 +94,7 @@ in
     bashdb
     # clipboard support for Wayland
     wl-clipboard
+    pkgs-unstable.lspmux
   ];
 
   programs.neovim = {
@@ -170,6 +181,7 @@ in
       obsidian-nvim
 
       none-ls-nvim
+      lsp_lines-nvim
 
 
       # database access
@@ -243,4 +255,39 @@ in
   home.file."${config.home.homeDirectory}/.config/nvim/ftplugin/markdown.lua".source = config.lib.file.mkOutOfStoreSymlink ./config/ftplugin/markdown.lua;
 
   home.file."${config.home.homeDirectory}/.ideavimrc".source = config.lib.file.mkOutOfStoreSymlink ./config/idea-vim-config.vim;
+
+  systemd.user.services."lspmux" = lib.mkIf stdenv.isLinux {
+    Unit = {
+      Description = "lspmux rust-analyzer multiplexer";
+      After = [ "network-online.target" ];
+    };
+    Service = {
+      ExecStart = "${pkgs-unstable.lspmux}/bin/lspmux server";
+      Restart = "on-failure";
+      RestartSec = 2;
+      Environment = [
+        "RUST_LOG=info"
+        "PATH=${servicePath}"
+      ];
+    };
+    Install = {
+      WantedBy = [ "default.target" ];
+    };
+  };
+
+  launchd.agents."lspmux" = lib.mkIf stdenv.isDarwin {
+    enable = true;
+    config = {
+      ProgramArguments = [
+        "${pkgs-unstable.lspmux}/bin/lspmux"
+        "server"
+      ];
+      KeepAlive = true;
+      RunAtLoad = true;
+      EnvironmentVariables = {
+        RUST_LOG = "info";
+        PATH = servicePath;
+      };
+    };
+  };
 }
