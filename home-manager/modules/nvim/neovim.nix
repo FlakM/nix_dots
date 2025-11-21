@@ -164,6 +164,7 @@ in
       nvim-tree-lua
 
       vim-gitgutter
+      diffview-nvim
 
       rustaceanvim
 
@@ -237,6 +238,7 @@ in
         (builtins.readFile ./config/marks.lua)
         #(builtins.readFile ./config/yaml.lua)
         (builtins.readFile ./config/git.lua)
+        (builtins.readFile ./config/diffview.lua)
         (if stdenv.isLinux then
           "local bashdb_path = \"${pkgs.bashdb}/bin/bashdb\""
         else
@@ -255,6 +257,37 @@ in
   home.file."${config.home.homeDirectory}/.config/nvim/ftplugin/markdown.lua".source = config.lib.file.mkOutOfStoreSymlink ./config/ftplugin/markdown.lua;
 
   home.file."${config.home.homeDirectory}/.ideavimrc".source = config.lib.file.mkOutOfStoreSymlink ./config/idea-vim-config.vim;
+
+  xdg.configFile."lspmux/config.toml".text = ''
+    pass_environment = [
+      "PATH",
+      "LD_LIBRARY_PATH",
+      "LIBRARY_PATH",
+      "PKG_CONFIG_PATH",
+      "PKG_CONFIG_LIBDIR",
+      "PKG_CONFIG_SYSROOT_DIR",
+      "CPATH",
+      "C_INCLUDE_PATH",
+      "CPLUS_INCLUDE_PATH",
+      "CC",
+      "CXX",
+      "CFLAGS",
+      "CXXFLAGS",
+      "RUSTFLAGS",
+      "RUSTDOCFLAGS",
+      "RUSTC_WRAPPER",
+      "RUST_SRC_PATH",
+      "CARGO_TARGET_DIR",
+      "OPENSSL_DIR",
+      "OPENSSL_LIB_DIR",
+      "OPENSSL_INCLUDE_DIR",
+      "LIBCLANG_PATH",
+      "SSL_CERT_FILE",
+      "NIX_SSL_CERT_FILE",
+      "PROTOC",
+      "PROTOC_INCLUDE",
+    ]
+  '';
 
   systemd.user.services."lspmux" = lib.mkIf stdenv.isLinux {
     Unit = {
