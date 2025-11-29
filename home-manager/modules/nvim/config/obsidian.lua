@@ -62,3 +62,16 @@ map("n", "<leader>3", [[<cmd>ObsidianTomorrow<CR>]])
 
 -- set conceallevel to 2
 vim.cmd("set conceallevel=2")
+
+-- Obsidian buffers are opened by background jobs, so disable swapfiles for them
+-- to avoid E325 warnings when the plugin re-edits an already-open note.
+local obsidian_paths = {
+    vim.fn.expand("~/programming/flakm/obsidian/work") .. "/**",
+    vim.fn.expand("~/programming/flakm/obsidian/house/house") .. "/**",
+}
+vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
+    pattern = obsidian_paths,
+    callback = function()
+        vim.opt_local.swapfile = false
+    end,
+})

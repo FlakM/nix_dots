@@ -17,18 +17,18 @@
     ];
   };
 
+  hardware.firmware = with pkgs; [
+    linux-firmware
+  ];
+
   services.jellyfin = {
     enable = true;
     group = "jellyfin";
   };
 
-  users.users.jellyfin = {
-    extraGroups = [ "render" "video" ];
-  };
-
   systemd.services.jellyfin = {
     serviceConfig = {
-      SupplementaryGroups = [ "render" "video" ];
+      SupplementaryGroups = [ "render" "video" "media" ];
       DeviceAllow = [
         "/dev/dri/renderD128 rw"
       ];
@@ -79,7 +79,7 @@
             proxy_set_header Host $host; # try $host instead if this doesn't work                                                                                                                                                                                                     
             proxy_set_header X-Forwarded-Proto $scheme;                                                                                                                                                                                                                               
             proxy_pass http://127.0.0.1:8989;                                                                                                                                                                                                                                         
-            proxy_redirect http://127.0.0.1:8989 https://jellyseerr.house.flakm.com;                                                                                                                                                                                                  
+            proxy_redirect http://127.0.0.1:8989 https://sonarr.house.flakm.com;                                                                                                                                                                                                      
           '';
         };
       };
@@ -95,6 +95,19 @@
             proxy_set_header X-Forwarded-Proto $scheme;                                                                                                                                                                                                                               
             proxy_pass http://127.0.0.1:8080;                                                                                                                                                                                                                                         
             proxy_redirect http://127.0.0.1:8080 https://sabnzbd.house.flakm.com;                                                                                                                                                                                                     
+          '';
+        };
+      };
+
+      "radarr.house.flakm.com" = {
+        useACMEHost = "house.flakm.com";
+        forceSSL = true;
+        locations."/" = {
+          extraConfig = ''
+            proxy_set_header Host $host;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_pass http://127.0.0.1:7878;
+            proxy_redirect http://127.0.0.1:7878 https://radarr.house.flakm.com;
           '';
         };
       };
@@ -116,16 +129,6 @@
     };
   };
 
-  users.groups.jellyfin.members = [ "deluge" "sabnzbd" "sonarr" "jellyseerr" "flakm" ];
-  users.groups.deluge.members = [ "jellyfin" "flakm" ];
-  users.groups.sabnzbd.members = [ "jellyfin" "sonarr" "jellyseerr" "flakm" ];
-  users.groups.audiobookshelf.members = [ "flakm" "readarr" ];
-
-  users.users.sonarr = {
-    extraGroups = [ "jellyfin" "sabnzbd" "jellyseerr" ];
-  };
-
-
   environment.systemPackages = with pkgs; [
     #ffmpeg
   ];
@@ -146,6 +149,8 @@
   services.sonarr.enable = true;
 
   services.sabnzbd.enable = true;
+
+  services.radarr.enable = true;
 
   services.readarr.enable = true;
 

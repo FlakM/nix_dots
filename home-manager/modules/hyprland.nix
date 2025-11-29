@@ -187,6 +187,8 @@ in
       pkgs-unstable.walker # application launcher & clipboard UI
       brightnessctl # brightness control
       rofimoji
+
+      wf-recorder # screen recording
     ];
 
   xdg.configFile."rofimoji.rc" = {

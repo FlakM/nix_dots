@@ -301,6 +301,26 @@ in
       Environment = [
         "RUST_LOG=info"
         "PATH=${servicePath}"
+        "PKG_CONFIG_PATH=${lib.makeSearchPath "lib/pkgconfig" (with pkgs; [
+          zlib
+          openssl
+          rdkafka
+          cyrus_sasl
+        ])}"
+        "LD_LIBRARY_PATH=${lib.makeLibraryPath (with pkgs; [
+          zlib
+          openssl
+          rdkafka
+          cyrus_sasl
+          stdenv.cc.cc.lib
+        ])}"
+        "C_INCLUDE_PATH=${lib.makeSearchPath "include" (with pkgs; [
+          zlib.dev
+          openssl.dev
+          rdkafka.dev
+          cyrus_sasl.dev
+        ])}"
+        "LIBCLANG_PATH=${pkgs.llvmPackages.libclang.lib}/lib"
       ];
     };
     Install = {

@@ -1,4 +1,12 @@
 { config, pkgs, ... }: {
+  nixpkgs.overlays = [
+    (self: super: {
+      paperless-ngx = super.paperless-ngx.overrideAttrs (old: {
+        doCheck = false;
+      });
+    })
+  ];
+
   sops.defaultSopsFile = ../../secrets/secrets.yaml;
   sops.secrets = {
     paperless_admin_password = {
