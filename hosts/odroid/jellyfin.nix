@@ -17,6 +17,7 @@
     ];
   };
 
+  # to allow jellyfin to fully use hardware acceleration
   hardware.firmware = with pkgs; [
     linux-firmware
   ];
@@ -68,7 +69,6 @@
           '';
         };
       };
-
 
       "sonarr.house.flakm.com" = {
         useACMEHost = "house.flakm.com";

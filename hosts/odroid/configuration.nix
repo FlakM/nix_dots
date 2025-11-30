@@ -17,6 +17,7 @@
     ./adguard.nix
     ./paperless.nix
     ./media-permissions.nix
+    ./wireguard.nix
     #../../shared/k3s.nix
     #../../shared/wireguard.nix
     ../../shared/netdata.nix

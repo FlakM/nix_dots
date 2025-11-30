@@ -61,21 +61,4 @@
     "d /var/media/podcasty 2775 audiobookshelf media - -"
   ];
 
-  system.activationScripts.fixMediaPermissions = {
-    text = ''
-      echo "Fixing media directory permissions..."
-
-      find /var/media -type f -exec chgrp media {} \; 2>/dev/null || true
-      find /var/media -type d -exec chgrp media {} \; 2>/dev/null || true
-      find /var/media -type f -exec chmod g+rw {} \; 2>/dev/null || true
-      find /var/media -type d -exec chmod 2775 {} \; 2>/dev/null || true
-
-      chgrp -R media /var/lib/sabnzbd/Downloads 2>/dev/null || true
-      chmod -R g+rwX /var/lib/sabnzbd/Downloads 2>/dev/null || true
-      find /var/lib/sabnzbd/Downloads -type d -exec chmod 2775 {} \; 2>/dev/null || true
-
-      echo "Media permissions fixed"
-    '';
-    deps = [];
-  };
 }
