@@ -107,7 +107,7 @@ in
       xdgOpenUsePortal = true;
 
       extraPortals = [
-        inputs.hyprland.packages.${pkgs.system}.xdg-desktop-portal-hyprland
+        inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland
         pkgs.xdg-desktop-portal-gtk
       ];
     };
@@ -160,7 +160,7 @@ in
 
   home.packages = with pkgs; [
       swaynotificationcenter # modern notifications
-      rofi-wayland
+      rofi
       libnotify # provides notify-send for testing
       playerctl # media status for waybar
       shotman # screenshot
@@ -852,8 +852,8 @@ in
       variables = [ "--all" ];
       enableXdgAutostart = true; # 🔑 start XDG‐autostart apps
     };
-    package = inputs.hyprland.packages.${pkgs.system}.hyprland;
-    portalPackage = inputs.hyprland.packages.${pkgs.system}.xdg-desktop-portal-hyprland;
+    package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
+    portalPackage = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
   };
 
 

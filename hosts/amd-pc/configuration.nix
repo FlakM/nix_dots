@@ -3,7 +3,7 @@
 { pkgs, inputs, lib, pkgs-unstable, pkgs-master, config, ... }:
 
 let
-  fenix = inputs.fenix.packages.${pkgs.system}.stable;
+  fenix = inputs.fenix.packages.${pkgs.stdenv.hostPlatform.system}.stable;
 in
 
 {
@@ -28,7 +28,7 @@ in
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
-      ExecStart = "${pkgs.utillinux}/bin/mount /dev/zvol/rpool/nixos/atuin /home/flakm/.local/share/atuin";
+      ExecStart = "${pkgs.util-linux}/bin/mount /dev/zvol/rpool/nixos/atuin /home/flakm/.local/share/atuin";
       User = "root";
     };
   };
@@ -144,7 +144,7 @@ in
 
   services.libinput.enable = true;
 
-  services.xserver.displayManager.gdm = {
+  services.displayManager.gdm = {
     enable = true;
     wayland = true;
   };
@@ -177,11 +177,13 @@ in
       enable = true;
       enable32Bit = true;
       extraPackages = with pkgs; [
-        amdvlk
-        rocmPackages.clr.icd
+        libva-vdpau-driver
+        libvdpau-va-gl
+        mesa
       ];
-      extraPackages32 = with pkgs; [
-        driversi686Linux.amdvlk
+      extraPackages32 = with pkgs.driversi686Linux; [
+        libva-vdpau-driver
+        libvdpau-va-gl
       ];
     };
     bluetooth = {
@@ -200,7 +202,7 @@ in
     before = [ "bluetooth.service" ];
     serviceConfig = {
       Type = "oneshot";
-      ExecStart = "${pkgs.utillinux}/bin/rfkill unblock bluetooth";
+      ExecStart = "${pkgs.util-linux}/bin/rfkill unblock bluetooth";
     };
   };
 
@@ -311,7 +313,7 @@ in
     libreoffice
 
 
-    bitwarden
+    bitwarden-desktop
     bitwarden-cli
 
     # spelling
@@ -324,8 +326,6 @@ in
     hunspellDicts.pl_PL
     hyphen
     languagetool
-
-    qt6.full
 
     libsForQt5.qtstyleplugins
     adwaita-qt

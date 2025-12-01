@@ -169,8 +169,10 @@ map("n", "<leader>duc", function()
 end)
 
 
-require 'lspconfig'.nil_ls.setup {
-    autostart = true,
+vim.lsp.config('nil_ls', {
+    cmd = { 'nil' },
+    filetypes = { 'nix' },
+    root_markers = { 'flake.nix', '.git' },
     settings = {
         ['nil'] = {
             testSetting = 42,
@@ -179,8 +181,8 @@ require 'lspconfig'.nil_ls.setup {
             },
         },
     },
-
-}
+})
+vim.lsp.enable('nil_ls')
 
 -- completion related settings
 -- This is similiar to what I use

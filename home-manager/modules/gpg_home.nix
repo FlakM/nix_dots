@@ -8,7 +8,7 @@
     pcsclite
     gpgme
   ] ++ lib.optionals stdenv.isLinux [
-    pinentry
+    pinentry-curses
   ];
 
 

@@ -75,7 +75,7 @@
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
-      ExecStart = "${pkgs.utillinux}/bin/mount /dev/zvol/rpool/nixos/atuin /home/flakm/.local/share/atuin";
+      ExecStart = "${pkgs.util-linux}/bin/mount /dev/zvol/rpool/nixos/atuin /home/flakm/.local/share/atuin";
       User = "root";
     };
   };
@@ -93,7 +93,7 @@
 
     wgnord
     wireguard-tools
-    transmission_3
+    transmission_4
     unrar
 
     # for monitoring gpu (quicksync)

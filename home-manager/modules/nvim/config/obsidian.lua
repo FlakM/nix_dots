@@ -22,43 +22,42 @@ require("obsidian").setup({
     },
 
     notes_subdir = "daily",
-    mappings = {
+    legacy_commands = false,
+})
+
+-- Set up keymaps manually (mappings option is deprecated)
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = "markdown",
+    callback = function()
+        local bufnr = vim.api.nvim_get_current_buf()
+
         -- Show backlinks for the current note. Mnemonic: go to references
-        ["gr"] = {
-          action = function()
-              vim.api.nvim_command("ObsidianBacklinks")
-          end,
-          opts = { buffer = true },
-        },
-       -- Overrides the 'gf' mapping to work on markdown/wiki links within your vault.
-       ["gd"] = {
-         action = function()
-           return require("obsidian").util.gf_passthrough()
-         end,
-         opts = { noremap = false, expr = true, buffer = true },
-       },
-       -- Toggle check-boxes.
-       ["<leader>ch"] = {
-         action = function()
-           return require("obsidian").util.toggle_checkbox()
-         end,
-         opts = { buffer = true },
-       },
-       -- Smart action depending on context, either follow link or toggle checkbox.
-       ["<cr>"] = {
-         action = function()
-           return require("obsidian").util.smart_action()
-         end,
-         opts = { buffer = true, expr = true },
-     },
-    }
+        vim.keymap.set("n", "gr", function()
+            vim.cmd("Obsidian backlinks")
+        end, { buffer = bufnr, desc = "Obsidian backlinks" })
+
+        -- Overrides the 'gf' mapping to work on markdown/wiki links within your vault.
+        vim.keymap.set("n", "gd", function()
+            return require("obsidian").util.gf_passthrough()
+        end, { buffer = bufnr, noremap = false, expr = true, desc = "Follow link" })
+
+        -- Toggle check-boxes.
+        vim.keymap.set("n", "<leader>ch", function()
+            return require("obsidian").util.toggle_checkbox()
+        end, { buffer = bufnr, desc = "Toggle checkbox" })
+
+        -- Smart action depending on context, either follow link or toggle checkbox.
+        vim.keymap.set("n", "<cr>", function()
+            return require("obsidian").util.smart_action()
+        end, { buffer = bufnr, expr = true, desc = "Smart action" })
+    end,
 })
 
 
-map("n", "<leader>D", [[<cmd>ObsidianDailies<CR>]])
-map("n", "<leader>1", [[<cmd>ObsidianYesterday<CR>]])
-map("n", "<leader>2", [[<cmd>ObsidianToday<CR>]])
-map("n", "<leader>3", [[<cmd>ObsidianTomorrow<CR>]])
+map("n", "<leader>D", [[<cmd>Obsidian dailies<CR>]])
+map("n", "<leader>1", [[<cmd>Obsidian yesterday<CR>]])
+map("n", "<leader>2", [[<cmd>Obsidian today<CR>]])
+map("n", "<leader>3", [[<cmd>Obsidian tomorrow<CR>]])
 
 -- set conceallevel to 2
 vim.cmd("set conceallevel=2")

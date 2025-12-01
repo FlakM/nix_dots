@@ -12,8 +12,7 @@
   ] ++ lib.optionals stdenv.isLinux [
     parted
     cryptsetup
-    #yubikey-manager-qt
-    yubikey-personalization-gui
+
     yubioath-flutter
   ];
 }

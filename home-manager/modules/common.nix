@@ -26,7 +26,7 @@
     pkgs-unstable.yt-dlp
 
 
-    du-dust
+    dust
 
     # tools for debugging grpc services
     grpcurl

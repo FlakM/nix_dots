@@ -1,6 +1,6 @@
 { pkgs, lib, inputs, ... }:
 let
-  fenix = inputs.fenix.packages.${pkgs.system};
+  fenix = inputs.fenix.packages.${pkgs.stdenv.hostPlatform.system};
 in
 
 {

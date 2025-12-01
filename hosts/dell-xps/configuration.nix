@@ -1,7 +1,7 @@
 # configuration in this file only applies to amd-pc host.
 { pkgs, inputs, lib, nixos-hardware, pkgs-unstable, ... }:
 let
-  fenix = inputs.fenix.packages.${pkgs.system}.stable;
+  fenix = inputs.fenix.packages.${pkgs.stdenv.hostPlatform.system}.stable;
 in
 
 {
@@ -101,7 +101,7 @@ in
   #  displayManager.sddm.enable = true;
   #};
 
-  services.xserver.displayManager.gdm = {
+  services.displayManager.gdm = {
     enable = true;
     wayland = true;
   };
@@ -218,7 +218,7 @@ in
     libreoffice
 
 
-    bitwarden
+    bitwarden-desktop
     bitwarden-cli
 
     # spelling
@@ -228,8 +228,6 @@ in
     aspellDicts.en-computers
 
     tailscale
-
-    qt6.full
 
     libsForQt5.qtstyleplugins
     adwaita-qt

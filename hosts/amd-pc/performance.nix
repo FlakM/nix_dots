@@ -10,7 +10,7 @@
   environment.systemPackages = with pkgs; [
     # turbostat - use matching kernel version
     config.boot.kernelPackages.turbostat
-    linuxPackages.perf
+    perf
 
     bcc
     bpftrace

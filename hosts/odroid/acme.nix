@@ -4,7 +4,6 @@
   security.acme = {
     acceptTerms = true;
     defaults.email = "me@flakm.com";
-    preliminarySelfsigned = false;
     defaults.reloadServices = [ "nginx" ];
 
     certs."house.flakm.com" = {
