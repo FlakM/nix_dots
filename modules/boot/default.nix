@@ -128,13 +128,20 @@ in
             copyKernels = true;
             efiSupport = true;
             zfsSupport = true;
-            extraInstallCommands = (toString (map
+            extraInstallCommands = strings.concatMapStrings
               (diskName: ''
                 set -x
-                ${pkgs.coreutils-full}/bin/cp -r ${config.boot.loader.efi.efiSysMountPoint}/EFI /boot/efis/${diskName}${cfg.partitionScheme.efiBoot}
+                src=${config.boot.loader.efi.efiSysMountPoint}/EFI
+                dst=/boot/efis/${diskName}${cfg.partitionScheme.efiBoot}
+                ${pkgs.coreutils-full}/bin/mkdir -p "$dst"
+                if [ -d "$src" ]; then
+                  ${pkgs.coreutils-full}/bin/cp -r "$src" "$dst"
+                else
+                  echo "Skipping EFI copy because source '$src' is missing"
+                fi
                 set +x
               '')
-              (tail cfg.bootDevices)));
+              (tail cfg.bootDevices);
           };
         };
       };

@@ -25,7 +25,7 @@ local function format_proto()
     end
 end
 
-require'lspconfig'.protols.setup{
+vim.lsp.config('protols', {
     on_attach = function(client, bufnr)
         local buf_yaml_found = find_buf_yaml(vim.fn.fnamemodify(vim.api.nvim_buf_get_name(bufnr), ":h"))
         if buf_yaml_found then
@@ -33,7 +33,9 @@ require'lspconfig'.protols.setup{
             vim.keymap.set('n', '<leader>f', format_proto, { buffer = bufnr, desc = 'Format proto with buf' })
         end
     end,
-}
+})
+
+vim.lsp.enable('protols')
 
 vim.api.nvim_create_autocmd("FileType", {
     pattern = "proto",

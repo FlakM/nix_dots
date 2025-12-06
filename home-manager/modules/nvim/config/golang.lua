@@ -1,4 +1,3 @@
-local lspconfig = require("lspconfig")
 local api = vim.api
 
 local function extend_with_on_attach(opts)
@@ -9,8 +8,11 @@ local function extend_with_on_attach(opts)
   return opts
 end
 
-lspconfig.gopls.setup(extend_with_on_attach({}))
-lspconfig.terraform_lsp.setup(extend_with_on_attach({}))
+vim.lsp.config('gopls', extend_with_on_attach({}))
+vim.lsp.enable('gopls')
+
+vim.lsp.config('terraform_lsp', extend_with_on_attach({}))
+vim.lsp.enable('terraform_lsp')
 
 local function org_imports(wait_ms)
   local params = vim.lsp.util.make_range_params()

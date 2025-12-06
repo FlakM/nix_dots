@@ -19,7 +19,21 @@ in
     #./clickhouse.nix
   ];
 
+  # Root dataset still needs a fileSystems entry even when we rely on ZFS
+  # mountpoint properties for everything else.
+  fileSystems."/" = {
+    device = "rpool/nixos/root";
+    fsType = "zfs";
+    options = [ "zfsutil" "X-mount.mkdir" "noatime" ];
+    neededForBoot = true;
+  };
+
   nix.package = pkgs.nixVersions.latest;
+
+  # Import the boot pool so /boot is mounted from bpool (GRUB-compatible).
+  boot.zfs.extraPools = [ "bpool" ];
+
+  systemd.services.zfs-mount.enable = true;
 
   systemd.services.mount-atuin = {
     description = "Mount Atuin ZFS Volume";
@@ -175,16 +189,6 @@ in
   hardware = {
     graphics = {
       enable = true;
-      enable32Bit = true;
-      extraPackages = with pkgs; [
-        libva-vdpau-driver
-        libvdpau-va-gl
-        mesa
-      ];
-      extraPackages32 = with pkgs.driversi686Linux; [
-        libva-vdpau-driver
-        libvdpau-va-gl
-      ];
     };
     bluetooth = {
       enable = true;
@@ -215,6 +219,11 @@ in
     enable = true;
     #storageDriver = "zfs";
     daemon.settings = {
+      log-driver = "json-file";
+      log-opts = {
+        max-size = "10m";
+        max-file = "3";
+      };
       #bip = "172.26.0.1/16";
       #default-address-pools = [
       #  {

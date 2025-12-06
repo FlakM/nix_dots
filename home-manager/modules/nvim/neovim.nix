@@ -41,9 +41,6 @@ in
     # for toggling dark mode
     neovim-remote
 
-    # for debugging
-    python3
-
     proximity-sort
 
     # for debugging
@@ -198,7 +195,6 @@ in
       vim-fugitive
       vim-rhubarb
 
-
     ] ++ lib.optionals (pkgs.stdenv.system != "aarch64-linux") [
       #vim-go
     ]
@@ -220,7 +216,6 @@ in
       # for debugging
       clang
     ];
-
 
     extraLuaConfig =
       builtins.concatStringsSep "\n" [

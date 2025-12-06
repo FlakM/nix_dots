@@ -1,10 +1,9 @@
-local lspconfig = require('lspconfig')
-local util = lspconfig.util
+local util = require('lspconfig.util')
 
 -- Only setup ESLint if the project root has a .eslintrc.json file
 local eslint_root = util.root_pattern(".eslintrc.json")
 if eslint_root(vim.fn.getcwd()) then
-  lspconfig.eslint.setup({
+  vim.lsp.config('eslint', {
     root_dir = eslint_root,
     settings = {
       format = true,
@@ -16,16 +15,18 @@ if eslint_root(vim.fn.getcwd()) then
       })
     end,
   })
+  vim.lsp.enable('eslint')
 end
 
 -- Setup TypeScript Language Server regardless of a config file
-lspconfig.ts_ls.setup({
+vim.lsp.config('ts_ls', {
   settings = {
     completions = {
       completeFunctionCalls = true,
     },
   },
 })
+vim.lsp.enable('ts_ls')
 
 -- Only setup Prettier formatting if the project root has a .prettierrc file
 local prettier_root = util.root_pattern(".prettierrc")

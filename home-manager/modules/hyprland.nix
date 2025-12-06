@@ -22,7 +22,7 @@ let
       ${configure-gtk-dark}/bin/configure-gtk-dark
 
       for server in $(nvr --serverlist); do
-        nvr --servername "$server" -cc 'set background=dark'
+        nvr --servername "$server" -cc 'lua vim.g.background = "dark"; vim.cmd("set background=dark"); vim.cmd("colorscheme edge")'
       done
     else
       switch_theme "prefer-light"
@@ -30,7 +30,7 @@ let
       ${configure-gtk-light}/bin/configure-gtk-light
 
       for server in $(nvr --serverlist); do
-        nvr --servername "$server" -cc 'set background=light'
+        nvr --servername "$server" -cc 'lua vim.g.background = "light"; vim.cmd("set background=light"); vim.cmd("colorscheme edge"); vim.api.nvim_set_hl(0, "Visual", { bg = "#ffc0cb", fg = "NONE" })'
       done
     fi
   '';
@@ -987,6 +987,7 @@ in
             border_size = 5
             col.active_border = rgba(33ccffee) rgba(00ff99ee) 45deg
             col.inactive_border = rgba(595959aa)
+            layout = master
         }
     
         animations {
@@ -1017,6 +1018,15 @@ in
             # See https://wiki.hyprland.org/Configuring/Dwindle-Layout/ for more
             pseudotile = yes # master switch for pseudotiling. Enabling is bound to mainMod + P in the keybinds section below
             preserve_split = yes # you probably want this
+            force_split = 2 # 0 (default): split follows mouse, 1: always split to left/top, 2: always split to right/bottom
+        }
+
+        master {
+            # See https://wiki.hyprland.org/Configuring/Master-Layout/ for more
+            new_status = slave # new windows go to slave stack (sides), not master (center)
+            new_on_top = true # new windows are added to the top of the stack
+            mfact = 0.55 # master window size ratio (0.5 = 50%)
+            orientation = center # center: master in middle, slaves alternate sides (left first is hardcoded)
         }
     
 

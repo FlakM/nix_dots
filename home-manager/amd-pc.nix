@@ -113,6 +113,11 @@
     pinentry-program ${pkgs.pinentry-tty}/bin/pinentry-tty
   '';
 
+  home.file.".zshrc_local".text = ''
+    # Ensure SSH uses gpg-agent socket (YubiKey)
+    export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
+  '';
+
 
   home.packages = with pkgs; [
     pritunl-client

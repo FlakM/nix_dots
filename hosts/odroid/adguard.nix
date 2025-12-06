@@ -17,26 +17,32 @@
           {
             domain = "odroid";
             answer = "192.168.0.102";
+            enabled = true;
           }
           {
             domain = "amd-pc";
             answer = "192.168.0.249";
+            enabled = true;
           }
           {
             domain = "amd";
             answer = "192.168.0.249";
+            enabled = true;
           }
           {
             domain = "jellyfin.house.flakm.com";
             answer = "192.168.0.102";
+            enabled = true;
           }
           {
             domain = "house.flakm.com";
             answer = "192.168.0.102";
+            enabled = true;
           }
           {
             domain = "*.house.flakm.com";
             answer = "192.168.0.102";
+            enabled = true;
           }
         ];
       };
@@ -51,7 +57,7 @@
         ];
         enable_dnssec = true;
         ratelimit = 100;
-        mutableSettings = true;
+        mutableSettings = false;
 
 
       };
@@ -112,7 +118,7 @@
             proxy_set_header Host $host; # try $host instead if this doesn't work
             proxy_set_header X-Forwarded-Proto $scheme;
             proxy_pass http://127.0.0.1:3000; # replace port
-            proxy_redirect http://127.0.0.1:8096 https://adguard.house.flakm.com; # replace port
+            proxy_redirect http://127.0.0.1:3000 https://adguard.house.flakm.com; # replace port
           '';
         };
       };

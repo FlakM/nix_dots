@@ -1,4 +1,4 @@
-require('lspconfig').yamlls.setup {
+vim.lsp.config('yamlls', {
 --   -- other configuration for setup {}
 --  settings = {
 --    yaml = {
@@ -10,4 +10,6 @@ require('lspconfig').yamlls.setup {
 --      },
 --    },
 --  }
-}
+})
+
+vim.lsp.enable('yamlls')

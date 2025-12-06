@@ -45,7 +45,11 @@
       removableEfi = true;
       luks.enable = false;
     };
+    fileSystems.generateDataMounts = false;
   };
+
+  # System boots via UEFI; skip legacy BIOS grub install to avoid failures.
+  boot.loader.grub.devices = lib.mkForce [ "nodev" ];
   boot.initrd.availableKernelModules = [ "xhci_pci" "ahci" "nvme" "usb_storage" "sd_mod" "sdhci_pci" ];
   boot.kernelModules = [ "kvm-amd" ];
   boot.kernelParams = [ 
@@ -64,5 +68,3 @@
     ./configuration.nix
   ];
 }
-
-

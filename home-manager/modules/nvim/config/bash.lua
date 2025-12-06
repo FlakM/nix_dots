@@ -1,7 +1,7 @@
 -- confugured according to 
 -- https://github.com/neovim/nvim-lspconfig/blob/master/doc/configs.md#bashls
 --
-require'lspconfig'.bashls.setup{}
+vim.lsp.enable('bashls')
 
 
 if bashdb_path ~= nil then
@@ -39,4 +39,3 @@ if bashdb_path ~= nil then
       }
     }
 end
-

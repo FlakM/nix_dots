@@ -36,10 +36,8 @@ vim.api.nvim_create_autocmd("FileType", {
             vim.cmd("Obsidian backlinks")
         end, { buffer = bufnr, desc = "Obsidian backlinks" })
 
-        -- Overrides the 'gf' mapping to work on markdown/wiki links within your vault.
-        vim.keymap.set("n", "gd", function()
-            return require("obsidian").util.gf_passthrough()
-        end, { buffer = bufnr, noremap = false, expr = true, desc = "Follow link" })
+        -- Follow link under cursor
+        vim.keymap.set("n", "gd", "<cmd>Obsidian follow_link<CR>", { buffer = bufnr, desc = "Follow link" })
 
         -- Toggle check-boxes.
         vim.keymap.set("n", "<leader>ch", function()
