@@ -244,6 +244,135 @@ keymap("n", "<leader>ch", function()
   copy_to_clipboard(fn.expand("%:p:h"))
 end, { silent = true, desc = "Copy directory" })
 
+-- Jump CLI integration (github links, markdown references)
+keymap("n", "<leader>cg", function()
+  local file = fn.expand("%:p")
+  local line = fn.line(".")
+  local result = fn.system({ "jump", "github-link", "--file", file, "--start-line", tostring(line) })
+  if vim.v.shell_error == 0 then
+    local ok, parsed = pcall(vim.json.decode, result)
+    if ok and parsed.url then
+      copy_to_clipboard(parsed.markdown)
+      vim.notify("🔗 " .. parsed.markdown, vim.log.levels.INFO)
+    else
+      vim.notify("❌ Failed to parse result", vim.log.levels.ERROR)
+    end
+  else
+    vim.notify("❌ GitHub link failed", vim.log.levels.ERROR)
+  end
+end, { silent = true, desc = "Copy GitHub link" })
+
+keymap("v", "<leader>cg", function()
+  local start_line = fn.line("v")
+  local end_line = fn.line(".")
+  if start_line > end_line then
+    start_line, end_line = end_line, start_line
+  end
+  local file = fn.expand("%:p")
+  local result = fn.system({
+    "jump", "github-link",
+    "--file", file,
+    "--start-line", tostring(start_line),
+    "--end-line", tostring(end_line),
+  })
+  if vim.v.shell_error == 0 then
+    local ok, parsed = pcall(vim.json.decode, result)
+    if ok and parsed.url then
+      copy_to_clipboard(parsed.markdown)
+      vim.notify("🔗 " .. parsed.markdown, vim.log.levels.INFO)
+    else
+      vim.notify("❌ Failed to parse result", vim.log.levels.ERROR)
+    end
+  else
+    vim.notify("❌ GitHub link failed", vim.log.levels.ERROR)
+  end
+end, { silent = true, desc = "Copy GitHub link (selection)" })
+
+keymap("n", "<leader>cm", function()
+  local root = project_root()
+  local file = fn.expand("%:p")
+  local pos = api.nvim_win_get_cursor(0)
+  local line = pos[1]
+  local col = pos[2] + 1
+  local cmd = {
+    "jump", "copy-markdown",
+    "--root", root,
+    "--file", file,
+    "--line", tostring(line),
+    "--character", tostring(col),
+  }
+  local result = vim.trim(fn.system(cmd))
+  if vim.v.shell_error == 0 and result ~= "" then
+    copy_to_clipboard(result)
+    vim.notify("📝 " .. result:sub(1, 60), vim.log.levels.INFO)
+  else
+    vim.notify("❌ Markdown copy failed", vim.log.levels.ERROR)
+  end
+end, { silent = true, desc = "Copy markdown reference" })
+
+keymap("n", "<leader>cgl", function()
+  local root = project_root()
+  local file = fn.expand("%:p")
+  local pos = api.nvim_win_get_cursor(0)
+  local line = pos[1]
+  local col = pos[2] + 1
+  local cmd = {
+    "jump", "copy-markdown",
+    "--root", root,
+    "--file", file,
+    "--line", tostring(line),
+    "--character", tostring(col),
+    "--github",
+  }
+  local result = vim.trim(fn.system(cmd))
+  if vim.v.shell_error == 0 and result ~= "" then
+    copy_to_clipboard(result)
+    vim.notify("🔗 " .. result:sub(1, 60), vim.log.levels.INFO)
+  else
+    vim.notify("❌ GitHub link failed", vim.log.levels.ERROR)
+  end
+end, { silent = true, desc = "Copy markdown with GitHub link" })
+
+keymap("n", "<leader>j", function()
+  local link = fn.getreg("+")
+  if link == "" then
+    vim.notify("Clipboard is empty", vim.log.levels.WARN)
+    return
+  end
+  local result = fn.system({ "jump", vim.trim(link) })
+  if vim.v.shell_error ~= 0 then
+    vim.notify("Jump failed: " .. vim.trim(result), vim.log.levels.ERROR)
+  end
+end, { silent = true, desc = "Jump to link from clipboard" })
+
+keymap("n", "gj", function()
+  local line = api.nvim_get_current_line()
+  local col = api.nvim_win_get_cursor(0)[2]
+  -- Try to find markdown link [text](url) around cursor
+  local link
+  for url in line:gmatch("%[.-%]%((.-)%)") do
+    local start_pos, end_pos = line:find("%[.-%]%(" .. url:gsub("([%(%)%.%%%+%-%*%?%[%]%^%$])", "%%%1") .. "%)")
+    if start_pos and col >= start_pos - 1 and col <= end_pos then
+      link = url
+      break
+    end
+  end
+  -- Fallback: try plain URL under cursor
+  if not link then
+    link = fn.expand("<cWORD>")
+    -- Strip surrounding punctuation
+    link = link:match("https?://[^%s%]%)>\"']+") or link
+  end
+  if link == "" then
+    vim.notify("No link under cursor", vim.log.levels.WARN)
+    return
+  end
+  local result = fn.system({ "jump", link })
+  if vim.v.shell_error ~= 0 then
+    vim.notify("Jump failed: " .. vim.trim(result), vim.log.levels.ERROR)
+  end
+end, { silent = true, desc = "Jump to link under cursor" })
+
 -- Custom commands ------------------------------------------------------------
 local function list_cmd()
   local base = fn.fnamemodify(fn.expand("%"), ":h:.:S")

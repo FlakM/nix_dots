@@ -48,6 +48,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    jump = {
+      url = "path:/home/flakm/programming/flakm/jump";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
   };
   outputs =
     { self
@@ -66,6 +71,7 @@
     , homebrew-cask
     , homebrew-bundle
     , librus-notifications
+    , jump
     , ...
     }@inputs:
     let

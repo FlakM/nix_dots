@@ -1,6 +1,7 @@
-{ config, lib, pkgs, pkgs-unstable, pkgs-master, ... }:
+{ config, lib, pkgs, pkgs-unstable, pkgs-master, inputs, ... }:
 let
   inherit (pkgs) stdenv;
+  jump = inputs.jump.packages.${pkgs.system}.default;
   nvim-dap-probe-rs = pkgs.vimUtils.buildVimPlugin {
     name = "nvim-dap-probe-rs";
     src = pkgs.fetchFromGitHub {
@@ -92,6 +93,8 @@ in
     # clipboard support for Wayland
     wl-clipboard
     pkgs-unstable.lspmux
+    # code navigation for hyprland/tmux/nvim workflow
+    jump
   ];
 
   programs.neovim = {
@@ -191,9 +194,8 @@ in
       # fast switching between marks:
       marks-nvim
 
-      # copy to clipboard git links
+      # git commands
       vim-fugitive
-      vim-rhubarb
 
     ] ++ lib.optionals (pkgs.stdenv.system != "aarch64-linux") [
       #vim-go
@@ -232,7 +234,6 @@ in
         (builtins.readFile ./config/lua.lua)
         (builtins.readFile ./config/marks.lua)
         #(builtins.readFile ./config/yaml.lua)
-        (builtins.readFile ./config/git.lua)
         (builtins.readFile ./config/diffview.lua)
         (if stdenv.isLinux then
           "local bashdb_path = \"${pkgs.bashdb}/bin/bashdb\""
@@ -296,26 +297,6 @@ in
       Environment = [
         "RUST_LOG=info"
         "PATH=${servicePath}"
-        "PKG_CONFIG_PATH=${lib.makeSearchPath "lib/pkgconfig" (with pkgs; [
-          zlib
-          openssl
-          rdkafka
-          cyrus_sasl
-        ])}"
-        "LD_LIBRARY_PATH=${lib.makeLibraryPath (with pkgs; [
-          zlib
-          openssl
-          rdkafka
-          cyrus_sasl
-          stdenv.cc.cc.lib
-        ])}"
-        "C_INCLUDE_PATH=${lib.makeSearchPath "include" (with pkgs; [
-          zlib.dev
-          openssl.dev
-          rdkafka.dev
-          cyrus_sasl.dev
-        ])}"
-        "LIBCLANG_PATH=${pkgs.llvmPackages.libclang.lib}/lib"
       ];
     };
     Install = {
