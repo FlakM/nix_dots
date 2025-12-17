@@ -27,6 +27,7 @@
 
     ./modules/firefox.nix
     ./modules/productivity.nix
+    ./modules/media.nix
 
     ./modules/hyprland.nix
     #./modules/neomutt.nix

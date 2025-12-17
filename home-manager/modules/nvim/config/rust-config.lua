@@ -74,8 +74,8 @@ vim.g.rustaceanvim = {
                     runBuildScripts = true,
                 },
                 -- Add clippy/check lints for Rust.
-                checkOnSave = {
-                    enable = true,
+                checkOnSave = true,
+                check = {
                     command = "check",
                     allTargets = true,
                 },

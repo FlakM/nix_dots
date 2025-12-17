@@ -94,6 +94,20 @@
         });
       });
 
+      lspmuxOverlay = (final: prev: {
+        lspmux = prev.lspmux.overrideAttrs (old: {
+          patches = (old.patches or []) ++ [
+            ./patches/lspmux-init-notifications.patch
+          ];
+        });
+      });
+
+      paperlessOverlay = (final: prev: {
+        paperless-ngx = prev.paperless-ngx.overrideAttrs (old: {
+          doCheck = false;
+        });
+      });
+
       mkPkgs =
         nixpkgsInput:
         { extraConfig ? { }, overlays ? [ ] }:
@@ -114,7 +128,7 @@
         extraConfig = {
           permittedInsecurePackages = insecureDotnet;
         };
-        overlays = [ karabinerOverlay ];
+        overlays = [ karabinerOverlay paperlessOverlay ];
       };
 
       pkgs-default = pkgs-stable default_system;
@@ -125,6 +139,7 @@
             "electron-32.3.3"
           ];
         };
+        overlays = [ lspmuxOverlay ];
       };
 
       pkgs-master = mkPkgs nixpkgs-master {

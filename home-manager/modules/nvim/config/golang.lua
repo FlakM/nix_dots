@@ -8,7 +8,12 @@ local function extend_with_on_attach(opts)
   return opts
 end
 
-vim.lsp.config('gopls', extend_with_on_attach({}))
+local gopls_path = vim.fn.exepath("gopls")
+if gopls_path ~= "" then
+  vim.lsp.config('gopls', extend_with_on_attach({
+    cmd = { "lspmux", "client", "--server-path", gopls_path },
+  }))
+end
 vim.lsp.enable('gopls')
 
 vim.lsp.config('terraform_lsp', extend_with_on_attach({}))

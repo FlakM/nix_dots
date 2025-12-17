@@ -118,6 +118,10 @@ in
     # https://wiki.hyprland.org/Configuring/Environment-variables/
     MOZ_ENABLE_WAYLAND = 1; # Firefox Wayland
 
+    # Hardware video acceleration (VA-API for AMD)
+    LIBVA_DRIVER_NAME = "radeonsi";
+    VDPAU_DRIVER = "radeonsi";
+
     # PipeWire screen sharing fixes
     PIPEWIRE_LATENCY = "512/48000";
     PIPEWIRE_RT_PRIO = "20";

@@ -288,25 +288,41 @@ keymap("v", "<leader>cg", function()
   end
 end, { silent = true, desc = "Copy GitHub link (selection)" })
 
+local function get_lsp_server_for_filetype()
+  local ft = vim.bo.filetype
+  local servers = {
+    rust = "rust-analyzer",
+    typescript = "typescript-language-server",
+    typescriptreact = "typescript-language-server",
+    javascript = "typescript-language-server",
+    javascriptreact = "typescript-language-server",
+    python = "pyright-langserver",
+    go = "gopls",
+  }
+  return servers[ft] or "rust-analyzer"
+end
+
 keymap("n", "<leader>cm", function()
   local root = project_root()
   local file = fn.expand("%:p")
   local pos = api.nvim_win_get_cursor(0)
   local line = pos[1]
   local col = pos[2] + 1
+  local server = get_lsp_server_for_filetype()
   local cmd = {
     "jump", "copy-markdown",
     "--root", root,
     "--file", file,
     "--line", tostring(line),
     "--character", tostring(col),
+    "--server-path", server,
   }
   local result = vim.trim(fn.system(cmd))
   if vim.v.shell_error == 0 and result ~= "" then
     copy_to_clipboard(result)
     vim.notify("📝 " .. result:sub(1, 60), vim.log.levels.INFO)
   else
-    vim.notify("❌ Markdown copy failed", vim.log.levels.ERROR)
+    vim.notify("❌ Markdown copy failed: " .. result, vim.log.levels.ERROR)
   end
 end, { silent = true, desc = "Copy markdown reference" })
 
@@ -316,12 +332,14 @@ keymap("n", "<leader>cgl", function()
   local pos = api.nvim_win_get_cursor(0)
   local line = pos[1]
   local col = pos[2] + 1
+  local server = get_lsp_server_for_filetype()
   local cmd = {
     "jump", "copy-markdown",
     "--root", root,
     "--file", file,
     "--line", tostring(line),
     "--character", tostring(col),
+    "--server-path", server,
     "--github",
   }
   local result = vim.trim(fn.system(cmd))
@@ -329,7 +347,7 @@ keymap("n", "<leader>cgl", function()
     copy_to_clipboard(result)
     vim.notify("🔗 " .. result:sub(1, 60), vim.log.levels.INFO)
   else
-    vim.notify("❌ GitHub link failed", vim.log.levels.ERROR)
+    vim.notify("❌ GitHub link failed: " .. result, vim.log.levels.ERROR)
   end
 end, { silent = true, desc = "Copy markdown with GitHub link" })
 

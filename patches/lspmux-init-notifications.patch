@@ -1,0 +1,36 @@
+diff --git a/src/instance.rs b/src/instance.rs
+index 0edbd8e..444404c 100644
+--- a/src/instance.rs
++++ b/src/instance.rs
+@@ -520,14 +520,23 @@ async fn initialize_handshake(
+         .await
+         .context("send initialize request")?;
+
+-    let res = match reader
+-        .read_message()
+-        .await
+-        .context("receive initialize response")?
+-        .context("stream ended")?
+-    {
+-        Message::ResponseSuccess(res) if res.id == request_id => res,
+-        _ => bail!("first server message was not initialize response"),
++    // Loop to skip any notifications sent before the initialize response.
++    // LSP spec allows window/showMessage, window/logMessage, telemetry/event
++    // and window/showMessageRequest during initialization.
++    let res = loop {
++        let msg = reader
++            .read_message()
++            .await
++            .context("receive initialize response")?
++            .context("stream ended")?;
++        match msg {
++            Message::Notification(n) => {
++                tracing::debug!(method = %n.method, "skipping notification during init");
++                continue;
++            }
++            Message::ResponseSuccess(res) if res.id == request_id => break res,
++            _ => bail!("unexpected server message during initialization"),
++        }
+     };
+     let result = serde_json::from_value(res.result).context("parse initialize response result")?;
+

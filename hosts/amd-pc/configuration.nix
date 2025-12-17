@@ -189,6 +189,19 @@ in
   hardware = {
     graphics = {
       enable = true;
+      extraPackages = with pkgs; [
+        mesa
+        libva
+        libva-utils
+        libvdpau-va-gl
+        vaapiVdpau
+        amdvlk
+      ];
+      extraPackages32 = with pkgs.pkgsi686Linux; [
+        mesa
+        libva
+        amdvlk
+      ];
     };
     bluetooth = {
       enable = true;

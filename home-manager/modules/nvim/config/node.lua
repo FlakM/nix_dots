@@ -18,14 +18,18 @@ if eslint_root(vim.fn.getcwd()) then
   vim.lsp.enable('eslint')
 end
 
--- Setup TypeScript Language Server regardless of a config file
-vim.lsp.config('ts_ls', {
-  settings = {
-    completions = {
-      completeFunctionCalls = true,
+-- Setup TypeScript Language Server via lspmux
+local ts_ls_path = vim.fn.exepath("typescript-language-server")
+if ts_ls_path ~= "" then
+  vim.lsp.config('ts_ls', {
+    cmd = { "lspmux", "client", "--server-path", ts_ls_path, "--", "--stdio" },
+    settings = {
+      completions = {
+        completeFunctionCalls = true,
+      },
     },
-  },
-})
+  })
+end
 vim.lsp.enable('ts_ls')
 
 -- Only setup Prettier formatting if the project root has a .prettierrc file
