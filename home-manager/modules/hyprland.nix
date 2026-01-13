@@ -654,7 +654,15 @@ in
       # width = 1366; // Waybar width
       modules-left = [ "hyprland/workspaces" "custom/spotify" ];
       modules-center = [ "hyprland/window" ];
-      modules-right = [ "pulseaudio" "network" "cpu" "memory" "battery" "tray" "clock" ];
+      modules-right = [ "custom/vpn" "pulseaudio" "network" "cpu" "memory" "battery" "tray" "clock" ];
+
+      "custom/vpn" = {
+        format = "{}";
+        return-type = "json";
+        interval = 5;
+        exec = "vpn-waybar";
+        on-click = "vpn-menu";
+      };
 
       "hyprland/window" = {
         format = "{}";
@@ -845,6 +853,37 @@ in
         }
 
         #tray {
+        }
+
+        #custom-vpn {
+            padding: 0 10px;
+            margin: 0 4px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        #custom-vpn.both {
+            background: #00ff99;
+            color: #000;
+            font-weight: bold;
+        }
+
+        #custom-vpn.pritunl {
+            background: #00ff99;
+            color: #000;
+            font-weight: bold;
+        }
+
+        #custom-vpn.tailscale {
+            background: #33ccff;
+            color: #000;
+            font-weight: bold;
+        }
+
+        #custom-vpn.disconnected {
+            background: #ff6b6b;
+            color: #000;
+            font-weight: bold;
         }
     '';
   };

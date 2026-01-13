@@ -67,6 +67,11 @@
     }
   ];
 
+  systemd.services.nextcloud-setup = {
+    requires = [ "postgresql.service" ];
+    after = [ "postgresql.service" ];
+  };
+
   services.nginx = {
     enable = true;
 

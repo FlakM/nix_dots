@@ -16,6 +16,7 @@ in
     ./postgres.nix
     ./grafana.nix
     ./performance.nix
+    ./vpn.nix
     #./clickhouse.nix
   ];
 
@@ -194,13 +195,11 @@ in
         libva
         libva-utils
         libvdpau-va-gl
-        vaapiVdpau
-        amdvlk
+        libva-vdpau-driver
       ];
       extraPackages32 = with pkgs.pkgsi686Linux; [
         mesa
         libva
-        amdvlk
       ];
     };
     bluetooth = {
@@ -212,9 +211,9 @@ in
     firmware = [ pkgs.linux-firmware ];
   };
 
-  # Ensure Bluetooth is unblocked on boot
-  systemd.services.bluetooth-unblock = {
-    description = "Unblock Bluetooth adapter";
+  # MediaTek MT7922 Bluetooth needs rfkill unblock before bluez can power it on.
+  systemd.services.bluetooth-rfkill-unblock = {
+    description = "Unblock Bluetooth rfkill";
     wantedBy = [ "bluetooth.service" ];
     before = [ "bluetooth.service" ];
     serviceConfig = {

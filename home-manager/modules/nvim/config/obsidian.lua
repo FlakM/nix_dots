@@ -23,6 +23,17 @@ require("obsidian").setup({
 
     notes_subdir = "daily",
     legacy_commands = false,
+
+    attachments = {
+        img_folder = "assets/imgs",
+        img_name_func = function()
+            return string.format("%s", os.date("%Y%m%d%H%M%S"))
+        end,
+        img_text_func = function(path)
+            local name = vim.fs.basename(tostring(path))
+            return string.format("![[%s]]", name)
+        end,
+    },
 })
 
 -- Set up keymaps manually (mappings option is deprecated)
@@ -48,6 +59,9 @@ vim.api.nvim_create_autocmd("FileType", {
         vim.keymap.set("n", "<cr>", function()
             return require("obsidian").util.smart_action()
         end, { buffer = bufnr, expr = true, desc = "Smart action" })
+
+        -- Paste image from clipboard
+        vim.keymap.set("n", "<leader>pi", "<cmd>Obsidian paste_img<CR>", { buffer = bufnr, desc = "Paste image" })
     end,
 })
 

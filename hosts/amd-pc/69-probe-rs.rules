@@ -137,10 +137,14 @@ ATTRS{idVendor}=="0x15ba", ATTRS{idProduct}=="0x002b", MODE="660", GROUP="plugde
 ATTRS{idVendor}=="303a", ATTRS{idProduct}=="1001", MODE="660", GROUP="plugdev", TAG+="uaccess"
 # Espressif USB Bridge
 ATTRS{idVendor}=="303a", ATTRS{idProduct}=="1002", MODE="660", GROUP="plugdev", TAG+="uaccess"
+# ESP32-S3 built-in USB
+ATTRS{idVendor}=="303a", ATTRS{idProduct}=="4001", MODE="660", GROUP="plugdev", TAG+="uaccess"
 
 # CMSIS-DAP compatible adapters
 ATTRS{product}=="*CMSIS-DAP*", MODE="660", GROUP="plugdev", TAG+="uaccess"
 # WCH Link (CMSIS-DAP compatible adapter)
 ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="8011", MODE="660", GROUP="plugdev", TAG+="uaccess"
+# WCH CH343 USB-to-serial (used by some ESP32 dev boards)
+ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="55d3", MODE="660", GROUP="plugdev", TAG+="uaccess"
 
 LABEL="probe_rs_rules_end"

@@ -79,7 +79,6 @@ in
   '';
 
   home.sessionVariables = {
-    CARGO_TARGET_DIR = "${config.home.homeDirectory}/.cargo/target";
     OPENSSL_DIR = "${pkgs.openssl.dev}";
     OPENSSL_LIB_DIR = "${pkgs.openssl.out}/lib";
     OPENSSL_INCLUDE_DIR = "${pkgs.openssl.dev}/include";

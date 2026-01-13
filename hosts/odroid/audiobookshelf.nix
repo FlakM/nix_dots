@@ -25,9 +25,10 @@
         locations."/" = {
           proxyWebsockets = true;
           extraConfig = ''
-            proxy_set_header Host $host; # try $host instead if this doesn't work
+            client_max_body_size 2G;
+            proxy_set_header Host $host;
             proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_pass http://127.0.0.1:8000; # replace port
+            proxy_pass http://127.0.0.1:8000;
             proxy_redirect http://127.0.0.1:8000 https://audiobookshelf.house.flakm.com;'';
         };
       };
