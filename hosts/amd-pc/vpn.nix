@@ -1,5 +1,8 @@
 # Pritunl VPN with split DNS for Kubernetes cluster.local
 # Works without NetworkManager using systemd-resolved and udev rules
+#
+# Disable autostart for all profiles:
+#   pritunl-client list --json | jq -r '.[].id' | xargs -I{} pritunl-client disable {}
 { pkgs, lib, ... }:
 
 {
@@ -20,16 +23,13 @@
   services.resolved = {
     enable = true;
     dnssec = "allow-downgrade";
-    domains = [ "~." ];
-    # Use your AdGuard as fallback
+    # Use your AdGuard as fallback, 1.1.1.1 as last resort
     fallbackDns = [ "192.168.0.102" "1.1.1.1" ];
     extraConfig = ''
       DNSStubListener=yes
+      ResolveUnicastSingleLabel=yes
     '';
   };
-
-  # Point /etc/resolv.conf to resolved
-  networking.nameservers = [ "127.0.0.53" ];
 
   environment.systemPackages = with pkgs; [
     pritunl-client

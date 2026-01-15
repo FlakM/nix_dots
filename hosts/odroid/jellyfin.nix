@@ -1,5 +1,4 @@
-{ pkgs, pkgs-unstable, config, ... }: {
-
+{ pkgs, pkgs-unstable, config, lib, ... }: {
   nixpkgs.overlays = [
     (self: super: {
       vaapiIntel = super.vaapiIntel.override { enableHybridCodec = true; };
@@ -8,20 +7,17 @@
 
   hardware.graphics = {
     enable = true;
-    extraPackages = with pkgs;[
+    extraPackages = with pkgs; [
       intel-media-driver
       intel-vaapi-driver
       libva-vdpau-driver
       libvdpau-va-gl
       intel-compute-runtime
-      vpl-gpu-rt
+      # QSV not supported on Jasper Lake - use VAAPI in Jellyfin settings
     ];
   };
 
-  # to allow jellyfin to fully use hardware acceleration
-  hardware.firmware = with pkgs; [
-    linux-firmware
-  ];
+  hardware.firmware = with pkgs; [ linux-firmware ];
 
   services.jellyfin = {
     enable = true;
@@ -31,9 +27,15 @@
   systemd.services.jellyfin = {
     serviceConfig = {
       SupplementaryGroups = [ "render" "video" "media" ];
-      DeviceAllow = [
-        "/dev/dri/renderD128 rw"
-      ];
+      DeviceAllow = [ "/dev/dri/renderD128 rw" ];
+
+      ProtectHome = true;
+      ProtectSystem = "strict";
+      ReadWritePaths = [ "/var/lib/jellyfin" "/var/cache/jellyfin" ];
+
+      # Override upstream namespace settings that break things
+      PrivateUsers = lib.mkForce false;
+      RestrictNamespaces = lib.mkForce false;
     };
   };
 
@@ -44,18 +46,16 @@
     virtualHosts = {
       "jellyfin.house.flakm.com" = {
         useACMEHost = "house.flakm.com";
-        #serverAliases = [ "*.house.flakm.com" ];
         forceSSL = true;
         locations."/" = {
           extraConfig = ''
-            proxy_set_header Host $host; # try $host instead if this doesn't work
+            proxy_set_header Host $host;
             proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_pass http://127.0.0.1:8096; # replace port
-            proxy_redirect http://127.0.0.1:8096 https://jellyfin.house.flakm.com; # replace port
+            proxy_pass http://127.0.0.1:8096;
+            proxy_redirect http://127.0.0.1:8096 https://jellyfin.house.flakm.com;
           '';
         };
       };
-
 
       "jellyseerr.house.flakm.com" = {
         useACMEHost = "house.flakm.com";

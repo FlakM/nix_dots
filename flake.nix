@@ -52,7 +52,6 @@
       url = "path:/home/flakm/programming/flakm/jump";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
   };
   outputs =
     { self
@@ -79,7 +78,7 @@
 
       default_system = "x86_64-linux";
 
-      insecureDotnet = [
+      insecurePackages = [
         "dotnet-sdk-6.0.428"
         "aspnetcore-runtime-6.0.36"
       ];
@@ -126,7 +125,7 @@
 
       pkgs-stable = mkPkgs nixpkgs {
         extraConfig = {
-          permittedInsecurePackages = insecureDotnet;
+          permittedInsecurePackages = insecurePackages;
         };
         overlays = [ karabinerOverlay paperlessOverlay ];
       };
@@ -135,7 +134,7 @@
 
       pkgs-unstable = mkPkgs nixpkgs-unstable {
         extraConfig = {
-          permittedInsecurePackages = insecureDotnet ++ [
+          permittedInsecurePackages = insecurePackages ++ [
             "electron-32.3.3"
           ];
         };
