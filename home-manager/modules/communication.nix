@@ -9,6 +9,21 @@ let
     '';
   });
 
+  google-chrome-wayland = pkgs.symlinkJoin {
+    name = "google-chrome-wayland";
+    paths = [ pkgs.google-chrome ];
+    nativeBuildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
+      wrapProgram $out/bin/google-chrome-stable \
+        --set NIXOS_OZONE_WL 1 \
+        --add-flags "--ozone-platform=wayland" \
+        --add-flags "--enable-features=UseOzonePlatform,VaapiVideoDecoder,VaapiVideoEncoder,Vulkan" \
+        --add-flags "--use-gl=angle" \
+        --add-flags "--use-angle=vulkan" \
+        --add-flags "--enable-accelerated-video-decode"
+    '';
+  };
+
   slack-wayland = pkgs.symlinkJoin {
     name = "slack-wayland";
     paths = [ pkgs.slack ];
@@ -34,7 +49,7 @@ in
 
   home.packages = with pkgs; [
     mumble
-    google-chrome
+    google-chrome-wayland
     #element-desktop
     discord
     signal-desktop

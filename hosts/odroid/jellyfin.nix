@@ -32,8 +32,9 @@
       ProtectHome = true;
       ProtectSystem = "strict";
       ReadWritePaths = [ "/var/lib/jellyfin" "/var/cache/jellyfin" ];
+      # ZFS mounts need explicit BindPaths for proper write access within the namespace
+      BindPaths = [ "/var/media" ];
 
-      # Override upstream namespace settings that break things
       PrivateUsers = lib.mkForce false;
       RestrictNamespaces = lib.mkForce false;
     };

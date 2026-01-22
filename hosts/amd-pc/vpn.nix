@@ -20,11 +20,13 @@
   };
 
   # Enable systemd-resolved for split DNS
+  networking.nameservers = [ "192.168.0.102" ];
+
   services.resolved = {
     enable = true;
     dnssec = "allow-downgrade";
-    # Use your AdGuard as fallback, 1.1.1.1 as last resort
-    fallbackDns = [ "192.168.0.102" "1.1.1.1" ];
+    fallbackDns = [ "1.1.1.1" ];
+    domains = [ "~." ];
     extraConfig = ''
       DNSStubListener=yes
       ResolveUnicastSingleLabel=yes

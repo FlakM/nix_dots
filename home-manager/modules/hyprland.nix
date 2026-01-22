@@ -1086,7 +1086,7 @@ in
 
         windowrule = workspace 2,title:^(Firefox)(.*)$
         exec-once=[workspace 1 silent] kitty
-        exec-once=[workspace 2 silent] firefox
+        exec-once=[workspace 2 silent] uwsm app -- firefox
 
         # Transparency via Hyprland
         # windowrulev2 = opacity 0.90, class:^(kitty)$

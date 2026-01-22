@@ -288,68 +288,93 @@ keymap("v", "<leader>cg", function()
   end
 end, { silent = true, desc = "Copy GitHub link (selection)" })
 
-local function get_lsp_server_for_filetype()
-  local ft = vim.bo.filetype
-  local servers = {
-    rust = "rust-analyzer",
-    typescript = "typescript-language-server",
-    typescriptreact = "typescript-language-server",
-    javascript = "typescript-language-server",
-    javascriptreact = "typescript-language-server",
-    python = "pyright-langserver",
-    go = "gopls",
+local function get_lsp_hover_and_definition()
+  local bufnr = api.nvim_get_current_buf()
+  local clients = vim.lsp.get_clients({ bufnr = bufnr })
+  if #clients == 0 then
+    return nil, nil, "No LSP client attached"
+  end
+  local pos = api.nvim_win_get_cursor(0)
+  local params = {
+    textDocument = { uri = vim.uri_from_bufnr(bufnr) },
+    position = { line = pos[1] - 1, character = pos[2] }
   }
-  return servers[ft] or "rust-analyzer"
+  local hover_result = vim.lsp.buf_request_sync(bufnr, "textDocument/hover", params, 5000)
+  local def_result = vim.lsp.buf_request_sync(bufnr, "textDocument/definition", params, 5000)
+  if not hover_result and not def_result then
+    return nil, nil, "LSP timeout or no response"
+  end
+  return vim.json.encode(hover_result or {}), vim.json.encode(def_result or {}), nil
+end
+
+local function copy_markdown_via_lsp(use_github)
+  local root = project_root()
+  local file = fn.expand("%:p")
+  local pos = api.nvim_win_get_cursor(0)
+  local line = pos[1]
+  local hover_json, def_json, err = get_lsp_hover_and_definition()
+  if err then
+    vim.notify("❌ LSP error: " .. err, vim.log.levels.ERROR)
+    return
+  end
+  local tmp_hover = os.tmpname()
+  local tmp_def = os.tmpname()
+  local fh = io.open(tmp_hover, "w")
+  if fh then fh:write(hover_json); fh:close() end
+  local fd = io.open(tmp_def, "w")
+  if fd then fd:write(def_json); fd:close() end
+  local cmd_args = {
+    "jump", "format-symbol",
+    "--root", root,
+    "--file", file,
+    "--line", tostring(line),
+    "--hover-file", tmp_hover,
+    "--definition-file", tmp_def,
+  }
+  if use_github then
+    table.insert(cmd_args, "--github")
+  end
+  local result = vim.trim(fn.system(cmd_args))
+  os.remove(tmp_hover)
+  os.remove(tmp_def)
+  if vim.v.shell_error == 0 and result ~= "" then
+    copy_to_clipboard(result)
+    local icon = use_github and "🔗" or "📝"
+    vim.notify(icon .. " " .. result:sub(1, 60), vim.log.levels.INFO)
+  else
+    vim.notify("❌ Failed: " .. result, vim.log.levels.ERROR)
+  end
 end
 
 keymap("n", "<leader>cm", function()
-  local root = project_root()
-  local file = fn.expand("%:p")
-  local pos = api.nvim_win_get_cursor(0)
-  local line = pos[1]
-  local col = pos[2] + 1
-  local server = get_lsp_server_for_filetype()
-  local cmd = {
-    "jump", "copy-markdown",
-    "--root", root,
-    "--file", file,
-    "--line", tostring(line),
-    "--character", tostring(col),
-    "--server-path", server,
-  }
-  local result = vim.trim(fn.system(cmd))
-  if vim.v.shell_error == 0 and result ~= "" then
-    copy_to_clipboard(result)
-    vim.notify("📝 " .. result:sub(1, 60), vim.log.levels.INFO)
-  else
-    vim.notify("❌ Markdown copy failed: " .. result, vim.log.levels.ERROR)
-  end
+  copy_markdown_via_lsp(false)
 end, { silent = true, desc = "Copy markdown reference" })
 
 keymap("n", "<leader>cgl", function()
-  local root = project_root()
-  local file = fn.expand("%:p")
-  local pos = api.nvim_win_get_cursor(0)
-  local line = pos[1]
-  local col = pos[2] + 1
-  local server = get_lsp_server_for_filetype()
-  local cmd = {
-    "jump", "copy-markdown",
-    "--root", root,
-    "--file", file,
-    "--line", tostring(line),
-    "--character", tostring(col),
-    "--server-path", server,
-    "--github",
-  }
-  local result = vim.trim(fn.system(cmd))
-  if vim.v.shell_error == 0 and result ~= "" then
-    copy_to_clipboard(result)
-    vim.notify("🔗 " .. result:sub(1, 60), vim.log.levels.INFO)
-  else
-    vim.notify("❌ GitHub link failed: " .. result, vim.log.levels.ERROR)
-  end
+  copy_markdown_via_lsp(true)
 end, { silent = true, desc = "Copy markdown with GitHub link" })
+
+keymap("n", "<leader>cD", function()
+  local bufnr = api.nvim_get_current_buf()
+  local clients = vim.lsp.get_clients({ bufnr = bufnr })
+  print("LSP clients: " .. #clients)
+  for _, client in ipairs(clients) do
+    print("  - " .. client.name .. " (id=" .. client.id .. ")")
+  end
+  local pos = api.nvim_win_get_cursor(0)
+  local params = {
+    textDocument = { uri = vim.uri_from_bufnr(bufnr) },
+    position = { line = pos[1] - 1, character = pos[2] }
+  }
+  local hover = vim.lsp.buf_request_sync(bufnr, "textDocument/hover", params, 5000)
+  print("Hover result: " .. vim.inspect(hover))
+  local def = vim.lsp.buf_request_sync(bufnr, "textDocument/definition", params, 5000)
+  print("Definition result: " .. vim.inspect(def))
+  if hover then
+    local json = vim.json.encode(hover)
+    print("Hover JSON: " .. json:sub(1, 500))
+  end
+end, { silent = true, desc = "Debug LSP at cursor" })
 
 keymap("n", "<leader>j", function()
   local link = fn.getreg("+")

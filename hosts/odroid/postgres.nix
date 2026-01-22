@@ -3,7 +3,7 @@
   services.postgresql = {
     enable = true;
     package = pkgs.postgresql_14;
-    ensureDatabases = [ "tandoor" "nextcloud" "users" ];
+    ensureDatabases = [ "tandoor" "nextcloud" "users" "hass" ];
 
     identMap = ''
       # ArbitraryMapName systemUser DBUser
@@ -13,6 +13,7 @@
          superuser_map      flakm     nextcloud
          superuser_map      nextcloud     nextcloud
          superuser_map      flakm     zabbix
+         superuser_map      hass      hass
     '';
 
     #  let every DB user have access to it without a password through a "local" Unix socket "/var/lib/postgresql
@@ -29,9 +30,11 @@
       CREATE ROLE nextcloud WITH LOGIN;
       GRANT ALL PRIVILEGES ON DATABASE nextcloud TO nextcloud;
 
-
       CREATE ROLE zabbix WITH LOGIN;
       GRANT ALL PRIVILEGES ON DATABASE zabbix TO zabbix;
+
+      CREATE ROLE hass WITH LOGIN;
+      GRANT ALL PRIVILEGES ON DATABASE hass TO hass;
     '';
   };
 

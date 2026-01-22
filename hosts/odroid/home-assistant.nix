@@ -7,6 +7,11 @@
       "met"
       "radio_browser"
       "isal"
+      # discovery
+      "ssdp"
+      "zeroconf"
+      "dhcp"
+      "usb"
       # network/system integrations
       "adguard"
       "uptime_kuma"
@@ -14,7 +19,7 @@
       # media integrations
       "jellyfin"
       # device integrations
-      "lg_webos_tv"
+      "webostv"
       "brother"
       "xiaomi_miio"
       "xiaomi_ble"
@@ -27,6 +32,7 @@
     ];
     extraPackages = ps: with ps; [
       psycopg2
+      gtts
     ];
     config = {
       homeassistant = {

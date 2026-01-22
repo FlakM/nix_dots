@@ -37,6 +37,8 @@
 
     ./librus.nix
 
+    ./home-assistant.nix
+
     inputs.nixos-hardware.nixosModules.hardkernel-odroid-h3
   ];
 

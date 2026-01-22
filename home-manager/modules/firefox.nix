@@ -27,8 +27,12 @@
       isDefault = true;
 
       settings = {
-        # DPI and scaling
-        #"layout.css.devPixelsPerPx" = "1.6";
+        # Hardware video acceleration (AMD VA-API)
+        "media.ffmpeg.vaapi.enabled" = true;
+        "media.av1.enabled" = true;
+        "media.rdd-ffmpeg.enabled" = true;
+        "media.rdd-vpx.enabled" = true;
+        "media.navigator.mediadatadecoder_vpx_enabled" = true;
       };
 
       userChrome = ''
