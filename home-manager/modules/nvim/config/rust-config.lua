@@ -103,6 +103,27 @@ dap.adapters.codelldb = {
   -- detached = false,
 }
 
+dap.configurations.rust = {
+    {
+        name = "Attach to process",
+        type = "codelldb",
+        request = "attach",
+        pid = function()
+            return require('dap.utils').pick_process()
+        end,
+        cwd = "${workspaceFolder}",
+    },
+    {
+        name = "Attach to PID",
+        type = "codelldb",
+        request = "attach",
+        pid = function()
+            return tonumber(vim.fn.input('PID: '))
+        end,
+        cwd = "${workspaceFolder}",
+    },
+}
+
 -- print dap_path
 -- the adapters are setup according to https://github.com/mfussenegger/nvim-dap/wiki/Debug-Adapter-installation
 --
