@@ -620,11 +620,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1761550080,
-        "narHash": "sha256-SvktuuEgFk3sRQ//6XTOh7JnRjtz7VWhvIEQ5pMRhzQ=",
+        "lastModified": 1769178481,
+        "narHash": "sha256-40p4Z2KSpgcv9l+mD+fV0MBhzhr7LGCoGEJcdT0IK1g=",
         "ref": "refs/heads/main",
-        "rev": "f3b67b100dcfd0aee950f379a0335dc5b1d1d809",
-        "revCount": 7,
+        "rev": "9ce34afdd94294d3571f4764a928b0c130dc48de",
+        "revCount": 8,
         "type": "git",
         "url": "ssh://git@github.com/FlakM/czujka-librus"
       },
