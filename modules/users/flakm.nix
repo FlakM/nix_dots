@@ -7,6 +7,6 @@ in
     isNormalUser = lib.mkDefault true;
     shell = lib.mkForce pkgs.zsh;
     extraGroups = lib.mkDefault [ ];
-    openssh.authorizedKeys.keys = lib.mkDefault [ primaryKey ];
+    openssh.authorizedKeys.keys = [ primaryKey ];
   };
 }

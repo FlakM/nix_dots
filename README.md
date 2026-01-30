@@ -70,7 +70,12 @@ This is a set of very opinionated configurations. The mix of shortcuts is a resu
         - press `esc` to enter normal mode
         - enter `v` in normal mode to enter visual mode using default `$EDITOR` - useful for editing long commands
         - normal vim navigation works in normal mode
-
+5. `calendar` integration with Google Calendar via `vdirsyncer` + `khal`
+    - syncs every 15 minutes via systemd timer
+    - `khal list` show upcoming events
+    - `khal interactive` open interactive calendar view
+    - `vdirsyncer sync` manual sync
+    - waybar widget shows next event, click opens interactive view
 
 
 

@@ -14,55 +14,55 @@
       };
 
       aws = {
-        symbol = "  ";
+        symbol = "  ";
       };
       buf = {
-        symbol = " ";
+        symbol = " ";
       };
       c = {
-        symbol = " ";
+        symbol = " ";
       };
       dart = {
-        symbol = " ";
+        symbol = " ";
       };
       directory = {
         read_only = " 󰌾";
       };
       docker_context = {
-        symbol = " ";
+        symbol = " ";
       };
       git_branch = {
-        symbol = " ";
+        symbol = " ";
       };
       golang = {
-        symbol = " ";
+        symbol = " ";
       };
       guix_shell = {
-        symbol = " ";
+        symbol = " ";
       };
       haskell = {
-        symbol = " ";
+        symbol = " ";
       };
       haxe = {
-        symbol = " ";
+        symbol = " ";
       };
       hg_branch = {
-        symbol = " ";
+        symbol = " ";
       };
       hostname = {
-        ssh_symbol = " ";
+        ssh_symbol = " ";
       };
       java = {
-        symbol = " ";
+        symbol = " ";
       };
       julia = {
-        symbol = " ";
+        symbol = " ";
       };
       kotlin = {
-        symbol = " ";
+        symbol = " ";
       };
       lua = {
-        symbol = " ";
+        symbol = " ";
       };
       memory_usage = {
         symbol = "󰍛 ";
@@ -74,44 +74,51 @@
         symbol = "󰆥 ";
       };
       nix_shell = {
-        symbol = " ";
+        symbol = " ";
       };
       nodejs = {
-        symbol = " ";
+        symbol = " ";
       };
       package = {
         symbol = "󰏗 ";
       };
       perl = {
-        symbol = " ";
+        symbol = " ";
       };
       php = {
-        symbol = " ";
+        symbol = " ";
       };
       pijul_channel = {
-        symbol = " ";
+        symbol = " ";
       };
       python = {
         disabled = true;
-        symbol = " ";
+        symbol = " ";
       };
       rlang = {
         symbol = "󰟔 ";
       };
       ruby = {
-        symbol = " ";
+        symbol = " ";
       };
       rust = {
-        symbol = " ";
+        symbol = " ";
       };
       scala = {
-        symbol = " ";
+        symbol = " ";
       };
       swift = {
-        symbol = " ";
+        symbol = " ";
       };
       zig = {
-        symbol = " ";
+        symbol = " ";
+      };
+      custom.calendar = {
+        command = "~/.local/bin/khal-next";
+        when = "test -f ~/.local/bin/khal-next";
+        format = "[$symbol($output)]($style) ";
+        symbol = "󰃭 ";
+        style = "bold yellow";
       };
     };
   };

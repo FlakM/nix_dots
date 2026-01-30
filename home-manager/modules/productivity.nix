@@ -7,6 +7,7 @@
   home.packages = with pkgs; [
     timewarrior
     pkgs.obsidian
+    gcalcli
   ];
 
   programs.dircolors = {

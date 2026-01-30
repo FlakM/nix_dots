@@ -654,7 +654,16 @@ in
       # width = 1366; // Waybar width
       modules-left = [ "hyprland/workspaces" "custom/spotify" ];
       modules-center = [ "hyprland/window" ];
-      modules-right = [ "custom/vpn" "pulseaudio" "network" "cpu" "memory" "battery" "tray" "clock" ];
+      modules-right = [ "custom/calendar" "custom/vpn" "pulseaudio" "network" "cpu" "memory" "battery" "tray" "clock" ];
+
+      "custom/calendar" = {
+        format = "{}";
+        return-type = "json";
+        interval = 60;
+        exec = "${config.home.homeDirectory}/.local/bin/khal-waybar";
+        on-click = "kitty --class floating-calendar -o confirm_os_window_close=0 -e khal interactive";
+        on-click-right = "${config.home.homeDirectory}/.local/bin/khal-notify";
+      };
 
       "custom/vpn" = {
         format = "{}";
@@ -885,6 +894,29 @@ in
             color: #000;
             font-weight: bold;
         }
+
+        #custom-calendar {
+            padding: 0 10px;
+            margin: 0 4px;
+            border-radius: 10px;
+            color: #fff;
+        }
+
+        #custom-calendar.has-events {
+            background: #33ccff;
+            color: #000;
+            font-weight: bold;
+        }
+
+        #custom-calendar.urgent {
+            background: #ff6b6b;
+            color: #000;
+            font-weight: bold;
+        }
+
+        #custom-calendar.no-events {
+            color: #888;
+        }
     '';
   };
 
@@ -1092,6 +1124,11 @@ in
         # windowrulev2 = opacity 0.90, class:^(kitty)$
         windowrulev2 = opacity 0.90, class:^(firefox)$
         windowrulev2 = opacity 0.80, class:^(spotify)$
+
+        # Floating calendar window
+        windowrulev2 = float, class:^(floating-calendar)$
+        windowrulev2 = size 1400 900, class:^(floating-calendar)$
+        windowrulev2 = center, class:^(floating-calendar)$
 
         exec-once=[workspace 3 silent] obsidian
         exec-once=[workspace 3 silent] kitty --title "obsidian" --directory /home/flakm/programming/flakm/obsidian/work -- bash -c "tmux new-session -d -s obsidian 'nvim' && tmux attach-session -t obsidian"

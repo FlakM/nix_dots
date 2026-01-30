@@ -48,6 +48,8 @@
 
     ./modules/k8s.nix
     ./modules/front.nix
+    ./modules/calendar.nix
+    ./modules/mermaid
   ];
 
   xdg.enable = true;
@@ -150,6 +152,12 @@
 
       "neomutt_gmail" = {
         path = "${config.home.homeDirectory}/.neomutt_gmail";
+      };
+      "google_oauth_client_id" = {
+        path = "${config.home.homeDirectory}/.google_oauth_client_id";
+      };
+      "google_oauth_client_secret" = {
+        path = "${config.home.homeDirectory}/.google_oauth_client_secret";
       };
     };
   };
