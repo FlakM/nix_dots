@@ -5,10 +5,10 @@
   # Zabbix Server (psql backend)
   # ——————————————————————————————————————————————
   services.zabbixServer = {
-    enable  = true;
+    enable = true;
     database = {
-      type         = "pgsql";
-      socket      = "/run/postgresql";
+      type = "pgsql";
+      socket = "/run/postgresql";
       host = "/run/postgresql";
       createLocally = true;
     };
@@ -23,7 +23,7 @@
   #];
 
   services.zabbixWeb = {
-    enable   = true;
+    enable = true;
     frontend = "nginx";
     nginx = {
       virtualHost = {
@@ -38,9 +38,9 @@
 
 
   services.zabbixAgent = {
-    enable       = true;
-    openFirewall = true;   # opens TCP 10050
-    server       = "127.0.0.1";
+    enable = true;
+    openFirewall = true; # opens TCP 10050
+    server = "127.0.0.1";
   };
 
 }

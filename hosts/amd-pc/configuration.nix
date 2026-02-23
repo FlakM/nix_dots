@@ -11,7 +11,7 @@ in
     ../../shared/wireguard.nix
     ../../shared/gpg.nix
     #../../shared/k3s/server.nix
-    ../../shared/syncthing.nix
+    ../../shared/syncthing/amd-pc.nix
     ./zfs_replication.nix
     ./postgres.nix
     ./grafana.nix
@@ -360,6 +360,7 @@ in
     wgnord
 
     glibc
+    libuuid
 
     kdePackages.dolphin
     lxqt.lxqt-policykit
@@ -541,6 +542,7 @@ in
     "dip"
     "bluetooth"
     "plugdev"
+    "dialout"
     "scanner"
     "lp"
     "i2c"

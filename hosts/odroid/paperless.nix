@@ -49,32 +49,32 @@
     dataDir = "/var/lib/paperless";
     consumptionDirIsPublic = true;
     passwordFile = config.sops.secrets.paperless_admin_password.path;
-    
+
     settings = {
       PAPERLESS_URL = "https://paperless.house.flakm.com";
       PAPERLESS_ALLOWED_HOSTS = "paperless.house.flakm.com,localhost,127.0.0.1";
       PAPERLESS_CORS_ALLOWED_HOSTS = "https://paperless.house.flakm.com";
-      
+
       # OCR and language settings
       PAPERLESS_OCR_LANGUAGE = "eng+pol";
       PAPERLESS_OCR_USER_ARGS = {
         optimize = 1;
         pdfa_image_compression = "lossless";
       };
-      
+
       # Security settings
       PAPERLESS_SECRET_KEY_FILE = config.sops.secrets.paperless_secret_key.path;
       PAPERLESS_STATIC_URL = "/static/";
-      
+
       # Database configuration (using PostgreSQL)
       PAPERLESS_DBENGINE = "postgresql";
       PAPERLESS_DBHOST = "/run/postgresql";
       PAPERLESS_DBNAME = "paperless";
       PAPERLESS_DBUSER = "paperless";
-      
+
       # Redis configuration
       PAPERLESS_REDIS = "redis://localhost:6379";
-      
+
       # Consumer settings
       PAPERLESS_CONSUMER_POLLING = 30;
       PAPERLESS_CONSUMER_IGNORE_PATTERN = [
@@ -83,19 +83,19 @@
         "Thumbs.db"
         "._*"
       ];
-      
+
       # Task processing
       PAPERLESS_TASK_WORKERS = 2;
       PAPERLESS_THREADS_PER_WORKER = 1;
-      
+
       # Tika settings for better text extraction
       PAPERLESS_TIKA_ENABLED = true;
       PAPERLESS_TIKA_ENDPOINT = "http://localhost:9998";
       PAPERLESS_TIKA_GOTENBERG_ENDPOINT = "http://localhost:3010";
-      
+
       # Time zone
       PAPERLESS_TIME_ZONE = "Europe/Warsaw";
-      
+
       # Gmail OAuth configuration
       PAPERLESS_OAUTH_CALLBACK_BASE_URL = "https://paperless.house.flakm.com";
       PAPERLESS_GMAIL_OAUTH_CLIENT_ID_FILE = config.sops.secrets.gmail_oauth_client_id.path;
@@ -162,7 +162,7 @@
   services.nginx.virtualHosts."paperless.house.flakm.com" = {
     useACMEHost = "house.flakm.com";
     forceSSL = true;
-    
+
     locations."/" = {
       proxyPass = "http://127.0.0.1:28981";
       proxyWebsockets = true;
@@ -186,7 +186,7 @@
   services.nginx.virtualHosts."paperless-ai.house.flakm.com" = {
     useACMEHost = "house.flakm.com";
     forceSSL = true;
-    
+
     locations."/" = {
       proxyPass = "http://127.0.0.1:3011";
       proxyWebsockets = true;

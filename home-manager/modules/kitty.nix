@@ -12,13 +12,13 @@ in
       function dark() {
         echo "dark"
         ${kitty}/bin/kitten themes --config-file-name=my "GitHub Dark High Contrast"
-        cat "${config.home.homeDirectory}/Library/Preferences/aerc/stylesets/dark" > "${config.home.homeDirectory}/Library/Preferences/aerc/stylesets/current"
+        { cat "${config.home.homeDirectory}/Library/Preferences/aerc/stylesets/dark" > "${config.home.homeDirectory}/Library/Preferences/aerc/stylesets/current"; } 2>/dev/null || true
       }
 
       function light() {
         echo "light"
         ${kitty}/bin/kitten themes --config-file-name=my "Bluloco Light"
-        cat "${config.home.homeDirectory}/Library/Preferences/aerc/stylesets/light" > "${config.home.homeDirectory}/Library/Preferences/aerc/stylesets/current"
+        { cat "${config.home.homeDirectory}/Library/Preferences/aerc/stylesets/light" > "${config.home.homeDirectory}/Library/Preferences/aerc/stylesets/current"; } 2>/dev/null || true
       }
 
 

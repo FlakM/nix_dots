@@ -1,18 +1,18 @@
-{ inputs, config, pkgs, pkgs-unstable, pkgs-master, ... }:
+{ inputs, config, lib, pkgs, pkgs-unstable, pkgs-master, ... }:
 let
   fenix = inputs.fenix.packages.${pkgs.stdenv.hostPlatform.system};
+  cargoBuildDir = "${config.home.homeDirectory}/.cache/cargo-build";
 in
 {
+  home.activation.createCargoBuildDir = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    mkdir -p "${cargoBuildDir}"
+  '';
 
   home.packages = with pkgs; [
-    #    rustup
-    #pkgs-unstable.mold-wrapped
-    #clang
-    #gcc
-    #openssl
-    #libiconv
     pkg-config
     zlib
+    openssl
+    libiconv
 
     fenix.latest.rust-analyzer
     (fenix.latest.withComponents [
@@ -23,43 +23,34 @@ in
       "clippy"
     ])
 
-
-
-    openssl
     rdkafka
     cmake
-
     probe-rs-tools
-
     gnumake
     rust-jemalloc-sys
     protobuf
-
-    # framework for managing multiple git hooks
     pre-commit
-
     vscode
-
-
-    # library for regular expressions
     oniguruma
-    openssl
-    pkg-config
-    libiconv
   ] ++ lib.optionals stdenv.isDarwin [
     libiconv
-
   ] ++ lib.optionals stdenv.isLinux [
     gdb
     heaptrack
   ];
 
 
-  #rustflags = ["-C", "link-arg=-fuse-ld=${pkgs-unstable.mold-wrapped}/bin/mold", "--cfg", "tokio_unstable"]
   home.file.".cargo/config.toml".text = ''
+    [build]
+    # Store build artifacts outside of project directories
+    # This keeps target/ small (~25MB) with only final artifacts
+    # while build-dir (~600MB+) holds intermediate compilation cache
+    # Benefits: smaller ZFS snapshots, no rust-analyzer/cargo conflicts
+    build-dir = "${cargoBuildDir}/{workspace-path-hash}"
+
     [target.x86_64-unknown-linux-gnu]
+    linker = "${pkgs.llvmPackages.clang}/bin/clang"
     rustflags = [
-      "-C", "linker=${pkgs.llvmPackages.clang}/bin/clang",
       "-C", "link-arg=-fuse-ld=${pkgs.mold}/bin/mold",
       "-C", "link-arg=-L${pkgs.openssl.out}/lib",
       "-C", "link-arg=-Wl,-rpath,${pkgs.openssl.out}/lib",
@@ -74,6 +65,7 @@ in
       "-C", "link-arg=-L${pkgs.libtool.lib}/lib",
       "-C", "link-arg=-Wl,-rpath,${pkgs.libtool.lib}/lib"
     ]
+
     [target.aarch64-apple-darwin]
     rustflags = ["-L", "${pkgs.libiconv}/lib"]
   '';

@@ -66,18 +66,19 @@ vim.g.rustaceanvim = {
                     excludeDirs = { ".direnv" },
                 },
                 cargo = {
-                    --allFeatures = false,
                     loadOutDirsFromCheck = true,
                     buildScripts = {
                         enable = true,
                     },
-                    runBuildScripts = true,
                 },
-                -- Add clippy/check lints for Rust.
+                -- Use "build" instead of "check" to avoid fingerprint conflicts with terminal cargo.
+                -- cargo check and cargo build produce different fingerprints for the same crates,
+                -- causing recompilation when switching between neovim and terminal.
+                -- Setting allTargets=false avoids building tests/benches which differ between profiles.
                 checkOnSave = true,
                 check = {
-                    command = "check",
-                    allTargets = true,
+                    command = "build",
+                    allTargets = false,
                 },
                 procMacro = {
                     enable = true,

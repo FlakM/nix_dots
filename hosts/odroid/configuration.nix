@@ -18,6 +18,7 @@
     ./paperless.nix
     ./media-permissions.nix
     ./wireguard.nix
+    ./vaultwarden.nix
     #../../shared/k3s.nix
     #../../shared/wireguard.nix
     ../../shared/netdata.nix
@@ -38,6 +39,9 @@
     ./librus.nix
 
     ./home-assistant.nix
+    ./mosquitto.nix
+
+    ../../shared/syncthing/odroid.nix
 
     inputs.nixos-hardware.nixosModules.hardkernel-odroid-h3
   ];

@@ -13,7 +13,11 @@ require("obsidian").setup({
     workspaces = {
         {
             name = "work",
-            path = "~/programming/flakm/obsidian/work"
+            path = "~/obsidian/work"
+        },
+        {
+            name = "family",
+            path = "~/obsidian/family"
         },
         {
             name = "house",
@@ -77,7 +81,8 @@ vim.cmd("set conceallevel=2")
 -- Obsidian buffers are opened by background jobs, so disable swapfiles for them
 -- to avoid E325 warnings when the plugin re-edits an already-open note.
 local obsidian_paths = {
-    vim.fn.expand("~/programming/flakm/obsidian/work") .. "/**",
+    vim.fn.expand("~/obsidian/work") .. "/**",
+    vim.fn.expand("~/obsidian/family") .. "/**",
     vim.fn.expand("~/programming/flakm/obsidian/house/house") .. "/**",
 }
 vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {

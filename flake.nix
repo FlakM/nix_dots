@@ -44,7 +44,7 @@
     };
 
     librus-notifications = {
-      url = "git+ssh://git@github.com/FlakM/czujka-librus";
+      url = "path:/home/flakm/programming/flakm/librus";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -52,6 +52,20 @@
       url = "path:/home/flakm/programming/flakm/jump";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    llm-agents.url = "github:numtide/llm-agents.nix";
+
+    walker = {
+      url = "github:abenz1267/walker";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
+
+  nixConfig = {
+    extra-substituters = [ "https://cache.numtide.com" ];
+    extra-trusted-public-keys = [
+      "niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g="
+    ];
   };
   outputs =
     { self
@@ -71,6 +85,8 @@
     , homebrew-bundle
     , librus-notifications
     , jump
+    , llm-agents
+    , walker
     , ...
     }@inputs:
     let
@@ -95,7 +111,7 @@
 
       lspmuxOverlay = (final: prev: {
         lspmux = prev.lspmux.overrideAttrs (old: {
-          patches = (old.patches or []) ++ [
+          patches = (old.patches or [ ]) ++ [
             ./patches/lspmux-init-notifications.patch
           ];
         });
@@ -211,6 +227,7 @@
           inherit inputs outputs;
           pkgs-unstable = pkgs-unstable system;
           pkgs-master = pkgs-master system;
+          llm-agents-pkgs = llm-agents.packages.${system};
         }; # this is the important part
 
 
@@ -218,6 +235,7 @@
         modules = [
           ./home-manager/${hostName}.nix
           sops-nix.homeManagerModules.sops
+          walker.inputs.elephant.homeManagerModules.default
         ] ++ modules;
       };
     in

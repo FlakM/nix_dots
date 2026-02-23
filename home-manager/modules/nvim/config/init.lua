@@ -90,25 +90,25 @@ if fn.filereadable(fn.expand("~/.config/current-color_scheme")) == 1 then
   file:close()
   if theme == "prefer-light" then
     vim.g.background = "light"
-    cmd("set background=light")
+    vim.o.background = "light"
     cmd("colorscheme edge")
     api.nvim_set_hl(0, "Visual", { bg = "#ffc0cb", fg = "NONE" })
   else
     vim.g.background = "dark"
-    cmd("set background=dark")
+    vim.o.background = "dark"
     cmd("colorscheme edge")
   end
 end
 
 function _G.switch_theme()
-  if vim.g.background == "dark" or vim.g.background == nil then
+  if vim.o.background == "dark" then
     vim.g.background = "light"
-    cmd("set background=light")
+    vim.o.background = "light"
     cmd("colorscheme edge")
     api.nvim_set_hl(0, "Visual", { bg = "#ffc0cb", fg = "NONE" })
   else
     vim.g.background = "dark"
-    cmd("set background=dark")
+    vim.o.background = "dark"
     cmd("colorscheme edge")
   end
 end

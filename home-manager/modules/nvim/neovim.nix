@@ -12,7 +12,7 @@ let
     };
   };
   servicePath = lib.concatStringsSep ":" (
-    (config.home.sessionPath or [])
+    (config.home.sessionPath or [ ])
     ++ [
       "${config.home.homeDirectory}/.nix-profile/bin"
       "/run/wrappers/bin"
@@ -31,7 +31,7 @@ in
 
   home.packages = with pkgs; [
     # for copilot
-    nodejs
+    nodejs_24
     go
     gopls
 
@@ -283,6 +283,7 @@ in
       "OPENSSL_LIB_DIR",
       "OPENSSL_INCLUDE_DIR",
       "LIBCLANG_PATH",
+      "BINDGEN_EXTRA_CLANG_ARGS",
       "SSL_CERT_FILE",
       "NIX_SSL_CERT_FILE",
       "PROTOC",

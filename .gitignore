@@ -1,2 +1,6 @@
 result
 .direnv
+
+# Generated database configurations containing sensitive information
+# These should remain private and not be committed to the repository
+generated/

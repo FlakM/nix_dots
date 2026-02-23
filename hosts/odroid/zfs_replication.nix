@@ -3,6 +3,7 @@
   # sudo zfs allow -d backup create,receive,destroy,rollback,snapshot,hold,release,mount tank/backup/
   # sudo zfs allow -d backup create,receive,destroy,rollback,snapshot,hold,release,mount rpool/nixos/var/lib/postgresql
   # sudo zfs allow -d backup create,receive,destroy,rollback,snapshot,hold,release,mount rpool/nixos/var/lib/paperless
+  # sudo zfs allow -d backup create,receive,destroy,rollback,snapshot,hold,release,mount tank/data/media/audiobookshelf
   services.syncoid = {
     enable = true;
     user = "backup";
@@ -43,6 +44,14 @@
     };
 
     datasets."rpool/nixos/var/lib/paperless/ai" = {
+      useTemplate = [ "backup" ];
+    };
+
+    datasets."tank/data/media/audiobookshelf" = {
+      useTemplate = [ "backup" ];
+    };
+
+    datasets."tank/syncthing-encrypted" = {
       useTemplate = [ "backup" ];
     };
   };

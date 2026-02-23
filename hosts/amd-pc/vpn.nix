@@ -283,7 +283,7 @@
   # Systemd service to auto-configure DNS when tun interface appears
   systemd.services.vpn-dns-config = {
     description = "Configure split DNS for VPN tunnel";
-    wantedBy = [ ];  # Started by udev, not on boot
+    wantedBy = [ ]; # Started by udev, not on boot
     after = [ "systemd-resolved.service" ];
     serviceConfig = {
       Type = "oneshot";

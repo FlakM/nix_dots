@@ -140,6 +140,9 @@ ATTRS{idVendor}=="303a", ATTRS{idProduct}=="1002", MODE="660", GROUP="plugdev", 
 # ESP32-S3 built-in USB
 ATTRS{idVendor}=="303a", ATTRS{idProduct}=="4001", MODE="660", GROUP="plugdev", TAG+="uaccess"
 
+# CH340 USB-to-serial (used by ESPuino and many ESP32 dev boards)
+ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523", MODE="660", GROUP="plugdev", TAG+="uaccess"
+
 # CMSIS-DAP compatible adapters
 ATTRS{product}=="*CMSIS-DAP*", MODE="660", GROUP="plugdev", TAG+="uaccess"
 # WCH Link (CMSIS-DAP compatible adapter)

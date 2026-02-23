@@ -72,7 +72,8 @@ in
     {
       fileSystems = mkMerge (
         (if cfg.generateDataMounts then datasetMounts ++ bindMounts else [ ])
-        ++ efiMounts);
+        ++ efiMounts
+      );
 
       swapDevices = mkDefault (map
         (swap: {

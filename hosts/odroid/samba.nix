@@ -1,5 +1,5 @@
 { pkgs, config, inputs, ... }: {
-  
+
   # SOPS secret for Samba password
   sops.defaultSopsFile = ../../secrets/secrets.yaml;
   sops.secrets.samba_flakm_password = {

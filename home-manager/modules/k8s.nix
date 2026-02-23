@@ -16,7 +16,7 @@
         k9s = {
           body = {
             fgColor = "white";
-            bgColor = "#1F1F2E";      # deep charcoal
+            bgColor = "#1F1F2E"; # deep charcoal
             logoColor = "cyan";
           };
           info = {
@@ -39,35 +39,35 @@
               activeColor = "magenta";
             };
             status = {
-              newColor       = "green";
-              modifyColor    = "orange";
-              addColor       = "cyan";
-              errorColor     = "red";
+              newColor = "green";
+              modifyColor = "orange";
+              addColor = "cyan";
+              errorColor = "red";
               highlightColor = "magenta";
-              killColor      = "magenta";
+              killColor = "magenta";
               completedColor = "gray";
             };
             title = {
-              fgColor        = "white";
-              bgColor        = "#3B3E50";
+              fgColor = "white";
+              bgColor = "#3B3E50";
               highlightColor = "cyan";
-              counterColor   = "yellow";
-              filterColor    = "lightgray";
+              counterColor = "yellow";
+              filterColor = "lightgray";
             };
           };
           views = {
             table = {
-              fgColor     = "white";
-              bgColor     = "#1F1F2E";
+              fgColor = "white";
+              bgColor = "#1F1F2E";
               cursorColor = "cyan";
               header = {
-                fgColor     = "white";
-                bgColor     = "#2C2F45";
+                fgColor = "white";
+                bgColor = "#2C2F45";
                 sorterColor = "yellow";
               };
             };
             yaml = {
-              keyColor   = "cyan";
+              keyColor = "cyan";
               colonColor = "white";
               valueColor = "lightgreen";
             };

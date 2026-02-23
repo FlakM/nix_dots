@@ -1,10 +1,12 @@
-{ config, pkgs, pkgs-unstable, pkgs-master, lib, ... }: {
+{ llm-agents-pkgs, ... }:
 
-  home.packages = [
-    pkgs-master.claude-code
-    pkgs-master.codex
-    pkgs-master.gemini-cli
-    pkgs-master.cursor-cli
+{
+  home.packages = with llm-agents-pkgs; [
+    claude-code
+    codex
+    gemini-cli
+    ccusage
+    ccusage-codex
+    opencode
   ];
-
 }

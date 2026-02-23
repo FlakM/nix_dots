@@ -4,7 +4,7 @@ let
   apply-theme-script = pkgs.writeScript "apply-theme" ''
     set -e
     curr=$(cat ${path})
-    
+
     function switch_theme() {
       echo $1 > ${path}
       echo "Current theme: `cat ${path}`"
@@ -20,17 +20,35 @@ let
       switch_theme "prefer-dark"
       ~/.config/kitty/switch.sh dark ${path}
       ${configure-gtk-dark}/bin/configure-gtk-dark
+      ln -sf ~/.config/rofi/themes/dark.rasi ~/.config/rofi/theme.rasi
+
+      # Set Qt style for dark theme
+      export QT_STYLE_OVERRIDE=Adwaita-Dark
+
+      # Restart CopyQ to apply theme
+      if pgrep -x copyq > /dev/null; then
+        QT_STYLE_OVERRIDE=Adwaita-Dark copyq exit && sleep 0.5 && QT_STYLE_OVERRIDE=Adwaita-Dark copyq &
+      fi
 
       for server in $(nvr --serverlist); do
-        nvr --servername "$server" -cc 'lua vim.g.background = "dark"; vim.cmd("set background=dark"); vim.cmd("colorscheme edge")'
+        nvr --servername "$server" --nostart --remote-send '<Esc>:lua vim.g.background = "dark"; vim.o.background = "dark"; vim.cmd("colorscheme edge")<CR>' || true
       done
     else
       switch_theme "prefer-light"
       ~/.config/kitty/switch.sh light ${path}
       ${configure-gtk-light}/bin/configure-gtk-light
+      ln -sf ~/.config/rofi/themes/light.rasi ~/.config/rofi/theme.rasi
+
+      # Set Qt style for light theme
+      export QT_STYLE_OVERRIDE=Adwaita
+
+      # Restart CopyQ to apply theme
+      if pgrep -x copyq > /dev/null; then
+        QT_STYLE_OVERRIDE=Adwaita copyq exit && sleep 0.5 && QT_STYLE_OVERRIDE=Adwaita copyq &
+      fi
 
       for server in $(nvr --serverlist); do
-        nvr --servername "$server" -cc 'lua vim.g.background = "light"; vim.cmd("set background=light"); vim.cmd("colorscheme edge"); vim.api.nvim_set_hl(0, "Visual", { bg = "#ffc0cb", fg = "NONE" })'
+        nvr --servername "$server" --nostart --remote-send '<Esc>:lua vim.g.background = "light"; vim.o.background = "light"; vim.cmd("colorscheme edge"); vim.api.nvim_set_hl(0, "Visual", { bg = "#ffc0cb", fg = "NONE" })<CR>' || true
       done
     fi
   '';
@@ -158,48 +176,363 @@ in
     QT_AUTO_SCREEN_SCALE_FACTOR = "1";
     QT_QPA_PLATFORM = "wayland";
     QT_WAYLAND_DISABLE_WINDOWDECORATION = "1";
-    QT_QPA_PLATFORMTHEME = "qt5ct";
+    QT_QPA_PLATFORMTHEME = "gtk3";
+    QT_STYLE_OVERRIDE = "Adwaita-Dark";
   };
 
 
   home.packages = with pkgs; [
-      swaynotificationcenter # modern notifications
-      rofi
-      libnotify # provides notify-send for testing
-      playerctl # media status for waybar
-      shotman # screenshot
-      dconf
-      copyq
+    swaynotificationcenter # modern notifications
+    rofi
+    libnotify # provides notify-send for testing
+    playerctl # media status for waybar
+    shotman # screenshot
+    dconf
+    copyq
 
-      configure-gtk-dark
-      configure-gtk-light
-      wl-clipboard
-      wtype # for typing clipboard content
-      xclip # for compatibility
+    configure-gtk-dark
+    configure-gtk-light
+    wl-clipboard
+    wtype # for typing clipboard content
+    xclip # for compatibility
 
-      #unstable.xdg-utils
-      handlr
+    #unstable.xdg-utils
+    handlr
 
-      hyprland-protocols
-      hyprpaper # wallpaper utility
+    hyprland-protocols
+    hyprpaper # wallpaper utility
 
-      grim
-      swappy
-      slurp
+    grim
+    swappy
+    slurp
 
-      pkgs-unstable.grimblast
-      pkgs-unstable.walker # application launcher & clipboard UI
-      brightnessctl # brightness control
-      rofimoji
+    pkgs-unstable.grimblast
+    # walker from flake to ensure compatibility with elephant
+    inputs.walker.packages.${pkgs.stdenv.hostPlatform.system}.default
+    brightnessctl # brightness control
+    rofimoji
 
-      wf-recorder # screen recording
-    ];
+    wf-recorder # screen recording
+  ];
 
   xdg.configFile."rofimoji.rc" = {
     text = ''
       selector-args = "-kb-custom-1 Control+1 -kb-custom-2 Control+2 -kb-custom-3 Control+3"
     '';
   };
+
+  xdg.configFile."rofi/config.rasi" = {
+    text = ''
+      @import "theme.rasi"
+
+      configuration {
+        modi: "drun,run,window";
+        show-icons: true;
+        terminal: "kitty";
+        drun-display-format: "{name}";
+        location: 0;
+        disable-history: false;
+        hide-scrollbar: true;
+        display-drun: "  Apps";
+        display-run: "  Run";
+        display-window: " 﩯 Window";
+        sidebar-mode: true;
+      }
+    '';
+  };
+
+  xdg.configFile."rofi/themes/dark.rasi" = {
+    text = ''
+      * {
+        bg-col:  #1e1e2e;
+        bg-col-light: #313244;
+        border-col: #89b4fa;
+        selected-col: #313244;
+        blue: #89b4fa;
+        fg-col: #cdd6f4;
+        fg-col2: #f38ba8;
+        grey: #6c7086;
+        font: "FiraCode Nerd Font 14";
+      }
+
+      element-text, element-icon , mode-switcher {
+        background-color: inherit;
+        text-color: inherit;
+      }
+
+      window {
+        width: 30%;
+        height: 50%;
+        border: 3px;
+        border-color: @border-col;
+        background-color: @bg-col;
+        border-radius: 10px;
+      }
+
+      mainbox {
+        background-color: @bg-col;
+      }
+
+      inputbar {
+        children: [prompt,entry];
+        background-color: @bg-col;
+        border-radius: 5px;
+        padding: 2px;
+      }
+
+      prompt {
+        background-color: @blue;
+        padding: 10px;
+        text-color: @bg-col;
+        border-radius: 5px;
+        margin: 10px 0px 10px 10px;
+      }
+
+      textbox-prompt-colon {
+        expand: false;
+        str: ":";
+      }
+
+      entry {
+        padding: 10px;
+        margin: 10px 0px 10px 5px;
+        text-color: @fg-col;
+        background-color: @bg-col;
+      }
+
+      listview {
+        border: 0px 0px 0px;
+        padding: 6px 0px 0px;
+        margin: 10px 10px 10px 10px;
+        columns: 1;
+        lines: 10;
+        background-color: @bg-col;
+      }
+
+      element {
+        padding: 8px;
+        background-color: @bg-col;
+        text-color: @fg-col;
+        border-radius: 5px;
+      }
+
+      element-icon {
+        size: 25px;
+      }
+
+      element selected {
+        background-color:  @selected-col;
+        text-color: @fg-col2;
+      }
+
+      mode-switcher {
+        spacing: 0;
+      }
+
+      button {
+        padding: 10px;
+        background-color: @bg-col-light;
+        text-color: @grey;
+        vertical-align: 0.5;
+        horizontal-align: 0.5;
+      }
+
+      button selected {
+        background-color: @bg-col;
+        text-color: @blue;
+      }
+
+      message {
+        background-color: @bg-col-light;
+        margin: 2px;
+        padding: 2px;
+        border-radius: 5px;
+      }
+
+      textbox {
+        padding: 6px;
+        margin: 20px 0px 0px 20px;
+        text-color: @blue;
+        background-color: @bg-col-light;
+      }
+    '';
+  };
+
+  xdg.configFile."rofi/themes/light.rasi" = {
+    text = ''
+      * {
+        bg-col:  #eff1f5;
+        bg-col-light: #e6e9ef;
+        border-col: #1e66f5;
+        selected-col: #dce0e8;
+        blue: #1e66f5;
+        fg-col: #4c4f69;
+        fg-col2: #d20f39;
+        grey: #9ca0b0;
+        font: "FiraCode Nerd Font 14";
+      }
+
+      element-text, element-icon , mode-switcher {
+        background-color: inherit;
+        text-color: inherit;
+      }
+
+      window {
+        width: 30%;
+        height: 50%;
+        border: 3px;
+        border-color: @border-col;
+        background-color: @bg-col;
+        border-radius: 10px;
+      }
+
+      mainbox {
+        background-color: @bg-col;
+      }
+
+      inputbar {
+        children: [prompt,entry];
+        background-color: @bg-col;
+        border-radius: 5px;
+        padding: 2px;
+      }
+
+      prompt {
+        background-color: @blue;
+        padding: 10px;
+        text-color: @bg-col;
+        border-radius: 5px;
+        margin: 10px 0px 10px 10px;
+      }
+
+      textbox-prompt-colon {
+        expand: false;
+        str: ":";
+      }
+
+      entry {
+        padding: 10px;
+        margin: 10px 0px 10px 5px;
+        text-color: @fg-col;
+        background-color: @bg-col;
+      }
+
+      listview {
+        border: 0px 0px 0px;
+        padding: 6px 0px 0px;
+        margin: 10px 10px 10px 10px;
+        columns: 1;
+        lines: 10;
+        background-color: @bg-col;
+      }
+
+      element {
+        padding: 8px;
+        background-color: @bg-col;
+        text-color: @fg-col;
+        border-radius: 5px;
+      }
+
+      element-icon {
+        size: 25px;
+      }
+
+      element selected {
+        background-color:  @selected-col;
+        text-color: @fg-col2;
+      }
+
+      mode-switcher {
+        spacing: 0;
+      }
+
+      button {
+        padding: 10px;
+        background-color: @bg-col-light;
+        text-color: @grey;
+        vertical-align: 0.5;
+        horizontal-align: 0.5;
+      }
+
+      button selected {
+        background-color: @bg-col;
+        text-color: @blue;
+      }
+
+      message {
+        background-color: @bg-col-light;
+        margin: 2px;
+        padding: 2px;
+        border-radius: 5px;
+      }
+
+      textbox {
+        padding: 6px;
+        margin: 20px 0px 0px 20px;
+        text-color: @blue;
+        background-color: @bg-col-light;
+      }
+    '';
+  };
+
+  # CopyQ theme and configuration
+  xdg.configFile."copyq/themes/dark.ini" = {
+    text = ''
+      [General]
+      alt_bg=#1e1e2e
+      alt_item_css=
+      bg=#1e1e2e
+      cur_item_css="\n    ;border: 2px solid #89b4fa\n    ;background: #313244"
+      css=
+      css_template_items=
+      css_template_main_window=
+      css_template_menu=
+      css_template_notification=
+      edit_bg=#313244
+      edit_fg=#cdd6f4
+      edit_font=
+      fg=#cdd6f4
+      find_bg=#89b4fa
+      find_fg=#1e1e2e
+      font=FiraCode Nerd Font,14,-1,5,50,0,0,0,0,0
+      font_antialiasing=true
+      hover_item_css=
+      icon_size=16
+      item_css="\n    ;padding: 4px\n    ;margin: 2px"
+      item_spacing=2
+      menu_bar_css="\n    ;background: #313244\n    ;color: #cdd6f4"
+      menu_bar_selected_css="\n    ;background: #89b4fa\n    ;color: #1e1e2e"
+      menu_bar_disabled_css=
+      menu_css=
+      notes_bg=#313244
+      notes_fg=#cdd6f4
+      notes_font=
+      notification_bg=#313244
+      notification_fg=#cdd6f4
+      notification_font=
+      num_fg=#89b4fa
+      search_bar="\n    ;background: #313244\n    ;color: #cdd6f4\n    ;border: 1px solid #89b4fa\n    ;margin: 2px"
+      search_bar_focused="\n    ;border: 2px solid #89b4fa"
+      sel_bg=#89b4fa
+      sel_fg=#1e1e2e
+      sel_item_css=
+      show_number=true
+      show_scrollbars=false
+      style_main_window=false
+      tab_bar_css="\n    ;background: #1e1e2e"
+      tab_bar_item_css="\n    ;color: #6c7086\n    ;background: #1e1e2e\n    ;padding: 6px\n    ;margin: 2px"
+      tab_bar_scroll_buttons_css=
+      tab_bar_sel_item_css="\n    ;background: #313244\n    ;color: #89b4fa\n    ;border-bottom: 2px solid #89b4fa"
+      tab_bar_tab_close_button_css=
+      tab_tree_css=
+      tab_tree_item_css=
+      tab_tree_sel_item_css=
+      tool_bar_css=
+      tool_button_css=
+      use_system_icons=false
+    '';
+  };
+
 
   # https://github.com/hyprland-community/awesome-hyprland#runners-menus-and-application-launchers
   # https://github.com/Egosummiki/dotfiles/blob/master/waybar/mediaplayer.sh
@@ -222,21 +555,23 @@ in
 
   # hyprpaper configuration
   xdg.configFile."hypr/hyprpaper.conf" = {
-    text = let
-      wallpaperPath = "${config.home.homeDirectory}/.config/wallpaper.png";
-    in ''
-      # Preload wallpaper
-      preload = ${wallpaperPath}
+    text =
+      let
+        wallpaperPath = "${config.home.homeDirectory}/.config/wallpaper.png";
+      in
+      ''
+        # Preload wallpaper
+        preload = ${wallpaperPath}
       
-      # Set wallpaper for monitor
-      wallpaper = DP-1,${wallpaperPath}
+        # Set wallpaper for monitor
+        wallpaper = DP-1,${wallpaperPath}
       
-      # Enable splash text
-      splash = false
+        # Enable splash text
+        splash = false
       
-      # Enable IPC for runtime control
-      ipc = on
-    '';
+        # Enable IPC for runtime control
+        ipc = on
+      '';
   };
 
   # Manage wallpaper file
@@ -287,7 +622,6 @@ in
         font-size: 16px;
       }
 
-      /* Notification window styling - AUTO SIZING */
       .notification-row {
         outline: none;
         margin: 15px;
@@ -299,7 +633,6 @@ in
         border-radius: 24px;
       }
 
-      /* Individual notification styling - AUTO SIZING */
       .notification {
         background: rgba(16, 16, 24, 0.9);
         border: 3px solid rgba(51, 204, 255, 0.4);
@@ -321,7 +654,6 @@ in
         opacity: 1.0;
       }
 
-      /* Notification header - BIGGER TEXT */
       .notification-content .notification-header {
         margin-bottom: 12px;
       }
@@ -339,7 +671,6 @@ in
         opacity: 0.8;
       }
 
-      /* Notification body - LARGER & MORE READABLE */
       .notification-content .notification-body {
         color: rgba(255, 255, 255, 0.85);
         font-size: 16px;
@@ -348,7 +679,6 @@ in
         font-weight: normal;
       }
 
-      /* Notification icon - MUCH BIGGER */
       .notification-icon {
         margin-right: 20px;
         min-width: 80px;
@@ -360,7 +690,6 @@ in
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
       }
 
-      /* Close button */
       .close-button {
         background: rgba(255, 80, 80, 0.8);
         border: 2px solid rgba(255, 100, 100, 0.4);
@@ -376,7 +705,6 @@ in
         opacity: 1.0;
       }
 
-      /* Control Center */
       .control-center {
         background: rgba(12, 12, 20, 0.95);
         border: 3px solid rgba(51, 204, 255, 0.3);
@@ -393,7 +721,6 @@ in
         margin-bottom: 16px;
       }
 
-      /* Control center header */
       .control-center-list-placeholder {
         color: rgba(255, 255, 255, 0.6);
         font-size: 18px;
@@ -401,7 +728,6 @@ in
         text-align: center;
       }
 
-      /* Urgency-specific styling - MORE DRAMATIC */
       .notification.critical {
         border-color: rgba(255, 80, 80, 0.6);
         background: rgba(32, 16, 16, 0.9);
@@ -423,7 +749,6 @@ in
         opacity: 0.85;
       }
 
-      /* Action buttons */
       .notification-action {
         background: rgba(51, 204, 255, 0.2);
         border: 2px solid rgba(51, 204, 255, 0.4);
@@ -440,7 +765,6 @@ in
         box-shadow: 0 4px 12px rgba(51, 204, 255, 0.2);
       }
 
-      /* Progress bars - MORE VISIBLE */
       .notification-progress {
         background: rgba(255, 255, 255, 0.15);
         border-radius: 8px;
@@ -457,7 +781,6 @@ in
         box-shadow: 0 0 8px rgba(51, 204, 255, 0.4);
       }
 
-      /* Additional modern effects */
       .notification-content {
         position: relative;
       }
@@ -984,10 +1307,42 @@ in
         ];
 
 
-        listener = [];
+        listener = [ ];
       };
   };
 
+
+  programs.elephant = {
+    enable = true;
+    installService = true;
+    providers = [
+      "desktopapplications"
+      "clipboard"
+      "calc"
+      "runner"
+      "files"
+      "websearch"
+      "symbols"
+      "unicode"
+    ];
+  };
+
+  systemd.user.services.walker = {
+    Unit = {
+      Description = "Walker application launcher daemon";
+      PartOf = [ "graphical-session.target" ];
+      After = [ "graphical-session.target" "elephant.service" ];
+      Requires = [ "elephant.service" ];
+    };
+    Service = {
+      ExecStart = "${inputs.walker.packages.${pkgs.stdenv.hostPlatform.system}.default}/bin/walker --gapplication-service";
+      Restart = "on-failure";
+      RestartSec = 3;
+    };
+    Install = {
+      WantedBy = [ "graphical-session.target" ];
+    };
+  };
 
   services.hypridle = {
     enable = true;
@@ -1000,11 +1355,11 @@ in
       };
       listener = [
         {
-          timeout = 300;  # 5 minutes - lock screen
+          timeout = 300; # 5 minutes - lock screen
           on-timeout = "hyprlock";
         }
         {
-          timeout = 600;  # 10 minutes - turn off displays
+          timeout = 600; # 10 minutes - turn off displays
           on-timeout = "hyprctl dispatch dpms off";
           on-resume = "hyprctl dispatch dpms on";
         }
@@ -1012,6 +1367,7 @@ in
     };
 
   };
+
 
   wayland.windowManager.hyprland.extraConfig = ''
         # See https://wiki.hyprland.org/Configuring/Monitors/
@@ -1107,7 +1463,7 @@ in
 
         # Clipboard manager handled by CopyQ
         exec-once = copyq --start-server
-        exec-once = walker --gapplication-service
+        # walker service managed by systemd
         exec-once = ${configure-gtk-dark}/bin/configure-gtk-dark
         exec-once = hyprpaper
         exec-once = swaync
@@ -1130,8 +1486,14 @@ in
         windowrulev2 = size 1400 900, class:^(floating-calendar)$
         windowrulev2 = center, class:^(floating-calendar)$
 
+        # CopyQ clipboard manager - centered like Rofi
+        windowrulev2 = float, class:^(com.github.hluk.copyq)$
+        windowrulev2 = size 30% 50%, class:^(com.github.hluk.copyq)$
+        windowrulev2 = center, class:^(com.github.hluk.copyq)$
+        windowrulev2 = opacity 0.95, class:^(com.github.hluk.copyq)$
+
         exec-once=[workspace 3 silent] obsidian
-        exec-once=[workspace 3 silent] kitty --title "obsidian" --directory /home/flakm/programming/flakm/obsidian/work -- bash -c "tmux new-session -d -s obsidian 'nvim' && tmux attach-session -t obsidian"
+        exec-once=[workspace 3 silent] kitty --title "obsidian" --directory /home/flakm/obsidian/work -- bash -c "tmux new-session -d -s obsidian 'nvim' && tmux attach-session -t obsidian"
         windowrulev2 = float, title:^(obsidian)$
         windowrulev2 = fullscreen, title:^(obsidian)$
 
@@ -1150,7 +1512,7 @@ in
     
         bind=$mainMod,F,fullscreen 
 
-        bind = $mainMod, D, exec, walker --modules applications
+        bind = $mainMod, D, exec, rofi -show drun
         bind = ALT_CTRL, N, exec, ${config.home.homeDirectory}/.config/theme-switch.sh
         bind = $mainMod SHIFT, W, exec, hyprctl hyprpaper wallpaper "DP-1,${config.home.homeDirectory}/.config/wallpaper.png" 
         bind = $mainMod SHIFT, RETURN, exec, kitty
@@ -1192,7 +1554,7 @@ in
 
         # Clipboard actions
         # alt+v to open clipboard history (changed from ctrl+shift+v to avoid conflicts)
-        bind = $mainMod, V, exec, walker --modules clipboard
+        bind = $mainMod, V, exec, copyq toggle
         # alt+. to open emoji picker
         bind = $mainMod, period, exec, rofimoji | wl-copy
 

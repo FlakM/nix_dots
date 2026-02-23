@@ -2,6 +2,21 @@
 {
 
   networking.firewall.allowedUDPPorts = [ 53 ];
+
+  systemd.services.adguardhome = {
+    wants = [ "network-online.target" ];
+    after = [ "network-online.target" ];
+    # yaml-merge (PyYAML) drops the T separator from ISO8601 timestamps
+    # turning "2026-02-15T15:32:54" into "2026-02-15 15:32:54"
+    # which Go's time.Time parser rejects. Fix it after merge.
+    # https://github.com/NixOS/nixpkgs/issues/483743
+    preStart = lib.mkAfter ''
+      if [ -f "$STATE_DIRECTORY/AdGuardHome.yaml" ]; then
+        ${lib.getExe pkgs.gnused} -i 's/protection_disabled_until: \([0-9-]*\) \([0-9]\)/protection_disabled_until: \1T\2/' "$STATE_DIRECTORY/AdGuardHome.yaml"
+      fi
+    '';
+  };
+
   services.adguardhome = {
     enable = true;
     openFirewall = true;
@@ -53,13 +68,9 @@
         upstream_dns = [
           "https://dns.cloudflare.com/dns-query"
           "https://dns.google/dns-query"
-          "https://dns.quad9.net/dns-query"
         ];
         enable_dnssec = true;
         ratelimit = 100;
-        mutableSettings = false;
-
-
       };
 
       users = [

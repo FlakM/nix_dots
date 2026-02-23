@@ -15,7 +15,7 @@
       };
 
       ui = {
-        styleset-name = "current"; 
+        styleset-name = "current";
         border-char-vertical = "│";
         border-char-horizontal = "─";
       };
