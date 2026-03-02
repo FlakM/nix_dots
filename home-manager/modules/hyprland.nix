@@ -1478,8 +1478,8 @@ in
 
         # Transparency via Hyprland
         # windowrulev2 = opacity 0.90, class:^(kitty)$
-        windowrulev2 = opacity 0.90, class:^(firefox)$
-        windowrulev2 = opacity 0.80, class:^(spotify)$
+        windowrulev2 = opacity 1.00, class:^(firefox)$
+        windowrulev2 = opacity 1.00, class:^(spotify)$
 
         # Floating calendar window
         windowrulev2 = float, class:^(floating-calendar)$
@@ -1490,7 +1490,7 @@ in
         windowrulev2 = float, class:^(com.github.hluk.copyq)$
         windowrulev2 = size 30% 50%, class:^(com.github.hluk.copyq)$
         windowrulev2 = center, class:^(com.github.hluk.copyq)$
-        windowrulev2 = opacity 0.95, class:^(com.github.hluk.copyq)$
+        windowrulev2 = opacity 1.00, class:^(com.github.hluk.copyq)$
 
         exec-once=[workspace 3 silent] obsidian
         exec-once=[workspace 3 silent] kitty --title "obsidian" --directory /home/flakm/obsidian/work -- bash -c "tmux new-session -d -s obsidian 'nvim' && tmux attach-session -t obsidian"

@@ -8,5 +8,6 @@
     ccusage
     ccusage-codex
     opencode
+    amp
   ];
 }
