@@ -38,9 +38,6 @@
       ".flake_dir/"
       "result"
       ".local_ignore"
-      ".claude"
-      "**/.claude/"
-      "CLAUDE.md"
       "PLAN.md"
     ];
 

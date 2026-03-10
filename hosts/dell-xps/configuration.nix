@@ -54,6 +54,11 @@ in
   #networking.interfaces.eth0.useDHCP = true;
 
   programs.dconf.enable = true;
+  programs.thunar = {
+    enable = true;
+    plugins = with pkgs.xfce; [ thunar-volman ];
+  };
+  programs.xfconf.enable = true;
 
   xdg = {
     portal = {
@@ -243,7 +248,6 @@ in
 
     glibc
 
-    kdePackages.dolphin
     lxqt.lxqt-policykit
 
     # fun

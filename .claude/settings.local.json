@@ -1,0 +1,40 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(rg:*)",
+      "Bash(ssh:*)",
+      "Bash(cat:*)",
+      "Bash(lsblk:*)",
+      "Bash(hyprctl:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:wiki.hyprland.org)",
+      "WebFetch(domain:wiki.hypr.land)",
+      "Read(//home/flakm/.config/**)",
+      "Read(//home/flakm/.config/**)",
+      "Bash(pactl list:*)",
+      "Bash(systemctl:*)",
+      "Bash(journalctl:*)",
+      "Bash(dmesg:*)",
+      "Read(//home/flakm/.cache/hyprland/**)",
+      "Bash(lspci:*)",
+      "Bash(glxinfo:*)",
+      "WebSearch",
+      "WebFetch(domain:www.phoronix.com)",
+      "Bash(cachix:*)",
+      "Bash(nix flake update:*)",
+      "Bash(nix search:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(echo $XDG_SESSION_TYPE)",
+      "Bash(notify-send:*)",
+      "Read(//nix/store/xxrlnxdjh24clhqsmz2vnq8757fh8s9l-nixos-system-amd-pc-25.05.20250909.d179d77/**)",
+      "Bash(nix eval:*)",
+      "Read(//nix/store/2x3z3d5jr3yl36ia8lrzn4jbnbxgrr55-24qw2z8xgh1zd36vm52ackgzj84qqq9b-source/nixos/modules/services/web-apps/**)"
+    ],
+    "deny": [],
+    "additionalDirectories": [
+      "/home/flakm/wallpapers",
+      "/home/flakm/.cache/hyprland"
+    ]
+  }
+}

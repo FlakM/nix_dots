@@ -44,6 +44,19 @@ let
         --add-flags "--enable-features=UseOzonePlatform,WaylandWindowDecorations,VaapiVideoDecoder,WebRTCPipeWireCapturer"
     '';
   };
+
+  zulip-wayland = pkgs.symlinkJoin {
+    name = "zulip-wayland";
+    paths = [ pkgs.zulip ];
+    nativeBuildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
+      wrapProgram $out/bin/zulip \
+        --set ELECTRON_OZONE_PLATFORM_HINT wayland \
+        --set NIXOS_OZONE_WL 1 \
+        --add-flags "--ozone-platform=wayland" \
+        --add-flags "--enable-features=UseOzonePlatform,WaylandWindowDecorations,WebRTCPipeWireCapturer"
+    '';
+  };
 in
 {
 
@@ -55,7 +68,7 @@ in
     signal-desktop
     slack-wayland
     zulip-term
-    #zulip
+    zulip-wayland
   ];
 
 }

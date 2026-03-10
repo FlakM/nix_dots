@@ -105,6 +105,11 @@ in
   #networking.interfaces.eth0.useDHCP = true;
 
   programs.dconf.enable = true;
+  programs.thunar = {
+    enable = true;
+    plugins = with pkgs.xfce; [ thunar-volman ];
+  };
+  programs.xfconf.enable = true;
 
 
   security.rtkit.enable = true;
@@ -362,7 +367,6 @@ in
     glibc
     libuuid
 
-    kdePackages.dolphin
     lxqt.lxqt-policykit
 
     # fun
