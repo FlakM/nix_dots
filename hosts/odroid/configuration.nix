@@ -47,6 +47,17 @@
   ];
 
 
+  system.autoUpgrade = {
+    enable = true;
+    flake = inputs.self.outPath;
+    flags = [
+      "--update-input" "nixpkgs"
+      "-L"
+    ];
+    dates = "03:00";
+    randomizedDelaySec = "45min";
+  };
+
   networking.hostName = "odroid";
   networking.domain = "house.flakm.com";
 

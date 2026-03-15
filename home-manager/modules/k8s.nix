@@ -4,6 +4,7 @@
     teleport_17
     kubectx
     kubectl
+    istioctl
   ];
 
   programs.k9s = {

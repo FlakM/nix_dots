@@ -33,6 +33,7 @@
     grpc-client-cli
 
     gnuplot
+    python3
   ] ++ lib.optionals stdenv.isDarwin [
     coreutils-full # provides `dd` with --status=progress
   ] ++ lib.optionals stdenv.isLinux [

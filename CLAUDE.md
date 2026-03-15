@@ -4,10 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with Ma
 
 ## Repository Overview
 
-A comprehensive NixOS/nix-darwin flake configuration for multiple machines with extensive home-manager integration. Uses bleeding-edge packages (nixpkgs 25.05) and modular architecture for consistent cross-platform development environments.
+A comprehensive NixOS/nix-darwin flake configuration for multiple machines with home-manager integration. Uses nixpkgs 25.11 stable with unstable/master overlays for select packages.
 
 ### Core Architecture:
-- **Multi-channel setup**: stable (25.05), unstable, and master nixpkgs channels
+- **Multi-channel setup**: stable (25.11), unstable, and master nixpkgs channels
 - **Flake inputs**: Hyprland (latest git), fenix (Rust), sops-nix, darwin, home-manager
 - **Cross-platform**: NixOS (Linux) + nix-darwin (macOS) with shared modules
 - **Secrets management**: SOPS with Yubikey integration
@@ -47,14 +47,12 @@ nix run nix-darwin -- switch --flake ~/programming/flakm/nix_dots
 ```
 
 #### Home-manager:
-```bash
-# Local home-manager switch
-home-manager --flake ~/programming/flakm/nix_dots#flakm@amd-pc switch
+On NixOS hosts (amd-pc, dell-xps, odroid), home-manager is wired into the NixOS module — `nixos-rebuild switch` rebuilds both system and user config. No separate `home-manager switch` needed.
 
-# Remote home-manager (build locally, copy, then switch)
-home-manager --flake ~/programming/flakm/nix_dots#flakm@odroid build
-nix copy --to ssh://flakm@odroid ./result
-ssh flakm@odroid "home-manager --flake github:flakm/nix_dots#flakm@odroid switch"
+On macOS hosts (air, work), home-manager is standalone:
+```bash
+home-manager --flake ~/programming/flakm/nix_dots#maciek@air switch
+home-manager --flake ~/programming/flakm/nix_dots#flakm@work switch
 ```
 
 ### Formatting and Linting:

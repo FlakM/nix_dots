@@ -31,6 +31,17 @@ in
 
   nix.package = pkgs.nixVersions.latest;
 
+  system.autoUpgrade = {
+    enable = true;
+    flake = inputs.self.outPath;
+    flags = [
+      "--update-input" "nixpkgs"
+      "-L"
+    ];
+    dates = "02:00";
+    randomizedDelaySec = "45min";
+  };
+
   # Import the boot pool so /boot is mounted from bpool (GRUB-compatible).
   boot.zfs.extraPools = [ "bpool" ];
 

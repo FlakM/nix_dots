@@ -49,7 +49,7 @@
     };
 
     jump = {
-      url = "path:/home/flakm/programming/flakm/jump";
+      url = "github:FlakM/jump";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -90,8 +90,6 @@
     , ...
     }@inputs:
     let
-      inherit (self) outputs;
-
       default_system = "x86_64-linux";
 
       insecurePackages = [
@@ -203,6 +201,17 @@
             {
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
+              home-manager.extraSpecialArgs = {
+                inherit inputs;
+                pkgs-unstable = pkgs-unstable system;
+                pkgs-master = pkgs-master system;
+                llm-agents-pkgs = llm-agents.packages.${system};
+              };
+              home-manager.sharedModules = [
+                sops-nix.homeManagerModules.sops
+                walker.inputs.elephant.homeManagerModules.default
+              ];
+              home-manager.users.flakm = import ./home-manager/${hostName}.nix;
             }
 
             # fenix
@@ -221,23 +230,6 @@
           ];
         };
 
-      mkHomeManager = user: hostName: system: modules: home-manager.lib.homeManagerConfiguration {
-        pkgs = pkgs-stable system;
-        extraSpecialArgs = {
-          inherit inputs outputs;
-          pkgs-unstable = pkgs-unstable system;
-          pkgs-master = pkgs-master system;
-          llm-agents-pkgs = llm-agents.packages.${system};
-        }; # this is the important part
-
-
-
-        modules = [
-          ./home-manager/${hostName}.nix
-          sops-nix.homeManagerModules.sops
-          walker.inputs.elephant.homeManagerModules.default
-        ] ++ modules;
-      };
     in
     {
       formatter.x86_64-linux = pkgs-default.nixpkgs-fmt;
@@ -263,8 +255,6 @@
             pkgs-unstable = pkgs-unstable "aarch64-darwin";
             pkgs-master = pkgs-master "aarch64-darwin";
             pkgs = pkgs-stable "aarch64-darwin";
-
-            # make all inputs availabe in other nix files
             inherit inputs;
           };
           modules = [
@@ -275,6 +265,16 @@
             {
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
+              home-manager.extraSpecialArgs = {
+                inherit inputs;
+                pkgs-unstable = pkgs-unstable "aarch64-darwin";
+                pkgs-master = pkgs-master "aarch64-darwin";
+                llm-agents-pkgs = llm-agents.packages."aarch64-darwin";
+              };
+              home-manager.sharedModules = [
+                sops-nix.homeManagerModules.sops
+              ];
+              home-manager.users.maciek = import ./home-manager/air.nix;
             }
             {
               users = {
@@ -296,8 +296,6 @@
             pkgs-unstable = pkgs-unstable "aarch64-darwin";
             pkgs-master = pkgs-master "aarch64-darwin";
             pkgs = pkgs-stable "aarch64-darwin";
-
-            # make all inputs availabe in other nix files
             inherit inputs;
           };
           modules = [
@@ -309,6 +307,16 @@
             {
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
+              home-manager.extraSpecialArgs = {
+                inherit inputs;
+                pkgs-unstable = pkgs-unstable "aarch64-darwin";
+                pkgs-master = pkgs-master "aarch64-darwin";
+                llm-agents-pkgs = llm-agents.packages."aarch64-darwin";
+              };
+              home-manager.sharedModules = [
+                sops-nix.homeManagerModules.sops
+              ];
+              home-manager.users.flakm = import ./home-manager/work.nix;
             }
             {
               users = {
@@ -322,18 +330,6 @@
             }
           ];
         };
-
-
-
-      # Standalone home-manager configuration entrypoint
-      # Available through 'home-manager --flake .#your-username@your-hostname'
-      homeConfigurations = {
-        "flakm@dell-xps" = mkHomeManager "flakm" "dell-xps" "x86_64-linux" [ ];
-        "flakm@amd-pc" = mkHomeManager "flakm" "amd-pc" "x86_64-linux" [ ];
-        "flakm@odroid" = mkHomeManager "flakm" "odroid" "x86_64-linux" [ ];
-        "maciek@air" = mkHomeManager "maciek" "air" "aarch64-darwin" [ ];
-        "flakm@work" = mkHomeManager "flakm" "work" "aarch64-darwin" [ ];
-      };
 
 
     };
