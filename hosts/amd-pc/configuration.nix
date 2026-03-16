@@ -465,7 +465,7 @@ in
   # mDNS/DNS-SD protocols (Multicast DNS / DNS Service Discovery),
   services.avahi = {
     enable = true;
-    nssmdns4 = true;
+    nssmdns4 = false; # systemd-resolved handles mDNS; nss-mdns4 short-circuits single-label names like 'work'
     openFirewall = true;
   };
 

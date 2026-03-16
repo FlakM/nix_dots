@@ -42,6 +42,10 @@
       url = "github:homebrew/homebrew-bundle";
       flake = false;
     };
+    homebrew-nikitabobko = {
+      url = "github:nikitabobko/homebrew-tap";
+      flake = false;
+    };
 
     librus-notifications = {
       url = "path:/home/flakm/programming/flakm/librus";
@@ -83,6 +87,7 @@
     , homebrew-core
     , homebrew-cask
     , homebrew-bundle
+    , homebrew-nikitabobko
     , librus-notifications
     , jump
     , llm-agents
@@ -307,6 +312,7 @@
             {
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
+              home-manager.backupFileExtension = "hm-bak";
               home-manager.extraSpecialArgs = {
                 inherit inputs;
                 pkgs-unstable = pkgs-unstable "aarch64-darwin";

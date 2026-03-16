@@ -42,18 +42,18 @@ nixos-rebuild switch --target-host flakm@odroid --use-remote-sudo --flake ~/prog
 
 #### macOS (nix-darwin):
 ```bash
-# Switch darwin configuration
-nix run nix-darwin -- switch --flake ~/programming/flakm/nix_dots
+# Local switch on the Mac itself
+sudo darwin-rebuild switch --flake ~/programming/flakm/nix_dots
+
+# Remote deploy from amd-pc (requires SSH access + NOPASSWD sudo on target)
+rsync -av --exclude='.git' --exclude='result' ~/programming/flakm/nix_dots/ flakm@<host>:~/programming/flakm/nix_dots/
+ssh flakm@<host> "cd ~/programming/flakm/nix_dots && sudo darwin-rebuild switch --flake ."
 ```
 
 #### Home-manager:
-On NixOS hosts (amd-pc, dell-xps, odroid), home-manager is wired into the NixOS module — `nixos-rebuild switch` rebuilds both system and user config. No separate `home-manager switch` needed.
+Home-manager is wired into the system module on all hosts — `nixos-rebuild switch` (Linux) or `darwin-rebuild switch` (macOS) rebuilds both system and user config. No separate `home-manager switch` needed.
 
-On macOS hosts (air, work), home-manager is standalone:
-```bash
-home-manager --flake ~/programming/flakm/nix_dots#maciek@air switch
-home-manager --flake ~/programming/flakm/nix_dots#flakm@work switch
-```
+**Note:** sops-nix HM module hangs under `sudo darwin-rebuild` on macOS. macOS hosts use the darwin system-level sops module to decrypt secrets (via SSH host key → age), then home-manager symlinks them from `/run/secrets/<name>` into `~`.
 
 ### Formatting and Linting:
 ```bash
@@ -101,8 +101,14 @@ The neovim configuration includes specialized setups for:
 4. **Secret management**: SOPS-nix integration for encrypted secrets
 5. **Development environments**: Direnv integration for per-project development shells
 
-## Special Features:
+## Auto-upgrade:
+- **amd-pc**: daily at 02:00 (± 45min jitter), updates nixpkgs input
+- **odroid**: daily at 03:00 (± 45min jitter), updates nixpkgs input
+- **dell-xps**: daily at 02:00 (existing)
+- Uses `system.autoUpgrade` with `allowReboot = false` (default)
+- Home-manager is rebuilt as part of the system switch
 
+## Special Features:
 - ZFS replication setup on amd-pc and odroid
 - Self-hosted services on odroid (Jellyfin, Nextcloud, Calibre, etc.)
 - Yubikey/GPG integration for authentication

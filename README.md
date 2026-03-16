@@ -81,32 +81,54 @@ This is a set of very opinionated configurations. The mix of shortcuts is a resu
 
 ## How to use
 
-### On local machine
+Home-manager is wired into the system module on all hosts — a single rebuild command handles both system and user config.
 
-1. Clone repo into local dir `git clone git@github.com:FlakM/nix_dots.git` 
-2. Develop ie on `amd-pc` host
-3. Switch nixos `sudo nixos-rebuild switch --flake ~/programming/flakm/nix_dots#amd-pc`
-4. Switch home manager `home-manager --flake ~/programming/flakm/nix_dots#flakm@amd-pc switch`
+### NixOS (Linux)
 
-
-### On remote machine ie odroid
-
-1. Build locally and send paths over ssh and switch `nixos-rebuild switch --target-host flakm@odroid  --use-remote-sudo --flake ~/programming/flakm/nix_dots#odroid`
-2. Build locally home manager: `home-manager --flake ~/programming/flakm/nix_dots#flakm@odroid build`
-3. Ship over ssh: `nix copy --to ssh://flakm@odroid ./result`
-4. Commit & push changes
-5. Apply changes: `ssh flakm@odroid "home-manager --flake github:flakm/nix_dots#flakm@odroid switch"`
-
-### On mac m1
-
-1. Clone repo into local dir `git clone git@github.com:FlakM/nix_dots.git` 
-2. Follow [instructions](https://github.com/LnL7/nix-darwin?tab=readme-ov-file#flakes) to install nix-darwin. To change the machine name:
 ```bash
-sudo scutil --set ComputerName "air"
-sudo scutil --set HostName "air"
-sudo scutil --set LocalHostName "air"
+# Local switch (e.g., amd-pc)
+sudo nixos-rebuild switch --flake ~/programming/flakm/nix_dots#amd-pc
+
+# Remote build + switch (e.g., odroid — builds locally, deploys over SSH)
+nixos-rebuild switch --target-host flakm@odroid --use-remote-sudo --flake ~/programming/flakm/nix_dots#odroid
 ```
-3. Install changes `nix  run nix-darwin -- switch --flake ~/programming/flakm/nix_dots`
+
+### macOS (nix-darwin)
+
+```bash
+# Local switch on the Mac itself
+sudo darwin-rebuild switch --flake ~/programming/flakm/nix_dots
+
+# Remote deploy from amd-pc
+rsync -av --exclude='.git' --exclude='result' ~/programming/flakm/nix_dots/ flakm@work:~/programming/flakm/nix_dots/
+ssh flakm@work "cd ~/programming/flakm/nix_dots && sudo darwin-rebuild switch --flake ."
+```
+
+First-time setup on a new Mac:
+1. [Install nix-darwin](https://github.com/LnL7/nix-darwin?tab=readme-ov-file#flakes)
+2. Set the hostname:
+```bash
+sudo scutil --set ComputerName "work"
+sudo scutil --set HostName "work"
+sudo scutil --set LocalHostName "work"
+```
+3. Run `sudo darwin-rebuild switch --flake ~/programming/flakm/nix_dots`
+
+### Secrets
+
+Secrets are managed with [sops-nix](https://github.com/Mic92/sops-nix). Each host decrypts using its SSH host key (converted to age).
+
+On NixOS, secrets are available at `/run/secrets/<name>`. On macOS, the darwin system-level sops module decrypts to `/run/secrets/<name>` and home-manager symlinks them into `~`.
+
+To edit secrets (requires Yubikey):
+```bash
+nix-shell -p sops --run "sops secrets/secrets.yaml"
+```
+
+To add a new host, derive its age public key and add it to `.sops.yaml`:
+```bash
+ssh-to-age < /etc/ssh/ssh_host_ed25519_key.pub
+```
 
 ### Add custom project with dev-shell and direnv integration
 

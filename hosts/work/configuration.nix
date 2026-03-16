@@ -24,6 +24,7 @@
       "homebrew/homebrew-core" = inputs.homebrew-core;
       "homebrew/homebrew-cask" = inputs.homebrew-cask;
       "homebrew/homebrew-bundle" = inputs.homebrew-bundle;
+      "nikitabobko/homebrew-tap" = inputs.homebrew-nikitabobko;
     };
     #mutableTaps = true;
   };
@@ -62,14 +63,15 @@
 
 
   sops.defaultSopsFile = ../../secrets/secrets.yaml;
-  #  sops.secrets = {
-  #    "work_npmrc" = {
-  #      path = "${config.users.users.flakm.home}/.npmrc";
-  #      mode = "0440";
-  #      #owner = config.users.users.flakm.name;
-  #      #neededForUsers = true;
-  #    };
-  #  };
+  sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+  sops.secrets = {
+    "work_npmrc" = {
+      owner = config.users.users.flakm.name;
+    };
+    "jfrog_env" = {
+      owner = config.users.users.flakm.name;
+    };
+  };
 
 
 
@@ -114,8 +116,9 @@
 
 
 
-  # Add ability to use TouchID for sudo
-  #security.pam.enableSudoTouchIdAuth = true;
+  security.sudo.extraConfig = ''
+    flakm ALL=(ALL) NOPASSWD: ALL
+  '';
 
   homebrew = {
     enable = true;
@@ -128,9 +131,6 @@
       "aerospace"
     ];
     user = "flakm";
-    taps = [
-      "nikitabobko/tap"
-    ];
 
     #mutableTaps = false;
     #onActivation.cleanup = "zap";

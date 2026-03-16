@@ -22,6 +22,16 @@
   # Enable systemd-resolved for split DNS
   networking.nameservers = [ "192.168.0.102" ];
 
+  # Remove [!UNAVAIL=return] after resolve so single-label names like 'work'
+  # fall through to dns backend which appends search domains (tailscale injects ts.net)
+  system.nssDatabases.hosts = lib.mkForce [
+    "mymachines"
+    "resolve"
+    "files"
+    "myhostname"
+    "dns"
+  ];
+
   services.resolved = {
     enable = true;
     dnssec = "allow-downgrade";

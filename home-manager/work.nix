@@ -44,35 +44,10 @@
   ];
 
 
-  sops = {
-    # It's also possible to use a ssh key, but only when it has no password:
-    age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
-    defaultSopsFile = ../secrets/secrets.yaml;
-
-    secrets = {
-      "work_npmrc" = {
-        path = "${config.home.homeDirectory}/.npmrc";
-      };
-
-      "dbs" = {
-        sopsFile = ../secrets/dbs.yaml;
-        path = "${config.home.homeDirectory}/.dbs.lua";
-      };
-
-      "jfrog_env" = {
-        path = "${config.home.homeDirectory}/.jfrog.env";
-      };
-
-
-      "neomutt_flakm" = {
-        path = "${config.home.homeDirectory}/.neomutt_flakm";
-      };
-
-      "neomutt_gmail" = {
-        path = "${config.home.homeDirectory}/.neomutt_gmail";
-      };
-    };
-  };
+  # Secrets are decrypted by sops-nix darwin module (system-level) using SSH host key.
+  # Symlink them into the user's home directory.
+  home.file.".npmrc".source = config.lib.file.mkOutOfStoreSymlink "/run/secrets/work_npmrc";
+  home.file.".jfrog.env".source = config.lib.file.mkOutOfStoreSymlink "/run/secrets/jfrog_env";
 
 
   home = {
