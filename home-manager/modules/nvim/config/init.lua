@@ -29,6 +29,29 @@ end
 
 local keymap = vim.keymap.set
 
+local function system_open(target)
+  if target == nil or target == "" then
+    vim.notify("Nothing to open", vim.log.levels.WARN)
+    return
+  end
+
+  local opener = fn.has("macunix") == 1 and "open" or "xdg-open"
+  local job = fn.jobstart({ opener, target }, { detach = true })
+
+  if job <= 0 then
+    vim.notify(string.format("Failed to start %s", opener), vim.log.levels.ERROR)
+  end
+end
+
+local function visual_selection()
+  local start_pos = fn.getpos("'<")
+  local end_pos = fn.getpos("'>")
+  return table.concat(
+    api.nvim_buf_get_text(0, start_pos[2] - 1, start_pos[3] - 1, end_pos[2] - 1, end_pos[3], {}),
+    "\n"
+  )
+end
+
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
@@ -80,6 +103,12 @@ map("n", "<leader>ff", [[<cmd>Telescope find_files<CR>]])
 map("n", "<leader>fg", ":lua require('telescope').extensions.live_grep_args.live_grep_args()<CR>")
 map("n", "<leader>fb", [[<cmd>Telescope buffers<CR>]])
 map("n", "<leader>fh", [[<cmd>Telescope help_tags<CR>]])
+keymap("n", "gx", function()
+  system_open(fn.expand("<cfile>"))
+end, { silent = true, desc = "Open file or URL under cursor" })
+keymap("x", "gx", function()
+  system_open(visual_selection())
+end, { silent = true, desc = "Open selected file or URL" })
 
 -- Visual replace without yanking
 map("v", "<leader>p", [["_dP]])

@@ -1373,6 +1373,7 @@ in
         # See https://wiki.hyprland.org/Configuring/Monitors/
 
         env = XCURSOR_SIZE,32
+        env = XKB_CONFIG_ROOT,${pkgs.xkeyboard-config}/share/X11/xkb
 
         # toolkit-specific scaling
         xwayland {
@@ -1399,16 +1400,15 @@ in
             kb_variant =
             kb_model =
             kb_rules =
-            # both left windows and ctrl should be ctrl (caps lock is ctrl)
-            kb_options = altwin:ctrl_win,ctrl:nocaps
-    
+            kb_options = altwin:ctrl_win
+            repeat_delay = 250
+            repeat_rate = 33
             follow_mouse = 1
-    
+            sensitivity = 0
+
             touchpad {
                 natural_scroll = no
             }
-    
-            sensitivity = 0 # -1.0 - 1.0, 0 means no modification.
         }
     
         general {

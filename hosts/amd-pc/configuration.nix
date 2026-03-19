@@ -183,8 +183,8 @@ in
 
   services.xserver = {
     enable = false; # might need it for xwayland
-    #xkb.options = "lv3:lalt_switch caps:swapescape";
-    xkb.options = "caps:swapescape";
+    xkb.layout = "pl";
+    xkb.options = "altwin:ctrl_win";
   };
 
 
@@ -308,6 +308,8 @@ in
   environment.systemPackages = with pkgs; [
     nix-index
     amdgpu_top
+    dfu-util
+    xkeyboard-config
 
     qemu_full
     virt-manager
@@ -569,6 +571,7 @@ in
       text = builtins.readFile ./69-probe-rs.rules;
       destination = "/etc/udev/rules.d/69-probe-rs.rules";
     })
+    pkgs.qmk-udev-rules
   ];
 
 
