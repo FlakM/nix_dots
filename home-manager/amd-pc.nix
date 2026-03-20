@@ -50,6 +50,8 @@
     ./modules/front.nix
     ./modules/calendar.nix
     ./modules/mermaid
+    ./modules/peon-ping.nix
+    ./modules/pw-play-wrapper.nix
   ];
 
   xdg.enable = true;
@@ -69,12 +71,6 @@
       layout = "master";
     };
   };
-
-  #config = {
-  #  hyprland-local = {
-  #    scale = 1.5;
-  #  };
-  #};
 
   gtk = {
     enable = true;
@@ -107,13 +103,23 @@
   };
 
   # ~/.gnupg/gpg-agent.conf
-  xdg.configFile."/.gnupg/gpg-agent.conf".text = ''
+  # Use pinentry-auto wrapper: GUI (gnome3) when no TTY (e.g. Claude Code),
+  # curses when running in a terminal.
+  xdg.configFile."/.gnupg/gpg-agent.conf".text = let
+    pinentry-auto = pkgs.writeShellScript "pinentry-auto" ''
+      if [ -t 0 ]; then
+        exec ${pkgs.pinentry-curses}/bin/pinentry-curses "$@"
+      else
+        exec ${pkgs.pinentry-gnome3}/bin/pinentry-gnome3 "$@"
+      fi
+    '';
+  in ''
     enable-ssh-support
     write-env-file
     use-standard-socket
     default-cache-ttl 600
     max-cache-ttl 7200
-    pinentry-program ${pkgs.pinentry-tty}/bin/pinentry-tty
+    pinentry-program ${pinentry-auto}
   '';
 
   home.file.".zshrc_local".text = ''
@@ -124,6 +130,8 @@
 
   home.packages = with pkgs; [
     pritunl-client
+    qmk
+    qmk_hid
   ];
 
 
@@ -145,7 +153,6 @@
         path = "${config.home.homeDirectory}/.jfrog.env";
       };
 
-
       "neomutt_flakm" = {
         path = "${config.home.homeDirectory}/.neomutt_flakm";
       };
@@ -158,6 +165,9 @@
       };
       "google_oauth_client_secret" = {
         path = "${config.home.homeDirectory}/.google_oauth_client_secret";
+      };
+      "mealie_token" = {
+        path = "${config.home.homeDirectory}/.mealie_token";
       };
     };
   };

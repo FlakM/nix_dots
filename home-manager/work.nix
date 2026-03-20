@@ -33,14 +33,12 @@
 
     ./modules/sql.nix
 
-    #./modules/neomutt.nix
-
-    # TODO figure out why notmuch is not building
-    # it's failing on emacs build
     ./modules/aerc.nix
 
     ./modules/ai.nix
 
+    ./modules/peon-ping.nix
+    ./modules/pw-play-wrapper.nix
   ];
 
 
@@ -48,6 +46,8 @@
   # Symlink them into the user's home directory.
   home.file.".npmrc".source = config.lib.file.mkOutOfStoreSymlink "/run/secrets/work_npmrc";
   home.file.".jfrog.env".source = config.lib.file.mkOutOfStoreSymlink "/run/secrets/jfrog_env";
+  home.file.".github_personal_access_token".source =
+    config.lib.file.mkOutOfStoreSymlink "/run/secrets/github_personal_access_token";
 
 
   home = {

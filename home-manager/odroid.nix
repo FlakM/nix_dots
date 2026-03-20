@@ -11,6 +11,7 @@
     ./modules/atuin.nix
     ./modules/kitty.nix
     ./modules/starship.nix
+    ./modules/pw-play-wrapper.nix
   ];
 
   home = {

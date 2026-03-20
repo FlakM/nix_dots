@@ -41,10 +41,6 @@
 
 
     initContent = ''
-      # Enable bracketed paste mode for safe multiline pasting
-      autoload -Uz bracketed-paste-magic
-      zle -N bracketed-paste bracketed-paste-magic
-
       # home end
       bindkey  "^[[H"   beginning-of-line
       bindkey  "^[[F"   end-of-line
@@ -52,7 +48,7 @@
       bindkey  "^[[1;5C" forward-word
       bindkey  "^[[1;5D" backward-word
       bindkey  "^[[1;3C" forward-word
-      bindkey  "^[[1;eD" backward-word
+      bindkey  "^[[1;3D" backward-word
 
       export PKG_CONFIG_PATH="${pkgs.openssl.dev}/lib/pkgconfig:${pkgs.oniguruma.dev}/lib/pkgconfig:$PKG_CONFIG_PATH"
       export PKG="/lib/pkgconfig"
@@ -96,29 +92,6 @@
       function zvm_after_init() {
         my_init
 
-        # Create safe paste widget
-        function safe-paste-widget() {
-          local content
-          content=$(wl-paste 2>/dev/null) || return
-          # Replace with literal insertion without execution
-          LBUFFER="$LBUFFER$content"
-          zle redisplay
-        }
-        zle -N safe-paste-widget
-
-        # Bind Alt+Shift+V to safe paste
-        bindkey -M viins '^[[1;4V' safe-paste-widget  # Alt+Shift+V
-        bindkey -M vicmd '^[[1;4V' safe-paste-widget
-
-        # Try to make Shift+Insert safer by using our custom widget
-        bindkey -M viins '^[[2;2~' safe-paste-widget  # Shift+Insert
-        bindkey -M vicmd '^[[2;2~' safe-paste-widget
-
-        # Enhanced bracketed paste mode for safe multiline pasting
-        autoload -Uz bracketed-paste-magic
-        zle -N bracketed-paste bracketed-paste-magic
-        bindkey -M viins '^[[200~' bracketed-paste-magic
-        bindkey -M vicmd '^[[200~' bracketed-paste-magic
       }
       source ${pkgs.zsh-vi-mode}/share/zsh-vi-mode/zsh-vi-mode.plugin.zsh
       

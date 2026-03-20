@@ -71,6 +71,9 @@
     "jfrog_env" = {
       owner = config.users.users.flakm.name;
     };
+    "github_personal_access_token" = {
+      owner = config.users.users.flakm.name;
+    };
   };
 
 
@@ -96,28 +99,11 @@
     "flakm"
   ];
 
-  #environment.pathsToLink = [ "/share/zsh" ];
-
-
-
-  #services.tailscale.enable = true;
-
-
-  #system.activationScripts.postUserActivation.text = ''
-  #  rsyncArgs="--archive --checksum --chmod=-w --copy-unsafe-links --delete"
-  #  apps_source="${config.system.build.applications}/Applications"
-  #  moniker="Nix Trampolines"
-  #  app_target_base="$HOME/Applications"
-  #  app_target="$app_target_base/$moniker"
-  #  mkdir -p "$app_target"
-  #  # shellcheck disable=SC2086
-  #  ${pkgs.rsync}/bin/rsync $rsyncArgs "$apps_source/" "$app_target"
-  #'';
 
 
 
   security.sudo.extraConfig = ''
-    flakm ALL=(ALL) NOPASSWD: ALL
+    flakm ALL=(ALL) NOPASSWD: /run/current-system/sw/bin/darwin-rebuild, /run/current-system/sw/bin/nix*, /run/current-system/sw/bin/launchctl, /usr/bin/env nix*
   '';
 
   homebrew = {
@@ -205,21 +191,7 @@
           HIDKeyboardModifierMappingDst = 30064771125;
           HIDKeyboardModifierMappingSrc = 30064771172;
         }
-
-        #{
-        #  HIDKeyboardModifierMappingSrc = 30064771296; # left control
-        #  HIDKeyboardModifierMappingDst = 30064771299; # left command
-        #}
-        #{
-        #  HIDKeyboardModifierMappingSrc = 30064771299; # left command
-        #  HIDKeyboardModifierMappingDst = 30064771296; # left control
-        #}
       ];
     };
   };
-
-
-
-
 }
-

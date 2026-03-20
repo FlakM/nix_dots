@@ -1,4 +1,4 @@
-# configuration in this file only applies to amd-pc host.
+# configuration in this file only applies to dell-xps host.
 { pkgs, inputs, lib, nixos-hardware, pkgs-unstable, ... }:
 let
   fenix = inputs.fenix.packages.${pkgs.stdenv.hostPlatform.system}.stable;
@@ -22,18 +22,10 @@ in
     randomizedDelaySec = "45min";
   };
 
-  #nixpkgs.config = {
-  #  allowUnfree = true;
-  #  allowUnfreePredicate = (_: true);
-  #};
-
-
-
-  #boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
-  #boot.kernel.sysctl."net.ipv6.conf.all.forwarding" = 1;
   programs.hyprland = {
     enable = true;
     systemd.setPath.enable = true;
+    withUWSM = true;
   };
 
   # networking.hostName = "nixos"; # Define your hostname.

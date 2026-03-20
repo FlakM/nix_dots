@@ -22,6 +22,7 @@
     ./modules/zsh.nix
 
     ./modules/scala.nix
+    ./modules/pw-play-wrapper.nix
   ];
 
 

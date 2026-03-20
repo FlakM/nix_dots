@@ -1,4 +1,4 @@
-# configuration in this file only applies to exampleHost host.
+# configuration in this file only applies to odroid host.
 { pkgs, pkgs-unstable, inputs, lib, ... }: {
 
 

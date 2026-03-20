@@ -39,17 +39,15 @@
       bind k select-pane -U
       bind l select-pane -R
 
-      # Wayland clipboard integration
-      bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel 'wl-copy'
-      bind-key -T copy-mode-vi Enter send-keys -X copy-pipe-and-cancel 'wl-copy'
-      bind-key -n S-Insert run "tmux set-buffer \"$(wl-paste)\"; tmux paste-buffer"
-
-      # Enable bracketed paste mode for safe multiline pasting
+      # Clipboard via OSC 52 — works both locally and over SSH
+      # tmux sends OSC 52 to the terminal on yank, kitty picks it up
       set -g set-clipboard on
-      bind ] paste-buffer -p
+      set -g allow-passthrough on
+      set -as terminal-features ',xterm-kitty:clipboard'
 
-      # Safe paste from system clipboard (Alt+Shift+P)
-      bind-key -n M-S-p run "tmux set-buffer \"$(wl-paste)\"; tmux paste-buffer -p"
+      bind-key -T copy-mode-vi y send-keys -X copy-selection-and-cancel
+      bind-key -T copy-mode-vi Enter send-keys -X copy-selection-and-cancel
+      bind ] paste-buffer -p
 
       # Enable focus events for Neovim
       set -g focus-events on

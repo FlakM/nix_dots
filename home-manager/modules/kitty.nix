@@ -62,10 +62,10 @@ in
       # Enable bracketed paste mode for safe multiline pasting
       paste_actions quote-urls-at-prompt
       copy_on_select no
-      clipboard_control write-primary write-clipboard no-append
-      map alt+shift+c copy-to-clipboard
-      map alt+shift+v paste-from-clipboard
-      map shift+insert paste-from-clipboard
+      clipboard_control write-primary write-clipboard read-clipboard no-append
+      map shift+insert paste_from_clipboard
+      map alt+shift+c copy_to_clipboard
+      map alt+shift+v paste_from_clipboard
     '';
 
     font = {

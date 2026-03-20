@@ -29,4 +29,26 @@
       }
     ];
   };
+
+  xdg.configFile."opencode/plugins/peon-ping.ts".source =
+    "${inputs.peon-ping.packages.${pkgs.system}.default}/share/peon-ping/adapters/opencode/peon-ping.ts";
+
+  xdg.configFile."opencode/peon-ping/config.json".text = builtins.toJSON {
+    default_pack = "rick-and-morty";
+    volume = 0.5;
+    enabled = true;
+    desktop_notifications = true;
+    use_sound_effects_device = true;
+    categories = {
+      "session.start" = true;
+      "session.end" = true;
+      "task.acknowledge" = false;
+      "task.complete" = true;
+      "task.error" = true;
+      "task.progress" = true;
+      "input.required" = true;
+      "resource.limit" = true;
+      "user.spam" = true;
+    };
+  };
 }

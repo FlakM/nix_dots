@@ -20,8 +20,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nur.url = "github:nix-community/NUR";
-
     sops-nix = {
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -47,6 +45,7 @@
       flake = false;
     };
 
+    # Local path — only needed for odroid builds
     librus-notifications = {
       url = "path:/home/flakm/programming/flakm/librus";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -61,6 +60,11 @@
 
     walker = {
       url = "github:abenz1267/walker";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    peon-ping = {
+      url = "github:PeonPing/peon-ping";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -80,7 +84,6 @@
     , nixos-hardware
     , darwin
     , fenix
-    , nur
     , sops-nix
     , hyprland
     , nix-homebrew
@@ -92,6 +95,7 @@
     , jump
     , llm-agents
     , walker
+    , peon-ping
     , ...
     }@inputs:
     let
@@ -215,6 +219,7 @@
               home-manager.sharedModules = [
                 sops-nix.homeManagerModules.sops
                 walker.inputs.elephant.homeManagerModules.default
+                peon-ping.homeManagerModules.default
               ];
               home-manager.users.flakm = import ./home-manager/${hostName}.nix;
             }
@@ -223,11 +228,6 @@
             {
               nixpkgs.overlays = [
                 fenix.overlays.default
-
-
-                # pull just averaged_perceptron_tagger_eng from pkgs-unstable
-                (self: super: { })
-
               ];
             }
 
@@ -321,6 +321,7 @@
               };
               home-manager.sharedModules = [
                 sops-nix.homeManagerModules.sops
+                peon-ping.homeManagerModules.default
               ];
               home-manager.users.flakm = import ./home-manager/work.nix;
             }

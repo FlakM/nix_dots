@@ -7,7 +7,7 @@
     executable = true;
     text = ''
       #!${pkgs.bash}/bin/bash
-      exec ${pkgs.pipewire}/bin/pw-play --latency 5ms --volume 1.0 "$@"
+      exec ${pkgs.pipewire}/bin/pw-play --volume 1.0 "$@"
     '';
   };
 }

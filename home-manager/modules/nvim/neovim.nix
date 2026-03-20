@@ -14,7 +14,7 @@ let
   servicePath = lib.concatStringsSep ":" (
     (config.home.sessionPath or [ ])
     ++ [
-      "${config.home.homeDirectory}/.nix-profile/bin"
+      "/etc/profiles/per-user/${config.home.username}/bin"
       "/run/wrappers/bin"
       "/etc/profiles/per-user/${config.home.username}/bin"
       "/nix/var/nix/profiles/default/bin"
