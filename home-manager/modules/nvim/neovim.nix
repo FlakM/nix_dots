@@ -16,7 +16,6 @@ let
     ++ [
       "/etc/profiles/per-user/${config.home.username}/bin"
       "/run/wrappers/bin"
-      "/etc/profiles/per-user/${config.home.username}/bin"
       "/nix/var/nix/profiles/default/bin"
       "/run/current-system/sw/bin"
     ]
@@ -80,7 +79,6 @@ in
     #yaml-language-server
 
     # golang & terraform
-    gopls
     terraform-lsp
 
     # https://github.com/mrcjkb/rustaceanvim?tab=readme-ov-file#using-codelldb-for-debugging
@@ -152,7 +150,6 @@ in
       cmp-buffer
       cmp-path
       cmp-cmdline
-      nvim-cmp
 
       nvim-bqf
       telescope-nvim
@@ -242,6 +239,8 @@ in
         (builtins.readFile ./config/bash.lua)
         (builtins.readFile ./config/golang.lua)
         (builtins.readFile ./config/python.lua)
+        (builtins.readFile ./config/html.lua)
+        (builtins.readFile ./config/eink-bridge.lua)
       ];
 
 

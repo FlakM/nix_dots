@@ -17,7 +17,9 @@ in
     ./grafana.nix
     ./performance.nix
     ./vpn.nix
+    ../../shared/mount-atuin.nix
     #./clickhouse.nix
+    ./microvm.nix
   ];
 
   # Root dataset still needs a fileSystems entry even when we rely on ZFS
@@ -33,9 +35,8 @@ in
 
   system.autoUpgrade = {
     enable = true;
-    flake = inputs.self.outPath;
+    flake = "github:FlakM/nix_dots#amd-pc";
     flags = [
-      "--update-input" "nixpkgs"
       "-L"
     ];
     dates = "02:00";
@@ -46,19 +47,6 @@ in
   boot.zfs.extraPools = [ "bpool" ];
 
   systemd.services.zfs-mount.enable = true;
-
-  systemd.services.mount-atuin = {
-    description = "Mount Atuin ZFS Volume";
-    wantedBy = [ "multi-user.target" ];
-    after = [ "zfs.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-      ExecStart = "${pkgs.util-linux}/bin/mount /dev/zvol/rpool/nixos/atuin /home/flakm/.local/share/atuin";
-      User = "root";
-    };
-  };
-
 
   services.ollama = {
     enable = true;
@@ -440,7 +428,7 @@ in
   };
 
   # Open ports in the firewall.
-  networking.firewall.allowedTCPPorts = [ 8096 8000 ];
+  networking.firewall.allowedTCPPorts = [ 8096 8000 3333 ];
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
@@ -578,8 +566,6 @@ in
   # enable gnome keyring for nextcloud-client to store the password
   services.gnome.gnome-keyring.enable = true;
   security.pam.services.gdm.enableGnomeKeyring = true;
-
-  security.pam.services.hyprlock = { };
 
   services.bpftune.enable = true;
 

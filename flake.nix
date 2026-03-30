@@ -45,9 +45,9 @@
       flake = false;
     };
 
-    # Local path — only needed for odroid builds
+    # Only needed for odroid builds
     librus-notifications = {
-      url = "path:/home/flakm/programming/flakm/librus";
+      url = "github:FlakM/czujka-librus";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -67,12 +67,30 @@
       url = "github:PeonPing/peon-ping";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    eink-bridge = {
+      url = "github:FlakM/eink-bridge";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    microvm = {
+      url = "github:astro/microvm.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    nix-openclaw.url = "github:openclaw/nix-openclaw";
   };
 
   nixConfig = {
-    extra-substituters = [ "https://cache.numtide.com" ];
+    extra-substituters = [
+      "https://cache.numtide.com"
+      "https://microvm.cachix.org"
+      "https://nix-community.cachix.org"
+    ];
     extra-trusted-public-keys = [
       "niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g="
+      "microvm.cachix.org-1:oXnBc6hRE3eX5rSYdRyMYXnfzdCnor1een6jaXL68+4="
+      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCUSeBc="
     ];
   };
   outputs =
@@ -96,6 +114,9 @@
     , llm-agents
     , walker
     , peon-ping
+    , microvm
+    , eink-bridge
+    , nix-openclaw
     , ...
     }@inputs:
     let
@@ -235,6 +256,50 @@
           ];
         };
 
+      mkDarwinHost =
+        { hostName
+        , userName
+        , homeManagerConfig
+        , extraModules ? [ ]
+        , homeManagerSharedModules ? [ ]
+        , homeManagerBackupFileExtension ? null
+        }:
+        let
+          system = "aarch64-darwin";
+        in
+        darwin.lib.darwinSystem {
+          inherit system;
+          specialArgs = {
+            pkgs-unstable = pkgs-unstable system;
+            pkgs-master = pkgs-master system;
+            pkgs = pkgs-stable system;
+            inherit inputs;
+          };
+          modules = [
+            ./configuration.nix
+            ./hosts/${hostName}
+            home-manager.darwinModules.home-manager
+            nix-homebrew.darwinModules.nix-homebrew
+          ] ++ extraModules ++ [
+            ({
+              home-manager.useGlobalPkgs = true;
+              home-manager.useUserPackages = true;
+              home-manager.extraSpecialArgs = {
+                inherit inputs;
+                pkgs-unstable = pkgs-unstable system;
+                pkgs-master = pkgs-master system;
+                llm-agents-pkgs = llm-agents.packages.${system};
+              };
+              home-manager.sharedModules = homeManagerSharedModules;
+              home-manager.users.${userName} = import homeManagerConfig;
+              system.primaryUser = userName;
+            }
+            // nixpkgs.lib.optionalAttrs (homeManagerBackupFileExtension != null) {
+              home-manager.backupFileExtension = homeManagerBackupFileExtension;
+            })
+          ];
+        };
+
     in
     {
       formatter.x86_64-linux = pkgs-default.nixpkgs-fmt;
@@ -253,90 +318,28 @@
       };
 
 
-      darwinConfigurations.air =
-        darwin.lib.darwinSystem {
-          system = "aarch64-darwin";
-          specialArgs = {
-            pkgs-unstable = pkgs-unstable "aarch64-darwin";
-            pkgs-master = pkgs-master "aarch64-darwin";
-            pkgs = pkgs-stable "aarch64-darwin";
-            inherit inputs;
-          };
-          modules = [
-            ./configuration.nix
-            ./hosts/air
-            home-manager.darwinModules.home-manager
-            nix-homebrew.darwinModules.nix-homebrew
-            {
-              home-manager.useGlobalPkgs = true;
-              home-manager.useUserPackages = true;
-              home-manager.extraSpecialArgs = {
-                inherit inputs;
-                pkgs-unstable = pkgs-unstable "aarch64-darwin";
-                pkgs-master = pkgs-master "aarch64-darwin";
-                llm-agents-pkgs = llm-agents.packages."aarch64-darwin";
-              };
-              home-manager.sharedModules = [
-                sops-nix.homeManagerModules.sops
-              ];
-              home-manager.users.maciek = import ./home-manager/air.nix;
-            }
-            {
-              users = {
-                users = {
-                  maciek = {
-                    description = "maciek";
-                    home = "/Users/maciek";
-                  };
-                };
-              };
-            }
-          ];
-        };
+      darwinConfigurations.air = mkDarwinHost {
+        hostName = "air";
+        userName = "maciek";
+        homeManagerConfig = ./home-manager/air.nix;
+        homeManagerSharedModules = [
+          sops-nix.homeManagerModules.sops
+        ];
+      };
 
-      darwinConfigurations.work =
-        darwin.lib.darwinSystem {
-          system = "aarch64-darwin";
-          specialArgs = {
-            pkgs-unstable = pkgs-unstable "aarch64-darwin";
-            pkgs-master = pkgs-master "aarch64-darwin";
-            pkgs = pkgs-stable "aarch64-darwin";
-            inherit inputs;
-          };
-          modules = [
-            ./configuration.nix
-            ./hosts/work
-            home-manager.darwinModules.home-manager
-            sops-nix.darwinModules.sops
-            nix-homebrew.darwinModules.nix-homebrew
-            {
-              home-manager.useGlobalPkgs = true;
-              home-manager.useUserPackages = true;
-              home-manager.backupFileExtension = "hm-bak";
-              home-manager.extraSpecialArgs = {
-                inherit inputs;
-                pkgs-unstable = pkgs-unstable "aarch64-darwin";
-                pkgs-master = pkgs-master "aarch64-darwin";
-                llm-agents-pkgs = llm-agents.packages."aarch64-darwin";
-              };
-              home-manager.sharedModules = [
-                sops-nix.homeManagerModules.sops
-                peon-ping.homeManagerModules.default
-              ];
-              home-manager.users.flakm = import ./home-manager/work.nix;
-            }
-            {
-              users = {
-                users = {
-                  flakm = {
-                    description = "flakm";
-                    home = "/Users/flakm";
-                  };
-                };
-              };
-            }
-          ];
-        };
+      darwinConfigurations.work = mkDarwinHost {
+        hostName = "work";
+        userName = "flakm";
+        homeManagerConfig = ./home-manager/work.nix;
+        extraModules = [
+          sops-nix.darwinModules.sops
+        ];
+        homeManagerSharedModules = [
+          sops-nix.homeManagerModules.sops
+          peon-ping.homeManagerModules.default
+        ];
+        homeManagerBackupFileExtension = "hm-bak";
+      };
 
 
     };

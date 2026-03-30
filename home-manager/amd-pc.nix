@@ -52,6 +52,7 @@
     ./modules/mermaid
     ./modules/peon-ping.nix
     ./modules/pw-play-wrapper.nix
+    ./modules/eink-bridge.nix
   ];
 
   xdg.enable = true;
@@ -76,12 +77,14 @@
     enable = true;
     theme = {
       package = pkgs.gnome-themes-extra;
-      name = "Adwaita";
+      name = "Adwaita-dark";
     };
     iconTheme = {
       package = pkgs.adwaita-icon-theme;
       name = "Adwaita";
     };
+    gtk3.extraConfig.gtk-application-prefer-dark-theme = 1;
+    gtk4.extraConfig.gtk-application-prefer-dark-theme = 1;
     font = {
       name = "FiraCode";
       size = 11;
