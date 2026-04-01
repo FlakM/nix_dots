@@ -6,18 +6,20 @@ local cmd = vim.cmd
 
 opt.clipboard = { "unnamed", "unnamedplus" }
 
-vim.g.clipboard = {
-  name = "wl-clipboard",
-  copy = {
-    ["+"] = "wl-copy",
-    ["*"] = "wl-copy",
-  },
-  paste = {
-    ["+"] = "wl-paste --no-newline",
-    ["*"] = "wl-paste --no-newline",
-  },
-  cache_enabled = 1,
-}
+if fn.executable("wl-copy") == 1 then
+  vim.g.clipboard = {
+    name = "wl-clipboard",
+    copy = {
+      ["+"] = "wl-copy",
+      ["*"] = "wl-copy",
+    },
+    paste = {
+      ["+"] = "wl-paste --no-newline",
+      ["*"] = "wl-paste --no-newline",
+    },
+    cache_enabled = 1,
+  }
+end
 
 local function map(mode, lhs, rhs, opts)
   local options = { noremap = true }
@@ -608,12 +610,6 @@ autocmd("VimLeave", {
   command = "silent! wshada!",
 })
 
-autocmd("FileType", {
-  pattern = { "html", "xml", "xsl", "php" },
-  callback = function()
-    cmd("source ~/.config/nvim/scripts/closetag.vim")
-  end,
-})
 
 -- Plugins --------------------------------------------------------------------
 require("nvim-treesitter.install").compilers = { "gcc" }

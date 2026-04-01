@@ -1,5 +1,6 @@
 result
 .direnv
+*.img
 
 # Generated database configurations containing sensitive information
 # These should remain private and not be committed to the repository

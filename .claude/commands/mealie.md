@@ -1,161 +1,100 @@
-Manage Mealie recipes: scrape from URL, view, and edit sections/ingredients.
+Manage recipes in the self-hosted Mealie instance. Use this skill when the user wants to:
+- Add or import a recipe from a URL
+- List, search, or view existing recipes
+- Edit a recipe's ingredients, sections, or instructions
+- Delete a recipe
+- Improve recipe structure (grouping ingredients into sections, adding instruction titles)
 
-## API Access
+## Setup
 
-- **Base URL**: `https://mealie.house.flakm.com/api`
-- **Token file**: `~/.mealie_token` (SOPS-decrypted on amd-pc)
-- **Token env var fallback**: `$MEALIE_TOKEN`
-
-Read the token:
+Read the API token:
 ```bash
-MEALIE_TOKEN=$(cat ~/.mealie_token 2>/dev/null || echo "${MEALIE_TOKEN:-}")
-[ -z "$MEALIE_TOKEN" ] && echo "ERROR: No token at ~/.mealie_token" && exit 1
+MEALIE_TOKEN=$(cat ~/.mealie_token)
 MEALIE_BASE="https://mealie.house.flakm.com/api"
 ```
 
-## Operations
+## API Reference
 
-### List recipes
-```bash
-curl -s "$MEALIE_BASE/recipes?page=1&perPage=50" \
-  -H "Authorization: Bearer $MEALIE_TOKEN" | jq '.items[] | {name, slug}'
-```
+| Action | Method | Path | Body |
+|--------|--------|------|------|
+| List recipes | GET | `/recipes?page=1&perPage=50` | — |
+| Scrape from URL | POST | `/recipes/create/url` | `{"url":"...","includeTags":true}` → returns slug |
+| Test scrape (no import) | POST | `/recipes/test-scrape-url` | `{"url":"..."}` |
+| Get recipe | GET | `/recipes/{slug}` | — |
+| Update recipe | PUT | `/recipes/{slug}` | full recipe JSON (see note below) |
+| Delete by slug | DELETE | `/recipes/{slug}` | — |
+| Bulk delete by ID | POST | `/recipes/bulk-actions/delete` | `{"recipes":["<id>"]}` |
 
-### Scrape recipe from URL (creates it in Mealie)
-```bash
-curl -s -X POST "$MEALIE_BASE/recipes/create/url" \
-  -H "Authorization: Bearer $MEALIE_TOKEN" \
-  -H "Content-Type: application/json" \
-  --data-binary '{"url":"<URL>","includeTags":true}'
-# Returns: slug string
-```
-
-### Test-scrape without creating
-```bash
-curl -s -X POST "$MEALIE_BASE/recipes/test-scrape-url" \
-  -H "Authorization: Bearer $MEALIE_TOKEN" \
-  -H "Content-Type: application/json" \
-  --data-binary '{"url":"<URL>"}' | jq '.'
-```
-
-### Get recipe
-```bash
-curl -s "$MEALIE_BASE/recipes/<slug>" \
-  -H "Authorization: Bearer $MEALIE_TOKEN" | jq '.'
-```
-
-### Update recipe (PUT with full body)
-IMPORTANT: Always GET the recipe first, modify the JSON, then PUT back.
-The PUT body must include `id`, `userId`, `householdId`, `groupId`.
-
-```bash
-RECIPE=$(curl -s "$MEALIE_BASE/recipes/<slug>" -H "Authorization: Bearer $MEALIE_TOKEN")
-# Modify RECIPE with python3 or jq, then:
-echo "$MODIFIED" | curl -s -X PUT "$MEALIE_BASE/recipes/<slug>" \
-  -H "Authorization: Bearer $MEALIE_TOKEN" \
-  -H "Content-Type: application/json" \
-  --data-binary @- | jq '.slug // .detail'
-```
-
-### Delete recipe
-```bash
-# By slug:
-curl -s -X DELETE "$MEALIE_BASE/recipes/<slug>" \
-  -H "Authorization: Bearer $MEALIE_TOKEN"
-# Bulk delete by ID (more reliable):
-curl -s -X POST "$MEALIE_BASE/recipes/bulk-actions/delete" \
-  -H "Authorization: Bearer $MEALIE_TOKEN" \
-  -H "Content-Type: application/json" \
-  --data-binary '{"recipes":["<id>"]}'
-```
+**Update note:** always GET first, modify, then PUT back. The body must include `id`, `userId`, `householdId`, `groupId`.
 
 ## Recipe Structure
 
 ### Ingredient sections
-Sections are created by setting `title` on the **first ingredient** of each group.
-Subsequent ingredients in the section have `"title": null`.
+`title` on the **first** ingredient in a group creates a visible section header. Subsequent items have `"title": null`.
 
 ```json
-"recipeIngredient": [
-  {"title": "Sauce", "note": "2 cups tomato sauce", "display": "2 cups tomato sauce", "quantity": 2.0},
-  {"title": null,    "note": "1 tsp salt",          "display": "1 tsp salt"},
-  {"title": "Pasta", "note": "500g spaghetti",       "display": "500g spaghetti", "quantity": 500.0},
-  {"title": null,    "note": "1L water",             "display": "1L water",        "quantity": 1.0}
+[
+  {"title": "Sauce",  "note": "2 cups tomato sauce", "display": "2 cups tomato sauce"},
+  {"title": null,     "note": "1 tsp salt",           "display": "1 tsp salt"},
+  {"title": "Pasta",  "note": "500g spaghetti",        "display": "500g spaghetti"}
 ]
 ```
 
 ### Instruction sections
-Each instruction step can have an optional `title` (displayed as a subheading):
+Each step has an optional `title` (rendered as a subheading) plus required `summary` and `ingredientReferences`:
 ```json
-"recipeInstructions": [
-  {"title": "Prepare the sauce", "text": "...", "summary": "", "ingredientReferences": []},
-  {"title": "Cook pasta",        "text": "...", "summary": "", "ingredientReferences": []}
-]
+{"title": "Cook the sauce", "text": "...", "summary": "", "ingredientReferences": []}
 ```
 
-## Workflow: Scrape + Improve
-
-1. **Scrape** the URL → get slug
-2. **GET** the recipe and review its structure
-3. **Analyse** ingredients and instructions — identify logical groups
-4. **Update** using python3 to modify titles:
+## Workflow: Scrape and Improve
 
 ```python
-import subprocess, json
+import subprocess, json, os
 
-token = open('/root/.mealie_token').read().strip()  # adjust path
-base = 'https://mealie.house.flakm.com/api'
-
-def api(method, path, body=None):
-    cmd = ['curl', '-s', '-X', method, f'{base}{path}',
+def mealie(method, path, body=None):
+    token = open(os.path.expanduser('~/.mealie_token')).read().strip()
+    cmd = ['curl', '-s', '-X', method,
+           f'https://mealie.house.flakm.com/api{path}',
            '-H', f'Authorization: Bearer {token}',
            '-H', 'Content-Type: application/json']
     if body:
         cmd += ['--data-binary', json.dumps(body)]
     return json.loads(subprocess.check_output(cmd))
 
-slug = 'my-recipe'
-r = api('GET', f'/recipes/{slug}')
+# 1. Import
+slug = mealie('POST', '/recipes/create/url', {'url': '<URL>', 'includeTags': True}).strip('"')
 
-# Restructure ingredients into sections
-r['recipeIngredient'][0]['title'] = 'Batter'
-r['recipeIngredient'][3]['title'] = 'Filling'
-for i in [1, 2, 4, 5]:
+# 2. Get and inspect
+r = mealie('GET', f'/recipes/{slug}')
+
+# 3. Add sections (set title on first ingredient of each group, null on rest)
+r['recipeIngredient'][0]['title'] = 'Section A'
+r['recipeIngredient'][3]['title'] = 'Section B'
+for i in [1, 2]:
     r['recipeIngredient'][i]['title'] = None
 
-# Add section titles to instructions
-r['recipeInstructions'][0]['title'] = 'Prepare batter'
-r['recipeInstructions'][2]['title'] = 'Assemble'
+# 4. Add instruction titles
+r['recipeInstructions'][0]['title'] = 'Prepare'
+r['recipeInstructions'][2]['title'] = 'Cook'
 
-api('PUT', f'/recipes/{slug}', r)
+# 5. Save
+mealie('PUT', f'/recipes/{slug}', r)
 ```
 
 ## When scraping fails
 
-Some sites block scrapers. Options:
-1. Use `create/html-or-json` endpoint with fetched HTML:
-   ```bash
-   curl -s -X POST "$MEALIE_BASE/recipes/create/html-or-json" \
-     -H "Authorization: Bearer $MEALIE_TOKEN" \
-     -H "Content-Type: application/json" \
-     --data-binary '{"data":"<raw HTML or JSON-LD>","includeTags":true}'
-   ```
-2. Manually build the recipe JSON and POST to `/api/recipes`, then PUT the full body.
-
-## Arguments
-
-`$ARGUMENTS` — one of:
-- `list` — list all recipes
-- `scrape <URL>` — scrape and import a recipe, then show its structure and suggest section improvements
-- `view <slug>` — show recipe structure
-- `update-sections <slug>` — analyse and improve sections on an existing recipe
-- `delete <slug>` — delete a recipe
-- (empty) — ask the user what they want to do
+Fall back to `create/html-or-json` with the raw page HTML:
+```bash
+curl -s -X POST "$MEALIE_BASE/recipes/create/html-or-json" \
+  -H "Authorization: Bearer $MEALIE_TOKEN" \
+  -H "Content-Type: application/json" \
+  --data-binary '{"data":"<raw HTML or JSON-LD>","includeTags":true}'
+```
 
 ## Notes
 
-- Token is stored in SOPS secrets on amd-pc, decrypted to `~/.mealie_token`
-- `curl`, `jq`, and `python3` are available via nix
-- When scraping, always review the result and offer to improve sections using Claude's understanding of the recipe
-- Instruction `title` fields are optional section subheadings — use them when a recipe has distinct phases (e.g. "Marinate", "Cook", "Serve")
-- Keep ingredient `display` in sync with `note` when modifying
+- Token is at `~/.mealie_token` (SOPS secret, decrypted on amd-pc)
+- `curl`, `jq`, and `python3` are available
+- After scraping, always review ingredients and suggest logical section groupings
+- Keep `display` in sync with `note` when modifying ingredients
+- Use instruction `title` fields for distinct recipe phases (e.g. "Marinate", "Cook", "Serve")

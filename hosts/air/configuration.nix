@@ -3,8 +3,6 @@
 
 
   system.stateVersion = 5;
-  system.primaryUser = "flakm";
-
   services.karabiner-elements.enable = true;
 
   environment.systemPackages = with pkgs; [
@@ -62,4 +60,3 @@
   #'';
 
 }
-

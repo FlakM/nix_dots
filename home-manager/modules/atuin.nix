@@ -4,7 +4,7 @@
   # go to https://github.com/atuinsh/atuin/issues/952 
   programs.atuin = {
     enable = true;
-    enableZshIntegration = true;
+    enableZshIntegration = false;
     package = pkgs-unstable.atuin;
     # https://github.com/atuinsh/atuin/issues/1199#issuecomment-1940931241
     settings = {

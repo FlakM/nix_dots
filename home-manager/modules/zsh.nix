@@ -1,6 +1,5 @@
 { config, pkgs, ... }:
 {
-
   home.packages = with pkgs; [
     zsh
     eza
@@ -8,15 +7,11 @@
     asciinema-agg
   ];
 
-
-
   programs.zoxide.enable = true;
 
   programs.zsh = {
     enable = true;
     autocd = true;
-
-
 
     completionInit = "autoload -U compinit && compinit -i";
 
@@ -24,13 +19,6 @@
     enableCompletion = true;
     syntaxHighlighting.enable = true;
 
-    zplug = {
-      enable = false;
-      plugins = [
-        { name = "agkozak/zsh-z"; } # smart CD
-        #{ name = "jeffreytse/zsh-vi-mode"; } # vi mode <3
-      ];
-    };
     shellAliases = {
       ls = "eza";
       ll = "ls -l";
@@ -38,7 +26,6 @@
       vi = "vi";
       k = "kubectl";
     };
-
 
     initContent = ''
       # home end
@@ -51,14 +38,12 @@
       bindkey  "^[[1;3D" backward-word
 
       export PKG_CONFIG_PATH="${pkgs.openssl.dev}/lib/pkgconfig:${pkgs.oniguruma.dev}/lib/pkgconfig:$PKG_CONFIG_PATH"
-      export PKG="/lib/pkgconfig"
 
       function changelog() {
         latest_tag=$(git tag --sort=taggerdate | tail -1)
         new_version=$(echo $latest_tag | awk -F. '{$NF = $NF + 1;} 1' OFS=.)
         git-cliff "$latest_tag..HEAD" --tag "$new_version"
       }
-      
 
       function my_init() {
         export ATUIN_NOBIND="true"
@@ -80,41 +65,30 @@
         bindkey -M vicmd '^[OA' atuin-up-search-viins
       }
 
-
-
       function zvm_config() {
         ZVM_LAZY_KEYBINDINGS=false
         ZVM_SYSTEM_CLIPBOARD_ENABLED=true
-        ZVM_CLIPBOARD_COPY_CMD='wl-copy'
-        ZVM_CLIPBOARD_PASTE_CMD='wl-paste -n'
+        if command -v wl-copy &>/dev/null; then
+          ZVM_CLIPBOARD_COPY_CMD='wl-copy'
+          ZVM_CLIPBOARD_PASTE_CMD='wl-paste -n'
+        elif command -v pbcopy &>/dev/null; then
+          ZVM_CLIPBOARD_COPY_CMD='pbcopy'
+          ZVM_CLIPBOARD_PASTE_CMD='pbpaste'
+        fi
       }
 
       function zvm_after_init() {
         my_init
-
+        autoload -Uz bracketed-paste-magic
+        zle -N bracketed-paste bracketed-paste-magic
       }
       source ${pkgs.zsh-vi-mode}/share/zsh-vi-mode/zsh-vi-mode.plugin.zsh
-      
-
 
       source ~/.zshrc_local 2>/dev/null || true
       source ~/.jfrog.env 2>/dev/null || true
+      [ -f /run/secrets/jira_coralogix_token ] && export JIRA_API_TOKEN="$(cat /run/secrets/jira_coralogix_token)"
 
-      # silent import if it not exists
       source ~/.sdkman/bin/sdkman-init.sh 2>/dev/null || true
-
-
-      # for home.sessionVariables to work
-      # see @ https://discourse.nixos.org/t/home-manager-doesnt-seem-to-recognize-sessionvariables/8488/7
-      . "/etc/profiles/per-user/$USER/etc/profile.d/hm-session-vars.sh"
     '';
-
-
-    #       initExtraBeforeCompInit = ''
-    #    fpath+=("${config.home.homeDirectory}"/share/zsh/site-functions "${config.home.homeDirectory}"/share/zsh/$ZSH_VERSION/functions "${config.home.homeDirectory}"/share/zsh/vendor-completions)
-    #  '';
   };
-
-  #home.file."${config.home.homeDirectory}/.cargo/bin/rust-analyzer".source = config.lib.file.mkOutOfStoreSymlink ./rust-analyzer-shim;
-
 }

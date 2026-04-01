@@ -42,6 +42,7 @@
     ./mosquitto.nix
 
     ../../shared/syncthing/odroid.nix
+    ../../shared/mount-atuin.nix
 
     inputs.nixos-hardware.nixosModules.hardkernel-odroid-h3
   ];
@@ -49,9 +50,8 @@
 
   system.autoUpgrade = {
     enable = true;
-    flake = inputs.self.outPath;
+    flake = "github:FlakM/nix_dots#odroid";
     flags = [
-      "--update-input" "nixpkgs"
       "-L"
     ];
     dates = "03:00";
@@ -83,19 +83,6 @@
     "flakm"
   ];
 
-
-
-  systemd.services.mount-atuin = {
-    description = "Mount Atuin ZFS Volume";
-    wantedBy = [ "multi-user.target" ];
-    after = [ "zfs.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-      ExecStart = "${pkgs.util-linux}/bin/mount /dev/zvol/rpool/nixos/atuin /home/flakm/.local/share/atuin";
-      User = "root";
-    };
-  };
 
 
   programs.tmux = {

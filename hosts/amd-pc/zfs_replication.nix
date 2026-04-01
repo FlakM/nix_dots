@@ -37,6 +37,10 @@
     datasets."rpool/nixos/home/programming" = {
       useTemplate = [ "backup" ];
     };
+
+    datasets."rpool/nixos/microvms/clawd" = {
+      useTemplate = [ "backup" ];
+    };
   };
 
 }

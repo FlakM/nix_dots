@@ -50,16 +50,7 @@
     ]
   },
   "enabledPlugins": {
-    "slack@claude-plugins-official": true,
-    "chrome-devtools-mcp@chrome-devtools-plugins": true
-  },
-  "extraKnownMarketplaces": {
-    "chrome-devtools-plugins": {
-      "source": {
-        "source": "github",
-        "repo": "ChromeDevTools/chrome-devtools-mcp"
-      }
-    }
+    "slack@claude-plugins-official": true
   },
   "skipDangerousModePermissionPrompt": true,
   "safeCommands": [

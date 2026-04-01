@@ -21,7 +21,7 @@
     btop
     dnsutils
 
-    neofetch
+    fastfetch
 
     pkgs-unstable.yt-dlp
 

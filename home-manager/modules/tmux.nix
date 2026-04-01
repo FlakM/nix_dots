@@ -20,6 +20,8 @@
       set-option -g default-shell /run/current-system/sw/bin/zsh
       set-option -g default-command /run/current-system/sw/bin/zsh
 
+      set -ga update-environment WAYLAND_DISPLAY
+
       set -g base-index 1
       setw -g pane-base-index 1
 
@@ -48,6 +50,11 @@
       bind-key -T copy-mode-vi y send-keys -X copy-selection-and-cancel
       bind-key -T copy-mode-vi Enter send-keys -X copy-selection-and-cancel
       bind ] paste-buffer -p
+
+      # Shift+Insert paste from system clipboard
+      # kitty's map is bypassed when apps use the kitty keyboard protocol,
+      # so we handle it explicitly in tmux
+      bind-key -n S-Insert run-shell 'tmux set-buffer -- "$(wl-paste -n 2>/dev/null || pbpaste 2>/dev/null)"; tmux paste-buffer -p'
 
       # Enable focus events for Neovim
       set -g focus-events on

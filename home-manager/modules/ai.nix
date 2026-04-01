@@ -24,11 +24,12 @@
       force = true;
       source = ./claude/commands/hypr-screenshot.md;
     };
-    ".claude/plugins/cache/chrome-devtools-plugins/chrome-devtools-mcp/latest/skills/chrome-devtools/SKILL.md" = {
-      force = true;
-      source = ./claude/skills/chrome-devtools-SKILL.md;
-    };
-  };
+  } // builtins.listToAttrs (map
+    (name: {
+      name = ".claude/skills/${name}";
+      value = { force = true; source = ./claude/skills/${name}; };
+    })
+    (builtins.attrNames (builtins.readDir ./claude/skills)));
 
   xdg.configFile."opencode/opencode.json" = {
     force = true;

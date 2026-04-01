@@ -12,10 +12,8 @@ in
 
   system.autoUpgrade = {
     enable = true;
-    flake = inputs.self.outPath;
+    flake = "github:FlakM/nix_dots#dell-xps";
     flags = [
-      "--update-input"
-      "nixpkgs"
       "-L" # print build logs
     ];
     dates = "02:00";

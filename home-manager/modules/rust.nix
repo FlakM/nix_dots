@@ -32,8 +32,6 @@ in
     pre-commit
     vscode
     oniguruma
-  ] ++ lib.optionals stdenv.isDarwin [
-    libiconv
   ] ++ lib.optionals stdenv.isLinux [
     gdb
     heaptrack

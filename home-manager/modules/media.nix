@@ -1,4 +1,9 @@
 { pkgs, ... }:
+let
+  copy-location = pkgs.writeShellScript "thunar-copy-location" ''
+    printf '%s\n' "$@" | ${pkgs.wl-clipboard}/bin/wl-copy
+  '';
+in
 {
   programs.mpv = {
     enable = true;
@@ -33,6 +38,29 @@
     paint_mode=brush
     early_exit=false
     fill_shape=false
+  '';
+
+  xdg.configFile."Thunar/uca.xml".force = true;
+  xdg.configFile."Thunar/uca.xml".text = ''
+    <?xml version="1.0" encoding="UTF-8"?>
+    <actions>
+      <action>
+        <icon>edit-copy</icon>
+        <name>📋 Copy Location</name>
+        <submenu></submenu>
+        <unique-id>1711720000000000-1</unique-id>
+        <command>${copy-location} %F</command>
+        <description>Copy file path to clipboard</description>
+        <range></range>
+        <patterns>*</patterns>
+        <directories/>
+        <audio-files/>
+        <image-files/>
+        <other-files/>
+        <text-files/>
+        <video-files/>
+      </action>
+    </actions>
   '';
 
   xdg.configFile."xfce4/xfconf/xfce-perchannel-xml/thunar.xml".force = true;

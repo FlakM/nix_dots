@@ -1,4 +1,7 @@
-{ pkgs, config, ... }: {
+{ pkgs, config, ... }:
+let
+  webhookUrl = "http://192.168.0.249:8788/nextcloud-talk-webhook";
+in {
 
   services.nextcloud = {
     enable = true;
@@ -8,7 +11,7 @@
 
     extraApps = {
 
-      inherit (config.services.nextcloud.package.packages.apps) contacts calendar tasks previewgenerator notes memories cookbook mail bookmarks;
+      inherit (config.services.nextcloud.package.packages.apps) contacts calendar tasks previewgenerator notes memories cookbook mail bookmarks spreed;
       news = pkgs.fetchNextcloudApp {
         sha256 = "sha256-eR4lfbdrQJz6pFI189jssp4hxyCwMSWiJn9U2OgrgKE=";
         url = "https://github.com/nextcloud/news/releases/download/27.2.0/news.tar.gz";
@@ -29,6 +32,9 @@
     settings = {
       mail_smtpmode = "sendmail";
       mail_sendmailmode = "pipe";
+      overwritehost = "nextcloud.house.flakm.com";
+      overwriteprotocol = "https";
+      "overwrite.cli.url" = "https://nextcloud.house.flakm.com";
       enabledPreviewProviders = [
         "OC\\Preview\\Movie"
         "OC\\Preview\\BMP"
@@ -70,6 +76,35 @@
   systemd.services.nextcloud-setup = {
     requires = [ "postgresql.service" ];
     after = [ "postgresql.service" ];
+  };
+
+  sops.secrets.nextcloud_talk_bot_secret = {
+    sopsFile = ../../secrets/secrets.yaml;
+    owner = "nextcloud";
+    group = "nextcloud";
+  };
+
+  # Idempotently register the OpenClaw bot in Nextcloud Talk.
+  # Re-runs on each rebuild; occ talk:bot:install is a no-op if the bot URL already exists.
+  systemd.services.nextcloud-talk-bot-register = {
+    description = "Register OpenClaw bot in Nextcloud Talk";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "nextcloud-setup.service" "sops-install-secrets.service" ];
+    requires = [ "nextcloud-setup.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      User = "nextcloud";
+    };
+    script = ''
+      SECRET=$(cat ${config.sops.secrets.nextcloud_talk_bot_secret.path})
+      OCC="${config.services.nextcloud.occ}/bin/nextcloud-occ"
+      if ! $OCC talk:bot:list --output json 2>/dev/null | grep -q '"name":"OpenClaw"'; then
+        BOT_OUT=$($OCC talk:bot:install "OpenClaw" "$SECRET" "${webhookUrl}" "OpenClaw AI agent")
+        BOT_ID=$(echo "$BOT_OUT" | grep '^ID:' | awk '{print $2}')
+        [ -n "$BOT_ID" ] && $OCC talk:bot:state "$BOT_ID" 1
+      fi
+    '';
   };
 
   services.nginx = {

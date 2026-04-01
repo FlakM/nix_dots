@@ -17,6 +17,37 @@
     '';
   };
 
+  # Health check: restart AdGuard Home if DNS stops responding.
+  # The DNS proxy can become wedged (goroutine exhaustion from DoH + DNSSEC)
+  # while the process stays alive, so systemd's default restart logic won't help.
+  systemd.services.adguardhome-watchdog = {
+    description = "AdGuard Home DNS health check";
+    after = [ "adguardhome.service" ];
+    requires = [ "adguardhome.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      # Don't let systemctl restart kill this unit mid-flight
+      KillMode = "none";
+      ExecStart = pkgs.writeShellScript "adguardhome-watchdog" ''
+        # Wait for AdGuard to be fully up before testing
+        sleep 10
+        if ! ${pkgs.dig}/bin/dig @127.0.0.1 cloudflare.com +short +timeout=5 +tries=2 > /dev/null 2>&1; then
+          echo "AdGuard Home DNS unresponsive, restarting..."
+          systemctl restart adguardhome.service
+        fi
+      '';
+    };
+  };
+
+  systemd.timers.adguardhome-watchdog = {
+    description = "Run AdGuard Home DNS health check every 5 minutes";
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnBootSec = "5min";
+      OnUnitActiveSec = "5min";
+    };
+  };
+
   services.adguardhome = {
     enable = true;
     openFirewall = true;
@@ -64,13 +95,23 @@
 
       dns = {
         bind_hosts = [ "0.0.0.0" ];
-        bootstrap_dns = [ "1.1.1.1" "8.8.8.8" ];
+        bootstrap_dns = [ "1.1.1.1" "8.8.8.8" "9.9.9.9" ];
         upstream_dns = [
           "https://dns.cloudflare.com/dns-query"
           "https://dns.google/dns-query"
         ];
-        enable_dnssec = true;
+        # Plain DNS fallback breaks the DoH bootstrap circular dependency
+        # (AGH needs DNS to resolve DoH hostnames)
+        fallback_dns = [ "1.1.1.1" "8.8.8.8" ];
+        # Cloudflare/Google already validate DNSSEC; second layer just
+        # inflates responses and triggers "buffer size too small" errors
+        enable_dnssec = false;
         ratelimit = 100;
+        # Default 300 causes goroutine exhaustion when DoH upstreams are slow;
+        # 0 = unlimited. See github.com/AdguardTeam/AdGuardHome/issues/4317
+        max_goroutines = 0;
+        # Free goroutines faster when upstreams are slow (default 10s)
+        upstream_timeout = "3s";
       };
 
       users = [

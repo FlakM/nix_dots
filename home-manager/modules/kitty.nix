@@ -1,7 +1,18 @@
-{ config, pkgs, pkgs-unstable, libs, ... }:
-let kitty = pkgs-unstable.kitty;
+{ config, pkgs, pkgs-unstable, lib, libs, ... }:
+let
+  kitty = pkgs-unstable.kitty;
+  url-open = pkgs.writeScriptBin "url-open" ''
+    #!/usr/bin/env bash
+    exec ${if pkgs.stdenv.isDarwin then "/usr/bin/open" else "${pkgs.handlr}/bin/handlr open"} "$@"
+  '';
+  xdg-open = pkgs.writeScriptBin "xdg-open" ''
+    #!/usr/bin/env bash
+    exec ${url-open}/bin/url-open "$@"
+  '';
 in
 {
+
+  home.packages = lib.optionals pkgs.stdenv.isLinux [ xdg-open ];
 
   xdg.configFile."kitty/switch.sh" = {
     text = ''
@@ -55,6 +66,7 @@ in
 
     extraConfig = ''
       include current-theme.conf
+      open_url_with ${url-open}/bin/url-open
       # Allow neovim jump to last cursor position
       map ctrl+shift+o no_op
       map ctrl+shift+n no_op
