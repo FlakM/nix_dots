@@ -54,7 +54,9 @@ in
     enable = true;
     package = pkgs-unstable.ollama;
     environmentVariables = {
-      OLLAMA_NUM_PARALLEL = "4";
+      # CPU-only inference: >1 parallel causes contention and empty responses.
+      # Set to 1 until a GPU is available.
+      OLLAMA_NUM_PARALLEL = "1";
     };
   };
 
