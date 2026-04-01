@@ -52,10 +52,12 @@ in
 
   services.ollama = {
     enable = true;
-    package = pkgs-unstable.ollama;
+    # ollama-vulkan enables GPU acceleration via Vulkan (RADV/Mesa).
+    # The AMD Raphael iGPU (0x164e, 2GB VRAM) can offload a subset of layers
+    # even though the full model (6GB) doesn't fit — partial offload still
+    # gives a meaningful speedup over pure CPU.
+    package = pkgs-unstable.ollama-vulkan;
     environmentVariables = {
-      # CPU-only inference: >1 parallel causes contention and empty responses.
-      # Set to 1 until a GPU is available.
       OLLAMA_NUM_PARALLEL = "1";
     };
   };
@@ -69,7 +71,7 @@ in
       Type = "oneshot";
       RemainAfterExit = true;
       ExecStartPre = "${pkgs.bash}/bin/bash -c 'until ${pkgs.curl}/bin/curl -sf http://127.0.0.1:11434/api/tags >/dev/null; do sleep 1; done'";
-      ExecStart = "${pkgs-unstable.ollama}/bin/ollama pull qwen2.5vl:7b";
+      ExecStart = "${pkgs-unstable.ollama-vulkan}/bin/ollama pull qwen2.5vl:7b";
     };
     environment = {
       OLLAMA_HOST = "127.0.0.1:11434";
