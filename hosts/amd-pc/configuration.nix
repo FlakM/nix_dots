@@ -52,11 +52,17 @@ in
 
   services.ollama = {
     enable = true;
+    # CPU-only inference. GPU acceleration was investigated exhaustively:
+    #   - Vulkan (ollama-vulkan): blocked — ggml needs a single 6.9GB buffer but
+    #     Vulkan maxStorageBufferRange is uint32_t-limited to 4GB (spec constraint).
+    #   - ROCm (ollama-rocm, gfx1036→gfx1030 override): works but 8-10× slower than
+    #     CPU because the Raphael iGPU shares DDR5 bandwidth with the CPU (UMA), and
+    #     AVX-512 Zen4 wins this memory-bandwidth-bound workload.
+    # CPU with qwen2.5vl:7b takes 3–33 s per annotation group, which is acceptable.
     package = pkgs-unstable.ollama;
     environmentVariables = {
-      # CPU-only inference: >1 parallel causes contention and empty responses.
       OLLAMA_NUM_PARALLEL = "1";
-      # OCR outputs are short; 1024 tokens is ample and reduces memory use.
+      # OCR outputs are short; 1024 tokens is ample and keeps KV cache small.
       OLLAMA_CONTEXT_LENGTH = "1024";
     };
   };
