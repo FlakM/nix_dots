@@ -38,6 +38,8 @@ in
     flake = "github:FlakM/nix_dots#amd-pc";
     flags = [
       "-L"
+      "--update-input" "nixpkgs"
+      "--update-input" "nixpkgs-unstable"
     ];
     dates = "02:00";
     randomizedDelaySec = "45min";
@@ -51,6 +53,27 @@ in
   services.ollama = {
     enable = true;
     package = pkgs-unstable.ollama;
+    environmentVariables = {
+      OLLAMA_NUM_PARALLEL = "4";
+    };
+  };
+
+  systemd.services.ollama-pull-qwen = {
+    description = "Pull qwen2.5vl:7b model for eink-bridge OCR";
+    after = [ "ollama.service" "network-online.target" ];
+    requires = [ "ollama.service" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStartPre = "${pkgs.bash}/bin/bash -c 'until ${pkgs.curl}/bin/curl -sf http://127.0.0.1:11434/api/tags >/dev/null; do sleep 1; done'";
+      ExecStart = "${pkgs-unstable.ollama}/bin/ollama pull qwen2.5vl:7b";
+    };
+    environment = {
+      OLLAMA_HOST = "127.0.0.1:11434";
+      OLLAMA_MODELS = "/var/lib/ollama/models";
+      HOME = "/var/lib/ollama";
+    };
   };
 
   networking.extraHosts =
@@ -66,6 +89,19 @@ in
     enable = true;
     systemd.setPath.enable = true;
     withUWSM = true;
+  };
+
+  xdg.portal = {
+    enable = true;
+    xdgOpenUsePortal = true;
+    extraPortals = with pkgs; [
+      xdg-desktop-portal-hyprland
+      xdg-desktop-portal-gtk
+    ];
+    configPackages = with pkgs; [
+      xdg-desktop-portal-gtk
+      xdg-desktop-portal-hyprland
+    ];
   };
 
   services.redis.servers."".enable = false;
