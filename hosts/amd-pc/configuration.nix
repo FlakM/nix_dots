@@ -67,8 +67,11 @@ in
     };
   };
 
+  # Pull OCR models on first boot. glm-ocr is the primary (2× faster than qwen2.5vl:7b
+  # for typical short annotations). qwen2.5vl:7b is the fallback for long cursive text
+  # (set EINK_OLLAMA_MODEL=qwen2.5vl:7b to use it).
   systemd.services.ollama-pull-qwen = {
-    description = "Pull qwen2.5vl:7b model for eink-bridge OCR";
+    description = "Pull OCR models for eink-bridge";
     after = [ "ollama.service" "network-online.target" ];
     requires = [ "ollama.service" ];
     wantedBy = [ "multi-user.target" ];
@@ -76,7 +79,7 @@ in
       Type = "oneshot";
       RemainAfterExit = true;
       ExecStartPre = "${pkgs.bash}/bin/bash -c 'until ${pkgs.curl}/bin/curl -sf http://127.0.0.1:11434/api/tags >/dev/null; do sleep 1; done'";
-      ExecStart = "${pkgs-unstable.ollama}/bin/ollama pull qwen2.5vl:7b";
+      ExecStart = "${pkgs.bash}/bin/bash -c '${pkgs-unstable.ollama}/bin/ollama pull glm-ocr && ${pkgs-unstable.ollama}/bin/ollama pull qwen2.5vl:7b'";
     };
     environment = {
       OLLAMA_HOST = "127.0.0.1:11434";
