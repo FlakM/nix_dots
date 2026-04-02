@@ -237,11 +237,46 @@
       }
     },
     {
+      "id": 15,
+      "type": "timeseries",
+      "title": "OCR Image Size (pixels)",
+      "datasource": { "type": "prometheus", "uid": "prometheus-eink" },
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 22 },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus-eink" },
+          "expr": "histogram_quantile(0.50, sum(rate(eink_ocr_image_pixels_bucket[5m])) by (le))",
+          "legendFormat": "p50"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus-eink" },
+          "expr": "histogram_quantile(0.90, sum(rate(eink_ocr_image_pixels_bucket[5m])) by (le))",
+          "legendFormat": "p90"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus-eink" },
+          "expr": "histogram_quantile(0.99, sum(rate(eink_ocr_image_pixels_bucket[5m])) by (le))",
+          "legendFormat": "p99"
+        }
+      ],
+      "options": {
+        "tooltip": { "mode": "multi" },
+        "legend": { "displayMode": "list", "placement": "bottom" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "lineWidth": 2, "fillOpacity": 10 },
+          "unit": "short",
+          "displayName": "px²"
+        }
+      }
+    },
+    {
       "id": 9,
       "type": "timeseries",
       "title": "OCR Request Rate & Tokens",
       "datasource": { "type": "prometheus", "uid": "prometheus-eink" },
-      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 22 },
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 22 },
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus-eink" },
@@ -272,7 +307,7 @@
       "type": "timeseries",
       "title": "WebSocket & Long-poll",
       "datasource": { "type": "prometheus", "uid": "prometheus-eink" },
-      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 22 },
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 31 },
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus-eink" },
