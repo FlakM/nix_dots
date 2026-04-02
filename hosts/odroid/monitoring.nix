@@ -42,9 +42,9 @@
     settings = {
       server = {
         http_addr = "0.0.0.0";
-        http_port = 3001;
+        http_port = 3002;
         domain = "odroid";
-        root_url = "http://odroid:3001/";
+        root_url = "http://odroid:3002/";
       };
       # allow anonymous read-only access for home lab convenience
       "auth.anonymous" = {
@@ -80,7 +80,7 @@
 
   # Open ports for LAN access
   networking.firewall.allowedTCPPorts = [
-    3001  # Grafana
+    3002  # Grafana
     9090  # Prometheus (useful for debugging)
     9091  # Pushgateway (Android + CLI push targets)
   ];
