@@ -44,6 +44,8 @@
     ../../shared/syncthing/odroid.nix
     ../../shared/mount-atuin.nix
 
+    ./monitoring.nix
+
     inputs.nixos-hardware.nixosModules.hardkernel-odroid-h3
   ];
 
