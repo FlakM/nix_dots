@@ -28,6 +28,12 @@
     };
 
     initContent = ''
+      function claude() {
+        local project_name
+        project_name="$(basename "$PWD")"
+        OTEL_RESOURCE_ATTRIBUTES="project.name=$project_name,project.path=$PWD" command claude "$@"
+      }
+
       # home end
       bindkey  "^[[H"   beginning-of-line
       bindkey  "^[[F"   end-of-line
