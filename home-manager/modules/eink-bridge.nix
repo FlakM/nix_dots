@@ -1,7 +1,12 @@
 { config, lib, pkgs, inputs, ... }:
 let
   inherit (pkgs) stdenv;
-  eink-bridge = inputs.eink-bridge.packages.${pkgs.system}.default;
+  einkPkgs = inputs.eink-bridge.packages.${pkgs.system};
+  eink-bridge = einkPkgs.default;
+  hasHarness = einkPkgs ? harness;
+  harness = if hasHarness then einkPkgs.harness else null;
+  hasChannel = einkPkgs ? einkChannel;
+  einkChannel = if hasChannel then einkPkgs.einkChannel else null;
   servicePath = lib.concatStringsSep ":" (
     (config.home.sessionPath or [ ])
     ++ [
@@ -11,11 +16,28 @@ let
       "/run/current-system/sw/bin"
     ]
   );
+
+  # Build home.file entries for each skill directory in the harness
+  skillFiles = if hasHarness then
+    builtins.listToAttrs (map (name: {
+      name = ".claude/skills/${name}";
+      value = { force = true; source = "${harness}/skills/${name}"; };
+    }) (builtins.attrNames (builtins.readDir "${harness}/skills")))
+  else { };
+
+  styleFiles = if hasHarness then
+    builtins.listToAttrs (map (name: {
+      name = ".claude/output-styles/${name}";
+      value = { force = true; source = "${harness}/output-styles/${name}"; };
+    }) (builtins.attrNames (builtins.readDir "${harness}/output-styles")))
+  else { };
 in
 {
   home.packages = [
     eink-bridge
-  ];
+  ] ++ lib.optional hasChannel einkChannel;
+
+  home.file = skillFiles // styleFiles;
 
   systemd.user.services."eink-serve" = lib.mkIf stdenv.isLinux {
     Unit = {
