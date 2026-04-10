@@ -170,8 +170,8 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1775765512,
-        "narHash": "sha256-/UXUVvO040JkthrV5VCcUBtF0zgJ0cRrAIQNlBhxXBc=",
+        "lastModified": 1775810151,
+        "narHash": "sha256-lyjU8izAMYyA5h5dBxun3LDPpWlJ4DkuXqgRaRI+zco=",
         "path": "/home/flakm/programming/flakm/eink-bridge",
         "type": "path"
       },
