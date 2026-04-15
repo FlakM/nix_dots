@@ -4,7 +4,7 @@
   "title": "E-Ink Bridge",
   "tags": ["eink"],
   "schemaVersion": 38,
-  "version": 1,
+  "version": 2,
   "time": { "from": "now-3h", "to": "now" },
   "timepicker": {},
   "refresh": "30s",
@@ -437,6 +437,68 @@
       },
       "fieldConfig": {
         "defaults": { "custom": { "lineWidth": 2, "fillOpacity": 5 } }
+      }
+    },
+    {
+      "id": 16,
+      "type": "stat",
+      "title": "Update Round-trip Avg (ms)",
+      "datasource": { "type": "prometheus", "uid": "prometheus-eink" },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 47 },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus-eink" },
+          "expr": "eink_android_update_round_trip_ms_avg",
+          "legendFormat": "avg ms"
+        }
+      ],
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "value",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 30000 },
+              { "color": "red", "value": 120000 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 17,
+      "type": "timeseries",
+      "title": "Android Update Round-trip Latency",
+      "description": "Time from tapping Request Update to receiving version_updated (server OCR + LLM rewrite + update_session)",
+      "datasource": { "type": "prometheus", "uid": "prometheus-eink" },
+      "gridPos": { "h": 9, "w": 18, "x": 6, "y": 47 },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus-eink" },
+          "expr": "eink_android_update_round_trip_ms_avg",
+          "legendFormat": "avg"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus-eink" },
+          "expr": "eink_android_update_round_trip_ms_max",
+          "legendFormat": "max"
+        }
+      ],
+      "options": {
+        "tooltip": { "mode": "multi" },
+        "legend": { "displayMode": "list", "placement": "bottom" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "lineWidth": 2, "fillOpacity": 10 },
+          "unit": "ms"
+        }
       }
     },
     {
