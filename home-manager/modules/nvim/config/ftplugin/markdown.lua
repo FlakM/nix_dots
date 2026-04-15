@@ -1,6 +1,6 @@
-vim.opt.wrap = true                          -- Enable line wrapping
-vim.opt.linebreak = true                     -- Wrap lines at word boundaries
-vim.opt.breakindent = true                   -- Enable break indent (optional)
-vim.opt.breakindentopt = "shift:2"           -- Set break indent options (optional)
-vim.opt.showbreak = "↪ "                     -- Visual indicator for wrapped lines (optional)
-vim.opt.formatoptions:remove("t")            -- Prevent automatic text reformatting
+vim.opt_local.wrap = false                   -- Disable soft wrap (conflicts with conceallevel)
+vim.opt_local.linebreak = true               -- Wrap at word boundaries if wrap is toggled on
+vim.opt_local.breakindent = true             -- Enable break indent if wrap is toggled on
+vim.opt_local.breakindentopt = "shift:2"     -- Break indent shift
+vim.opt_local.showbreak = "↪ "              -- Visual indicator for wrapped lines
+vim.opt_local.formatoptions:remove("t")      -- Prevent automatic text reformatting

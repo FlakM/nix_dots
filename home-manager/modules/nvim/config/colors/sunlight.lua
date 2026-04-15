@@ -214,6 +214,102 @@ hi("@comment.documentation", { fg = slate,    italic = true })
 -- unsafe — bold + italic + red so it's impossible to miss
 hi("@keyword.modifier.unsafe", { fg = red, bold = true, italic = true })
 
+-- ── LSP semantic tokens ─────────────────────────────────────────────────────
+-- Neovim 0.9+ applies LSP semantic tokens *after* tree-sitter, so if the theme
+-- does not map @lsp.* groups they fall back to Normal and repaint the colourful
+-- TS highlights in plain fg. Link every group we care about back to its
+-- tree-sitter equivalent so the palette actually wins.
+
+-- Types (rust-analyzer sends type/struct/enum/interface/trait separately)
+hi("@lsp.type.type",            { link = "@type" })
+hi("@lsp.type.class",           { link = "@type" })
+hi("@lsp.type.struct",          { link = "@type" })
+hi("@lsp.type.enum",            { link = "@type" })
+hi("@lsp.type.interface",       { link = "@type" })
+hi("@lsp.type.trait",           { link = "@type" })
+hi("@lsp.type.typeAlias",       { link = "@type.definition" })
+hi("@lsp.type.typeParameter",   { link = "@type.definition" })
+hi("@lsp.type.builtinType",     { link = "@type.builtin" })
+hi("@lsp.type.selfTypeKeyword", { link = "@type.builtin" })
+
+-- Functions & methods
+hi("@lsp.type.function",        { link = "@function" })
+hi("@lsp.type.method",          { link = "@function.method" })
+
+-- Variables & parameters
+hi("@lsp.type.variable",        { link = "@variable" })
+hi("@lsp.type.parameter",       { link = "@variable.parameter" })
+hi("@lsp.type.property",        { link = "@variable.member" })
+hi("@lsp.type.selfKeyword",     { link = "@variable.builtin" })
+
+-- Constants & enum members
+hi("@lsp.type.enumMember",      { link = "@constant" })
+hi("@lsp.type.const",           { link = "@constant" })
+
+-- Keywords, operators, punctuation
+hi("@lsp.type.keyword",         { link = "@keyword" })
+hi("@lsp.type.operator",        { link = "@operator" })
+hi("@lsp.type.punctuation",     { link = "@punctuation.delimiter" })
+
+-- Strings, numbers, chars, regex
+hi("@lsp.type.string",          { link = "@string" })
+hi("@lsp.type.number",          { link = "@number" })
+hi("@lsp.type.boolean",         { link = "@boolean" })
+hi("@lsp.type.character",       { link = "@character" })
+hi("@lsp.type.regexp",          { link = "@string.regexp" })
+
+-- Macros, attributes, decorators, lifetimes
+hi("@lsp.type.macro",           { link = "@function.macro" })
+hi("@lsp.type.decorator",       { link = "@attribute" })
+hi("@lsp.type.lifetime",        { fg = gold, italic = true })
+hi("@lsp.type.attributeBracket",{ link = "@punctuation.special" })
+hi("@lsp.type.derive",          { link = "@function.macro" })
+hi("@lsp.type.deriveHelper",    { link = "@function.macro" })
+
+-- Modules / namespaces
+hi("@lsp.type.namespace",       { link = "@module" })
+hi("@lsp.type.module",          { link = "@module" })
+
+-- Comments / docs
+hi("@lsp.type.comment",         { link = "@comment" })
+
+-- ── LSP typemods (rust-analyzer-specific emphasis) ──────────────────────────
+-- Async fns / methods get the violet async treatment
+hi("@lsp.typemod.function.async",        { link = "@keyword.coroutine.async" })
+hi("@lsp.typemod.method.async",          { link = "@keyword.coroutine.async" })
+
+-- unsafe fns / methods get the red emphasis
+hi("@lsp.typemod.function.unsafe",       { fg = red, bold = true })
+hi("@lsp.typemod.method.unsafe",         { fg = red, bold = true })
+hi("@lsp.typemod.keyword.unsafe",        { fg = red, bold = true, italic = true })
+hi("@lsp.typemod.operator.unsafe",       { fg = red, bold = true })
+
+-- const / static globals stay purple bold
+hi("@lsp.typemod.variable.const",        { link = "@constant" })
+hi("@lsp.typemod.variable.static",       { link = "@constant" })
+
+-- Mutable locals: keep the rose of @variable but underlined so mutation is visible
+hi("@lsp.typemod.variable.mutable",      { fg = rose, underline = true })
+hi("@lsp.typemod.variable.reference",    { link = "@variable" })
+hi("@lsp.typemod.parameter.mutable",     { fg = rose, italic = true, underline = true })
+
+-- Library / std items: stay in the navy module colour
+hi("@lsp.typemod.type.defaultLibrary",         { link = "@type.builtin" })
+hi("@lsp.typemod.variable.defaultLibrary",     { link = "@variable.builtin" })
+hi("@lsp.typemod.function.defaultLibrary",     { link = "@function.builtin" })
+hi("@lsp.typemod.namespace.defaultLibrary",    { link = "@module.builtin" })
+hi("@lsp.typemod.struct.defaultLibrary",       { link = "@type.builtin" })
+hi("@lsp.typemod.enum.defaultLibrary",         { link = "@type.builtin" })
+hi("@lsp.typemod.enumMember.defaultLibrary",   { link = "@constant.builtin" })
+
+-- Controlled by user but without special meaning — don't override TS
+hi("@lsp.typemod.type.library",                { link = "@type" })
+hi("@lsp.typemod.interface.library",           { link = "@type" })
+
+-- Derives and macro expansions that rust-analyzer knows about
+hi("@lsp.typemod.macro.defaultLibrary",        { link = "@function.macro" })
+hi("@lsp.typemod.macro.library",               { link = "@function.macro" })
+
 -- ── Diagnostics ─────────────────────────────────────────────────────────────
 hi("DiagnosticError",            { fg = red })
 hi("DiagnosticWarn",             { fg = amber })

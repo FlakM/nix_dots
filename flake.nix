@@ -236,6 +236,7 @@
                 pkgs-unstable = pkgs-unstable system;
                 pkgs-master = pkgs-master system;
                 llm-agents-pkgs = llm-agents.packages.${system};
+                flakeRoot = toString ./.;
               };
               home-manager.sharedModules = [
                 sops-nix.homeManagerModules.sops

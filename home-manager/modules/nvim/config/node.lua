@@ -23,6 +23,11 @@ local ts_ls_path = vim.fn.exepath("typescript-language-server")
 if ts_ls_path ~= "" then
   vim.lsp.config('ts_ls', {
     cmd = { "lspmux", "client", "--server-path", ts_ls_path, "--", "--stdio" },
+    init_options = {
+      hostInfo = 'neovim',
+      maxTsServerMemory = 8192,
+      disableAutomaticTypingAcquisition = true,
+    },
     settings = {
       completions = {
         completeFunctionCalls = true,

@@ -119,26 +119,14 @@ if fn.filereadable(fn.expand("~/.config/current-color_scheme")) == 1 then
   local file = assert(io.open(fn.expand("~/.config/current-color_scheme"), "r"))
   local theme = file:read()
   file:close()
-  if theme == "prefer-light" then
-    vim.g.background = "light"
+  if theme == "prefer-sunlight" then
+    vim.o.background = "light"
+    cmd("colorscheme sunlight")
+  elseif theme == "prefer-light" then
     vim.o.background = "light"
     cmd("colorscheme edge")
     api.nvim_set_hl(0, "Visual", { bg = "#ffc0cb", fg = "NONE" })
   else
-    vim.g.background = "dark"
-    vim.o.background = "dark"
-    cmd("colorscheme edge")
-  end
-end
-
-function _G.switch_theme()
-  if vim.o.background == "dark" then
-    vim.g.background = "light"
-    vim.o.background = "light"
-    cmd("colorscheme edge")
-    api.nvim_set_hl(0, "Visual", { bg = "#ffc0cb", fg = "NONE" })
-  else
-    vim.g.background = "dark"
     vim.o.background = "dark"
     cmd("colorscheme edge")
   end

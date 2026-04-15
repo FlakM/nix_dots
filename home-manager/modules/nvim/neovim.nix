@@ -1,4 +1,4 @@
-{ config, lib, pkgs, pkgs-unstable, pkgs-master, inputs, ... }:
+{ config, lib, pkgs, pkgs-unstable, pkgs-master, inputs, flakeRoot, ... }:
 let
   inherit (pkgs) stdenv;
   jump = inputs.jump.packages.${pkgs.system}.default;
@@ -50,7 +50,7 @@ in
     graphviz
 
     # bash lsp
-    pkgs-unstable.nodePackages.bash-language-server
+    pkgs-unstable.bash-language-server
     shfmt
 
     tree-sitter
@@ -64,7 +64,7 @@ in
     # node
     typescript
     typescript-language-server
-    nodePackages.prettier
+    pkgs.prettier
     vscode-langservers-extracted
     eslint
 
@@ -251,9 +251,14 @@ in
   home.file."${config.home.homeDirectory}/.config/nvim/ftplugin/json.lua".source = config.lib.file.mkOutOfStoreSymlink ./config/ftplugin/json.lua;
   home.file."${config.home.homeDirectory}/.config/nvim/ftplugin/markdown.lua".source = config.lib.file.mkOutOfStoreSymlink ./config/ftplugin/markdown.lua;
 
+  home.file."${config.home.homeDirectory}/.config/nvim/colors/sunlight.lua".source = config.lib.file.mkOutOfStoreSymlink "${flakeRoot}/home-manager/modules/nvim/config/colors/sunlight.lua";
+  home.file."${config.home.homeDirectory}/.config/nvim/plugin/theme_cycle.lua".source = config.lib.file.mkOutOfStoreSymlink "${flakeRoot}/home-manager/modules/nvim/config/plugin/theme_cycle.lua";
+  home.file."${config.home.homeDirectory}/.config/nvim/queries/rust/highlights.scm".source = config.lib.file.mkOutOfStoreSymlink "${flakeRoot}/home-manager/modules/nvim/config/queries/rust/highlights.scm";
+
   home.file."${config.home.homeDirectory}/.ideavimrc".source = config.lib.file.mkOutOfStoreSymlink ./config/idea-vim-config.vim;
 
   xdg.configFile."lspmux/config.toml".text = ''
+    instance_timeout = 14400
     pass_environment = [
       "PATH",
       "LD_LIBRARY_PATH",
