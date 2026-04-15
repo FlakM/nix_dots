@@ -151,7 +151,22 @@ in
   #networking.interfaces.enp14s0.useDHCP = false;
   #networking.interfaces.eth0.useDHCP = true;
 
-  programs.dconf.enable = true;
+  programs.dconf = {
+    enable = true;
+    profiles.gdm.databases = [{
+      settings = {
+        "org/gnome/desktop/background" = {
+          picture-uri = "file://${inputs.self}/wallpapers/wallpaper.png";
+          picture-uri-dark = "file://${inputs.self}/wallpapers/wallpaper.png";
+          picture-options = "zoom";
+        };
+        "org/gnome/desktop/screensaver" = {
+          picture-uri = "file://${inputs.self}/wallpapers/wallpaper.png";
+          picture-options = "zoom";
+        };
+      };
+    }];
+  };
   programs.thunar = {
     enable = true;
     plugins = with pkgs.xfce; [ thunar-volman ];
@@ -328,6 +343,7 @@ in
     # temporary keys for pikvm and odroid if the tailscale is not working on amd
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINJ/re3ma3iPQIXyixzDjaQ7Jf7+M/byFMoCHmH9I3pj root@pikvm"
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDVvK18r4EdYJOW8Ml9Dp0y0TDqnVaTQswA8AdNmHyde flakm@odroid"
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBCSh4nXWO827OwprBKa63SzLnGBqzbG0h6/H9gtjn17 odroid-ccusage-push"
   ];
 
   environment.pathsToLink = [ "/share/zsh" ];
