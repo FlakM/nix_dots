@@ -90,6 +90,10 @@
       }
       source ${pkgs.zsh-vi-mode}/share/zsh-vi-mode/zsh-vi-mode.plugin.zsh
 
+      if [ -n "$TMUX" ] && [ -z "$WAYLAND_DISPLAY" ]; then
+        eval "$(tmux show-environment -s WAYLAND_DISPLAY 2>/dev/null)"
+      fi
+
       source ~/.zshrc_local 2>/dev/null || true
       source ~/.jfrog.env 2>/dev/null || true
       [ -f /run/secrets/jira_coralogix_token ] && export JIRA_API_TOKEN="$(cat /run/secrets/jira_coralogix_token)"

@@ -80,9 +80,6 @@
 
 
 
-  # Nicely reload system units when changing configs
-  systemd.user.startServices = "sd-switch";
-
   # ~/.gnupg/gpg-agent.conf
   xdg.configFile."/.gnupg/gpg-agent.conf".text = ''
     enable-ssh-support
