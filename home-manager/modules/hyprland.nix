@@ -33,6 +33,23 @@ let
       for server in $(nvr --serverlist); do
         nvr --servername "$server" --nostart --remote-send '<Esc>:lua vim.g.background = "dark"; vim.o.background = "dark"; vim.cmd("colorscheme edge")<CR>' || true
       done
+    elif [ "$curr" = "prefer-dark" ]; then
+      switch_theme "prefer-sunlight"
+      ~/.config/kitty/switch.sh sunlight ${path}
+      ${configure-gtk-light}/bin/configure-gtk-light
+      ln -sf ~/.config/rofi/themes/light.rasi ~/.config/rofi/theme.rasi
+
+      # Set Qt style for light theme
+      export QT_STYLE_OVERRIDE=Adwaita
+
+      # Restart CopyQ to apply theme
+      if pgrep -x copyq > /dev/null; then
+        QT_STYLE_OVERRIDE=Adwaita copyq exit && sleep 0.5 && QT_STYLE_OVERRIDE=Adwaita copyq &
+      fi
+
+      for server in $(nvr --serverlist); do
+        nvr --servername "$server" --nostart --remote-send '<Esc>:lua vim.o.background = "light"; vim.cmd("colorscheme sunlight")<CR>' || true
+      done
     else
       switch_theme "prefer-light"
       ~/.config/kitty/switch.sh light ${path}
