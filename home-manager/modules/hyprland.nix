@@ -1432,7 +1432,7 @@ in
         {
           timeout = 600; # 10 minutes - turn off displays
           on-timeout = "hyprctl dispatch dpms off";
-          on-resume = "hyprctl dispatch dpms on";
+          on-resume = "hyprctl dispatch dpms on; sleep 1; hyprctl reload";
         }
       ];
     };
@@ -1442,6 +1442,8 @@ in
 
   wayland.windowManager.hyprland.extraConfig = ''
         # See https://wiki.hyprland.org/Configuring/Monitors/
+        monitor = desc:LG Electronics LG ULTRAWIDE 404NTMXDC219, 5120x1440@143.98Hz, auto, 1
+        monitor = , preferred, auto, 1
 
         env = XCURSOR_SIZE,32
         env = XKB_CONFIG_ROOT,${pkgs.xkeyboard-config}/share/X11/xkb
