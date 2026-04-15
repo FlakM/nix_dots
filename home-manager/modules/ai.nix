@@ -9,6 +9,7 @@
     ccusage-codex
     opencode
     amp
+    rtk
   ];
 
   home.file = {
@@ -23,6 +24,16 @@
     ".claude/commands/hypr-screenshot.md" = {
       force = true;
       source = ./claude/commands/hypr-screenshot.md;
+    };
+    ".claude/statusline.sh" = {
+      force = true;
+      source = ./claude/statusline.sh;
+      executable = true;
+    };
+    ".claude/hooks/rtk-rewrite.sh" = {
+      force = true;
+      source = ./claude/hooks/rtk-rewrite.sh;
+      executable = true;
     };
   } // builtins.listToAttrs (map
     (name: {
