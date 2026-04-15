@@ -130,6 +130,9 @@ in
             "hyprland"
             "gtk"
           ];
+          "org.freedesktop.impl.portal.Settings" = [
+            "gtk"
+          ];
           "org.freedesktop.impl.portal.ScreenCast" = [
             "hyprland"
           ];
@@ -1342,6 +1345,57 @@ in
       "symbols"
       "unicode"
     ];
+  };
+
+  systemd.user.services.xdg-desktop-portal = {
+    Unit = {
+      Description = "Portal service";
+      PartOf = [ "graphical-session.target" ];
+      After = [ "graphical-session.target" "xdg-desktop-portal-hyprland.service" "xdg-desktop-portal-gtk.service" ];
+    };
+    Service = {
+      Type = "dbus";
+      BusName = "org.freedesktop.portal.Desktop";
+      ExecStart = "${pkgs.xdg-desktop-portal}/libexec/xdg-desktop-portal";
+      Slice = "session.slice";
+    };
+    Install = {
+      WantedBy = [ "graphical-session.target" ];
+    };
+  };
+
+  systemd.user.services.xdg-desktop-portal-hyprland = {
+    Unit = {
+      Description = "Portal service (Hyprland implementation)";
+      PartOf = [ "graphical-session.target" ];
+      After = [ "graphical-session.target" ];
+    };
+    Service = {
+      Type = "dbus";
+      BusName = "org.freedesktop.impl.portal.desktop.hyprland";
+      ExecStart = "${inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland}/libexec/xdg-desktop-portal-hyprland";
+      Slice = "session.slice";
+    };
+    Install = {
+      WantedBy = [ "graphical-session.target" ];
+    };
+  };
+
+  systemd.user.services.xdg-desktop-portal-gtk = {
+    Unit = {
+      Description = "Portal service (GTK/GNOME implementation)";
+      PartOf = [ "graphical-session.target" ];
+      After = [ "graphical-session.target" ];
+    };
+    Service = {
+      Type = "dbus";
+      BusName = "org.freedesktop.impl.portal.desktop.gtk";
+      ExecStart = "${pkgs.xdg-desktop-portal-gtk}/libexec/xdg-desktop-portal-gtk";
+      Slice = "session.slice";
+    };
+    Install = {
+      WantedBy = [ "graphical-session.target" ];
+    };
   };
 
   systemd.user.services.walker = {
