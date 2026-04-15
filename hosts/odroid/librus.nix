@@ -33,7 +33,7 @@ let
       export "$key=$value"
     done < "$SECRETS_FILE"
 
-    exec ${librusPackage}/bin/librus-test "$@"
+    exec ${librusPackage}/bin/librus-notifications "$@"
   '';
 in
 {

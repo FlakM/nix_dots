@@ -137,15 +137,8 @@
 
 
 
-  disabledModules = [ "services/misc/jellyseerr.nix" ];
-
-  imports = [
-    "${pkgs-unstable.path}/nixos/modules/services/misc/jellyseerr.nix"
-  ];
-
   services.jellyseerr = {
     enable = true;
-    package = pkgs-unstable.jellyseerr;
   };
 
   services.sonarr.enable = true;

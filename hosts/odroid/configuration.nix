@@ -22,7 +22,6 @@
     #../../shared/k3s.nix
     #../../shared/wireguard.nix
     ../../shared/netdata.nix
-    ./calibre.nix
     ./audiobookshelf.nix
     #../../shared/oom_killer.nix
     #./smokeping.nix
