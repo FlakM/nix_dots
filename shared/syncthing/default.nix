@@ -80,7 +80,7 @@
       name = "odroid";
     };
     pixel = {
-      id = "CS543I2-6DUUOEB-EMPHN7L-KEMEWMD-CG5KS57-W24GPRA-JZA46Y6-UEPYXQ4";
+      id = "5F7XKJT-22DE2FJ-IZDSRT6-46NYTNK-2VLLHLC-EAFAV4C-BKJYTNC-FCF3DAL";
       name = "pixel";
     };
     air = {

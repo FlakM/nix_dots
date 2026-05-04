@@ -50,6 +50,15 @@ in
               maxAge = "31536000";
             };
           };
+          ignores.lines = [
+            ".obsidian/workspace.json"
+            ".obsidian/workspace-mobile.json"
+            ".obsidian/daily-notes.json"
+            ".obsidian/cache"
+            ".obsidian/trash"
+            ".trash"
+            ".stversions"
+          ];
         };
 
         "${registry.folders.work-vault.id}" = {
@@ -65,6 +74,15 @@ in
               maxAge = "31536000";
             };
           };
+          ignores.lines = [
+            ".obsidian/workspace.json"
+            ".obsidian/workspace-mobile.json"
+            ".obsidian/daily-notes.json"
+            ".obsidian/cache"
+            ".obsidian/trash"
+            ".trash"
+            ".stversions"
+          ];
         };
       };
 
