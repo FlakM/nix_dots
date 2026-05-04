@@ -20,6 +20,22 @@ let
       echo "# HELP ccusage_daily_model_cost_usd Daily cost by model in USD"
       echo "# TYPE ccusage_daily_model_cost_usd gauge"
       echo "$DAILY" | ${JQ} -r '.daily[] as $d | $d.modelBreakdowns[] | select(.modelName != null) | "ccusage_daily_model_cost_usd{date=\"\($d.date)\",model=\"\(.modelName)\"} \(.cost)"'
+
+      echo "# HELP ccusage_daily_input_tokens Daily input token count"
+      echo "# TYPE ccusage_daily_input_tokens gauge"
+      echo "$DAILY" | ${JQ} -r '.daily[] | "ccusage_daily_input_tokens{date=\"\(.date)\"} \(.inputTokens // 0)"'
+
+      echo "# HELP ccusage_daily_output_tokens Daily output token count"
+      echo "# TYPE ccusage_daily_output_tokens gauge"
+      echo "$DAILY" | ${JQ} -r '.daily[] | "ccusage_daily_output_tokens{date=\"\(.date)\"} \(.outputTokens // 0)"'
+
+      echo "# HELP ccusage_daily_cache_creation_tokens Daily cache creation token count"
+      echo "# TYPE ccusage_daily_cache_creation_tokens gauge"
+      echo "$DAILY" | ${JQ} -r '.daily[] | "ccusage_daily_cache_creation_tokens{date=\"\(.date)\"} \(.cacheCreationTokens // 0)"'
+
+      echo "# HELP ccusage_daily_cache_read_tokens Daily cache read token count"
+      echo "# TYPE ccusage_daily_cache_read_tokens gauge"
+      echo "$DAILY" | ${JQ} -r '.daily[] | "ccusage_daily_cache_read_tokens{date=\"\(.date)\"} \(.cacheReadTokens // 0)"'
     } | ${CURL} --silent --data-binary @- "$PUSHGATEWAY/metrics/job/ccusage"
 
     # --- all blocks (for active block metrics + today's running total) ---
@@ -39,6 +55,10 @@ let
         echo "# HELP ccusage_block_end_timestamp Unix timestamp when current block ends"
         echo "# TYPE ccusage_block_end_timestamp gauge"
         echo "ccusage_block_end_timestamp $END_EPOCH"
+
+        echo "# HELP ccusage_block_burn_rate_usd_per_hour Current token burn rate in USD per hour"
+        echo "# TYPE ccusage_block_burn_rate_usd_per_hour gauge"
+        echo "$ALL_BLOCKS" | ${JQ} -r '.blocks[] | select(.isActive == true) | "ccusage_block_burn_rate_usd_per_hour \(.burnRate.costPerHour // 0)"'
       } | ${CURL} --silent --data-binary @- "$PUSHGATEWAY/metrics/job/ccusage-block"
     else
       ${CURL} --silent -X DELETE "$PUSHGATEWAY/metrics/job/ccusage-block" || true

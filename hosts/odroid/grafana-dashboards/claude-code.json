@@ -23,31 +23,24 @@
   "liveNow": false,
   "panels": [
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus-eink"
-      },
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "id": 100,
+      "title": "Status",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
+          "color": {"mode": "thresholds"},
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 70
-              },
-              {
-                "color": "red",
-                "value": 90
-              }
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 70},
+              {"color": "red", "value": 90}
             ]
           },
           "unit": "percent",
@@ -56,34 +49,20 @@
         },
         "overrides": []
       },
-      "gridPos": {
-        "h": 3,
-        "w": 6,
-        "x": 0,
-        "y": 0
-      },
+      "gridPos": {"h": 3, "w": 5, "x": 0, "y": 1},
       "id": 12,
       "options": {
         "colorMode": "background",
         "graphMode": "none",
         "justifyMode": "center",
         "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
         "textMode": "auto"
       },
       "pluginVersion": "9.0.0",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus-eink"
-          },
+          "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
           "editorMode": "code",
           "expr": "claude_rate_limit_pct{window=\"five_hour\"}",
           "instant": true,
@@ -96,219 +75,39 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus-eink"
-      },
+      "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 70
-              },
-              {
-                "color": "red",
-                "value": 90
-              }
-            ]
-          },
-          "unit": "percent",
-          "min": 0,
-          "max": 100
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 6,
-        "x": 12,
-        "y": 0
-      },
-      "id": 13,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "9.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus-eink"
-          },
-          "editorMode": "code",
-          "expr": "claude_rate_limit_pct{window=\"seven_day\"}",
-          "instant": true,
-          "legendFormat": "",
-          "range": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Weekly All %",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus-eink"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 86400
-              },
-              {
-                "color": "orange",
-                "value": 43200
-              }
-            ]
-          },
-          "unit": "dtdurations"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 6,
-        "x": 18,
-        "y": 0
-      },
-      "id": 14,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "9.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus-eink"
-          },
-          "editorMode": "code",
-          "expr": "claude_rate_limit_resets_at{window=\"seven_day\"} - time()",
-          "instant": true,
-          "legendFormat": "",
-          "range": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Weekly Resets In",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus-eink"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
+          "color": {"mode": "thresholds"},
           "mappings": [
-            {
-              "options": {
-                "match": "null",
-                "result": {
-                  "text": "No data"
-                }
-              },
-              "type": "special"
-            }
+            {"options": {"match": "null", "result": {"text": "No data"}}, "type": "special"}
           ],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 3600
-              },
-              {
-                "color": "orange",
-                "value": 1800
-              }
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 3600},
+              {"color": "orange", "value": 1800}
             ]
           },
           "unit": "dtdurations"
         },
         "overrides": []
       },
-      "gridPos": {
-        "h": 3,
-        "w": 6,
-        "x": 6,
-        "y": 0
-      },
+      "gridPos": {"h": 3, "w": 5, "x": 5, "y": 1},
       "id": 15,
       "options": {
         "colorMode": "background",
         "graphMode": "none",
         "justifyMode": "center",
         "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
         "textMode": "auto"
       },
       "pluginVersion": "9.0.0",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus-eink"
-          },
+          "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
           "editorMode": "code",
           "expr": "claude_rate_limit_resets_at{window=\"five_hour\"} - time()",
           "instant": true,
@@ -321,69 +120,268 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus-eink"
-      },
+      "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
+          "color": {"mode": "thresholds"},
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 10
-              },
-              {
-                "color": "orange",
-                "value": 30
-              },
-              {
-                "color": "red",
-                "value": 100
-              }
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 70},
+              {"color": "red", "value": 90}
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 3, "w": 5, "x": 10, "y": 1},
+      "id": 13,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
+          "editorMode": "code",
+          "expr": "claude_rate_limit_pct{window=\"seven_day\"}",
+          "instant": true,
+          "legendFormat": "",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Weekly All %",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 86400},
+              {"color": "orange", "value": 43200}
+            ]
+          },
+          "unit": "dtdurations"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 3, "w": 5, "x": 15, "y": 1},
+      "id": 14,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
+          "editorMode": "code",
+          "expr": "claude_rate_limit_resets_at{window=\"seven_day\"} - time()",
+          "instant": true,
+          "legendFormat": "",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Weekly Resets In",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [
+            {"options": {"match": "null", "result": {"text": "idle"}}, "type": "special"}
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 5},
+              {"color": "orange", "value": 15},
+              {"color": "red", "value": 30}
+            ]
+          },
+          "unit": "currencyUSD",
+          "decimals": 2
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 3, "w": 4, "x": 20, "y": 1},
+      "id": 26,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "value_and_name"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
+          "editorMode": "code",
+          "expr": "ccusage_block_burn_rate_usd_per_hour",
+          "instant": true,
+          "legendFormat": "$/hr",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Burn Rate",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 4},
+      "id": 101,
+      "title": "Cost",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 50},
+              {"color": "orange", "value": 200},
+              {"color": "red", "value": 400}
             ]
           },
           "unit": "currencyUSD"
         },
         "overrides": []
       },
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 0,
-        "y": 3
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 5},
+      "id": 19,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
       },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
+          "editorMode": "code",
+          "expr": "ccusage_current_week_cost_usd",
+          "instant": true,
+          "legendFormat": "",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Current Week",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 10},
+              {"color": "orange", "value": 30},
+              {"color": "red", "value": 100}
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 4, "w": 6, "x": 6, "y": 5},
+      "id": 16,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
+          "editorMode": "code",
+          "expr": "ccusage_period_cost_usd{period=\"7d\"}",
+          "instant": true,
+          "legendFormat": "",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Last 7d",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 10},
+              {"color": "orange", "value": 30},
+              {"color": "red", "value": 100}
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 5},
       "id": 1,
       "options": {
         "colorMode": "background",
         "graphMode": "none",
         "justifyMode": "center",
         "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
         "textMode": "auto"
       },
       "pluginVersion": "9.0.0",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus-eink"
-          },
+          "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
           "editorMode": "code",
           "expr": "ccusage_period_cost_usd{period=\"30d\"}",
           "instant": true,
@@ -392,35 +390,21 @@
           "refId": "A"
         }
       ],
-      "title": "Last 30d Cost",
+      "title": "Last 30d",
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus-eink"
-      },
+      "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
+          "color": {"mode": "thresholds"},
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 70
-              },
-              {
-                "color": "green",
-                "value": 90
-              }
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 40},
+              {"color": "red", "value": 70}
             ]
           },
           "unit": "percent",
@@ -429,178 +413,20 @@
         },
         "overrides": []
       },
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 6,
-        "y": 3
-      },
-      "id": 2,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "9.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus-eink"
-          },
-          "editorMode": "code",
-          "expr": "sum(max_over_time(claude_code_token_usage_tokens_total{project_name=~\"$project\", type=\"cacheRead\"}[$__range])) / (sum(max_over_time(claude_code_token_usage_tokens_total{project_name=~\"$project\", type=~\"cacheRead|cacheCreation|input\"}[$__range]))) * 100",
-          "instant": true,
-          "legendFormat": "",
-          "range": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Cache Hit Rate",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus-eink"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 3600
-              },
-              {
-                "color": "orange",
-                "value": 14400
-              }
-            ]
-          },
-          "unit": "s"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 12,
-        "y": 3
-      },
-      "id": 3,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "9.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus-eink"
-          },
-          "editorMode": "code",
-          "expr": "sum(max_over_time(claude_code_active_time_seconds_total{project_name=~\"$project\"}[$__range]))",
-          "instant": true,
-          "legendFormat": "",
-          "range": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Active Time",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus-eink"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 40
-              },
-              {
-                "color": "red",
-                "value": 70
-              }
-            ]
-          },
-          "unit": "percent",
-          "min": 0,
-          "max": 100
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 18,
-        "y": 3
-      },
+      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 5},
       "id": 4,
       "options": {
         "colorMode": "background",
         "graphMode": "none",
         "justifyMode": "center",
         "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
         "textMode": "auto"
       },
       "pluginVersion": "9.0.0",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus-eink"
-          },
+          "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
           "editorMode": "code",
           "expr": "sum(max_over_time(claude_code_cost_usage_USD_total{project_name=~\"$project\", model=~\".*opus.*\"}[$__range])) / sum(max_over_time(claude_code_cost_usage_USD_total{project_name=~\"$project\"}[$__range])) * 100",
           "instant": true,
@@ -613,62 +439,32 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus-eink"
-      },
+      "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "vis": false
-            }
-          },
+          "color": {"mode": "palette-classic"},
+          "custom": {"hideFrom": {"legend": false, "tooltip": false, "vis": false}},
           "mappings": [],
           "unit": "currencyUSD"
         },
         "overrides": []
       },
-      "gridPos": {
-        "h": 6,
-        "w": 8,
-        "x": 0,
-        "y": 7
-      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 9},
       "id": 5,
       "options": {
         "legend": {
           "displayMode": "table",
           "placement": "right",
           "showLegend": true,
-          "values": [
-            "value"
-          ]
+          "values": ["value"]
         },
         "pieType": "pie",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "tooltip": {"mode": "single", "sort": "none"}
       },
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus-eink"
-          },
+          "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
           "editorMode": "code",
           "expr": "sum by (model)(max_over_time(claude_code_cost_usage_USD_total{project_name=~\"$project\"}[$__range]))",
           "instant": true,
@@ -681,62 +477,32 @@
       "type": "piechart"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus-eink"
-      },
+      "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "vis": false
-            }
-          },
+          "color": {"mode": "palette-classic"},
+          "custom": {"hideFrom": {"legend": false, "tooltip": false, "vis": false}},
           "mappings": [],
           "unit": "short"
         },
         "overrides": []
       },
-      "gridPos": {
-        "h": 6,
-        "w": 8,
-        "x": 8,
-        "y": 7
-      },
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 9},
       "id": 6,
       "options": {
         "legend": {
           "displayMode": "table",
           "placement": "right",
           "showLegend": true,
-          "values": [
-            "value"
-          ]
+          "values": ["value"]
         },
         "pieType": "donut",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "tooltip": {"mode": "single", "sort": "none"}
       },
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus-eink"
-          },
+          "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
           "editorMode": "code",
           "expr": "sum by (type)(max_over_time(claude_code_token_usage_tokens_total{project_name=~\"$project\"}[$__range]))",
           "instant": true,
@@ -749,58 +515,169 @@
       "type": "piechart"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus-eink"
-      },
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 17},
+      "id": 102,
+      "title": "Activity — filtered by $project",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "fixedColor": "green",
-            "mode": "fixed"
-          },
+          "color": {"mode": "thresholds"},
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
+              {"color": "red", "value": null},
+              {"color": "yellow", "value": 70},
+              {"color": "green", "value": 90}
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 3, "w": 5, "x": 0, "y": 18},
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
+          "editorMode": "code",
+          "expr": "sum(max_over_time(claude_code_token_usage_tokens_total{project_name=~\"$project\", type=\"cacheRead\"}[$__range])) / (sum(max_over_time(claude_code_token_usage_tokens_total{project_name=~\"$project\", type=~\"cacheRead|cacheCreation|input\"}[$__range]))) * 100",
+          "instant": true,
+          "legendFormat": "",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Cache Hit Rate",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 3600},
+              {"color": "orange", "value": 14400}
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 3, "w": 5, "x": 5, "y": 18},
+      "id": 3,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
+          "editorMode": "code",
+          "expr": "sum(max_over_time(claude_code_active_time_seconds_total{project_name=~\"$project\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Active Time",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null}
             ]
           },
           "unit": "short"
         },
         "overrides": []
       },
-      "gridPos": {
-        "h": 3,
-        "w": 8,
-        "x": 16,
-        "y": 7
+      "gridPos": {"h": 3, "w": 4, "x": 10, "y": 18},
+      "id": 20,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
       },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
+          "editorMode": "code",
+          "expr": "count(group by (session_id)(max_over_time(claude_code_session_count_total{project_name=~\"$project\"}[$__range])))",
+          "instant": true,
+          "legendFormat": "",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Sessions",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"fixedColor": "green", "mode": "fixed"},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{"color": "green", "value": null}]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 3, "w": 5, "x": 14, "y": 18},
       "id": 7,
       "options": {
         "colorMode": "background",
         "graphMode": "none",
         "justifyMode": "center",
         "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
         "textMode": "auto"
       },
       "pluginVersion": "9.0.0",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus-eink"
-          },
+          "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
           "editorMode": "code",
           "expr": "sum(max_over_time(claude_code_lines_of_code_count_total{project_name=~\"$project\", type=\"added\"}[$__range]))",
           "instant": true,
@@ -813,58 +690,33 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus-eink"
-      },
+      "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "fixedColor": "red",
-            "mode": "fixed"
-          },
+          "color": {"fixedColor": "red", "mode": "fixed"},
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              }
-            ]
+            "steps": [{"color": "red", "value": null}]
           },
           "unit": "short"
         },
         "overrides": []
       },
-      "gridPos": {
-        "h": 3,
-        "w": 8,
-        "x": 16,
-        "y": 10
-      },
+      "gridPos": {"h": 3, "w": 5, "x": 19, "y": 18},
       "id": 8,
       "options": {
         "colorMode": "background",
         "graphMode": "none",
         "justifyMode": "center",
         "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
         "textMode": "auto"
       },
       "pluginVersion": "9.0.0",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus-eink"
-          },
+          "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
           "editorMode": "code",
           "expr": "sum(max_over_time(claude_code_lines_of_code_count_total{project_name=~\"$project\", type=\"removed\"}[$__range]))",
           "instant": true,
@@ -877,190 +729,299 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus-eink"
-      },
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 21},
+      "id": 105,
+      "title": "Tools — filtered by $project",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "red", "value": null},
+              {"color": "yellow", "value": 80},
+              {"color": "green", "value": 95}
+            ]
           },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 3, "w": 8, "x": 0, "y": 22},
+      "id": 21,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
+          "editorMode": "code",
+          "expr": "sum(max_over_time(claude_code_code_edit_tool_decision_total{project_name=~\"$project\", decision=\"accept\"}[$__range])) / sum(max_over_time(claude_code_code_edit_tool_decision_total{project_name=~\"$project\"}[$__range])) * 100",
+          "instant": true,
+          "legendFormat": "",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Accept Rate",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "blue", "value": null},
+              {"color": "green", "value": 80}
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 3, "w": 8, "x": 8, "y": 22},
+      "id": 22,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
+          "editorMode": "code",
+          "expr": "sum(max_over_time(claude_code_code_edit_tool_decision_total{project_name=~\"$project\", source=\"config\"}[$__range])) / sum(max_over_time(claude_code_code_edit_tool_decision_total{project_name=~\"$project\"}[$__range])) * 100",
+          "instant": true,
+          "legendFormat": "",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Auto-approved %",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{"color": "green", "value": null}]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 3, "w": 8, "x": 16, "y": 22},
+      "id": 23,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
+          "editorMode": "code",
+          "expr": "sum(max_over_time(claude_code_code_edit_tool_decision_total{project_name=~\"$project\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Total Tool Calls",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {"hideFrom": {"legend": false, "tooltip": false, "vis": false}},
+          "mappings": [],
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 25},
+      "id": 24,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": ["value"]
+        },
+        "pieType": "pie",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "tooltip": {"mode": "single", "sort": "none"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
+          "editorMode": "code",
+          "expr": "sum by (tool_name)(max_over_time(claude_code_code_edit_tool_decision_total{project_name=~\"$project\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "{{tool_name}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Tool Calls by Name",
+      "type": "piechart"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {"hideFrom": {"legend": false, "tooltip": false, "vis": false}},
+          "mappings": [],
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 25},
+      "id": 25,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": ["value"]
+        },
+        "pieType": "donut",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "tooltip": {"mode": "single", "sort": "none"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
+          "editorMode": "code",
+          "expr": "sum by (language)(max_over_time(claude_code_code_edit_tool_decision_total{project_name=~\"$project\", language!=\"\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "{{language}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Edits by Language",
+      "type": "piechart"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 33},
+      "id": 103,
+      "title": "Projects",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
           "custom": {
             "align": "auto",
-            "cellOptions": {
-              "type": "auto"
-            },
+            "cellOptions": {"type": "auto"},
             "inspect": false
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
-            "steps": [
-              {
-                "color": "text",
-                "value": null
-              }
-            ]
+            "steps": [{"color": "text", "value": null}]
           }
         },
         "overrides": [
           {
-            "matcher": {
-              "id": "byName",
-              "options": "Cost"
-            },
+            "matcher": {"id": "byName", "options": "Cost"},
             "properties": [
-              {
-                "id": "unit",
-                "value": "currencyUSD"
-              },
-              {
-                "id": "custom.width",
-                "value": 100
-              }
+              {"id": "unit", "value": "currencyUSD"},
+              {"id": "custom.width", "value": 100}
             ]
           },
           {
-            "matcher": {
-              "id": "byName",
-              "options": "Tokens"
-            },
+            "matcher": {"id": "byName", "options": "Tokens"},
             "properties": [
-              {
-                "id": "unit",
-                "value": "short"
-              },
-              {
-                "id": "custom.width",
-                "value": 100
-              }
+              {"id": "unit", "value": "short"},
+              {"id": "custom.width", "value": 100}
             ]
           },
           {
-            "matcher": {
-              "id": "byName",
-              "options": "Added"
-            },
+            "matcher": {"id": "byName", "options": "Added"},
             "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "green",
-                  "mode": "fixed"
-                }
-              },
-              {
-                "id": "custom.cellOptions",
-                "value": {
-                  "type": "color-text"
-                }
-              },
-              {
-                "id": "custom.width",
-                "value": 80
-              }
+              {"id": "color", "value": {"fixedColor": "green", "mode": "fixed"}},
+              {"id": "custom.cellOptions", "value": {"type": "color-text"}},
+              {"id": "custom.width", "value": 80}
             ]
           },
           {
-            "matcher": {
-              "id": "byName",
-              "options": "Removed"
-            },
+            "matcher": {"id": "byName", "options": "Removed"},
             "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "red",
-                  "mode": "fixed"
-                }
-              },
-              {
-                "id": "custom.cellOptions",
-                "value": {
-                  "type": "color-text"
-                }
-              },
-              {
-                "id": "custom.width",
-                "value": 80
-              }
+              {"id": "color", "value": {"fixedColor": "red", "mode": "fixed"}},
+              {"id": "custom.cellOptions", "value": {"type": "color-text"}},
+              {"id": "custom.width", "value": 80}
             ]
           },
           {
-            "matcher": {
-              "id": "byName",
-              "options": "Active Time"
-            },
+            "matcher": {"id": "byName", "options": "Active Time"},
             "properties": [
-              {
-                "id": "unit",
-                "value": "s"
-              },
-              {
-                "id": "custom.width",
-                "value": 100
-              }
+              {"id": "unit", "value": "s"},
+              {"id": "custom.width", "value": 100}
             ]
           },
           {
-            "matcher": {
-              "id": "byName",
-              "options": "Sessions"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 80
-              }
-            ]
+            "matcher": {"id": "byName", "options": "Sessions"},
+            "properties": [{"id": "custom.width", "value": 80}]
           },
           {
-            "matcher": {
-              "id": "byName",
-              "options": "Commits"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 80
-              }
-            ]
+            "matcher": {"id": "byName", "options": "Commits"},
+            "properties": [{"id": "custom.width", "value": 80}]
           }
         ]
       },
-      "gridPos": {
-        "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 13
-      },
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 34},
       "id": 9,
       "options": {
         "cellHeight": "sm",
-        "footer": {
-          "countRows": false,
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
-        },
+        "footer": {"countRows": false, "fields": "", "reducer": ["sum"], "show": false},
         "showHeader": true,
-        "sortBy": [
-          {
-            "desc": true,
-            "displayName": "Cost"
-          }
-        ]
+        "sortBy": [{"desc": true, "displayName": "Cost"}]
       },
       "pluginVersion": "9.0.0",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus-eink"
-          },
+          "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
           "editorMode": "code",
           "expr": "sum by (project_name)(max_over_time(claude_code_cost_usage_USD_total{project_name!=\"\"}[$__range]))",
           "format": "table",
@@ -1070,10 +1031,7 @@
           "refId": "A"
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus-eink"
-          },
+          "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
           "editorMode": "code",
           "expr": "sum by (project_name)(max_over_time(claude_code_token_usage_tokens_total{project_name!=\"\"}[$__range]))",
           "format": "table",
@@ -1083,10 +1041,7 @@
           "refId": "B"
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus-eink"
-          },
+          "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
           "editorMode": "code",
           "expr": "sum by (project_name)(max_over_time(claude_code_lines_of_code_count_total{project_name!=\"\", type=\"added\"}[$__range]))",
           "format": "table",
@@ -1096,10 +1051,7 @@
           "refId": "C"
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus-eink"
-          },
+          "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
           "editorMode": "code",
           "expr": "sum by (project_name)(max_over_time(claude_code_lines_of_code_count_total{project_name!=\"\", type=\"removed\"}[$__range]))",
           "format": "table",
@@ -1109,10 +1061,7 @@
           "refId": "D"
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus-eink"
-          },
+          "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
           "editorMode": "code",
           "expr": "sum by (project_name)(max_over_time(claude_code_active_time_seconds_total{project_name!=\"\"}[$__range]))",
           "format": "table",
@@ -1122,10 +1071,7 @@
           "refId": "E"
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus-eink"
-          },
+          "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
           "editorMode": "code",
           "expr": "count by (project_name)(group by (session_id, project_name)(max_over_time(claude_code_session_count_total{project_name!=\"\"}[$__range])))",
           "format": "table",
@@ -1135,10 +1081,7 @@
           "refId": "F"
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus-eink"
-          },
+          "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
           "editorMode": "code",
           "expr": "sum by (project_name)(max_over_time(claude_code_commit_count_total{project_name!=\"\"}[$__range]))",
           "format": "table",
@@ -1153,22 +1096,14 @@
         {
           "id": "organize",
           "options": {
-            "excludeByName": {
-              "Time": true,
-              "__name__": true,
-              "job": true,
-              "instance": true
-            },
+            "excludeByName": {"Time": true, "__name__": true, "job": true, "instance": true},
             "indexByName": {},
             "renameByName": {}
           }
         },
         {
           "id": "joinByField",
-          "options": {
-            "byField": "project_name",
-            "mode": "outer"
-          }
+          "options": {"byField": "project_name", "mode": "outer"}
         },
         {
           "id": "organize",
@@ -1191,60 +1126,47 @@
       "type": "table"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus-eink"
-      },
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 42},
+      "id": 104,
+      "title": "History",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "fillOpacity": 80
-          },
+          "color": {"mode": "palette-classic"},
+          "custom": {"fillOpacity": 80},
           "unit": "currencyUSD"
         },
         "overrides": []
       },
-      "gridPos": {
-        "h": 10,
-        "w": 24,
-        "x": 0,
-        "y": 21
-      },
-      "id": 10,
+      "gridPos": {"h": 10, "w": 12, "x": 0, "y": 43},
+      "id": 17,
       "options": {
         "barRadius": 0.05,
         "barWidth": 0.9,
         "fillOpacity": 80,
         "groupWidth": 0.7,
         "legend": {
-          "calcs": [
-            "sum"
-          ],
+          "calcs": ["sum"],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
         },
         "orientation": "auto",
-        "stacking": "normal",
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        },
-        "xField": "Date",
+        "stacking": "none",
+        "tooltip": {"mode": "multi", "sort": "desc"},
+        "xField": "Week",
         "xTickLabelRotation": -45,
         "xTickLabelSpacing": 100
       },
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus-eink"
-          },
+          "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
           "editorMode": "code",
-          "expr": "ccusage_daily_cost_usd",
+          "expr": "ccusage_weekly_cost_usd",
           "format": "table",
           "instant": true,
           "legendFormat": "__auto",
@@ -1252,61 +1174,34 @@
           "refId": "A"
         }
       ],
-      "title": "Spend Over Time (daily)",
+      "title": "Weekly Cost History",
       "transformations": [
         {
           "id": "organize",
           "options": {
-            "excludeByName": {
-              "Time": true,
-              "job": true,
-              "instance": true,
-              "__name__": true
-            },
+            "excludeByName": {"Time": true, "job": true, "instance": true, "__name__": true},
             "indexByName": {},
-            "renameByName": {
-              "date": "Date",
-              "Value": "Cost"
-            }
+            "renameByName": {"week": "Week", "Value": "Cost"}
           }
         },
         {
           "id": "sortBy",
-          "options": {
-            "fields": [
-              {
-                "displayName": "Date",
-                "desc": false
-              }
-            ]
-          }
+          "options": {"fields": [{"displayName": "Week", "desc": false}]}
         }
       ],
       "type": "barchart"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus-eink"
-      },
+      "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "fillOpacity": 80
-          },
+          "color": {"mode": "palette-classic"},
+          "custom": {"fillOpacity": 80},
           "unit": "currencyUSD"
         },
         "overrides": []
       },
-      "gridPos": {
-        "h": 10,
-        "w": 24,
-        "x": 0,
-        "y": 29
-      },
+      "gridPos": {"h": 10, "w": 12, "x": 12, "y": 43},
       "id": 11,
       "options": {
         "barRadius": 0.05,
@@ -1314,28 +1209,20 @@
         "fillOpacity": 80,
         "groupWidth": 0.7,
         "legend": {
-          "calcs": [
-            "sum"
-          ],
+          "calcs": ["sum"],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
         },
         "orientation": "auto",
         "stacking": "normal",
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        },
+        "tooltip": {"mode": "multi", "sort": "desc"},
         "xTickLabelRotation": -45,
         "xTickLabelSpacing": 100
       },
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus-eink"
-          },
+          "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
           "editorMode": "code",
           "expr": "ccusage_daily_model_cost_usd",
           "format": "table",
@@ -1345,35 +1232,118 @@
           "refId": "A"
         }
       ],
-      "title": "Historical Daily Cost (ccusage)",
+      "title": "Daily Cost by Model",
       "transformations": [
         {
           "id": "organize",
           "options": {
-            "excludeByName": {
-              "Time": true,
-              "job": true,
-              "instance": true,
-              "__name__": true
-            },
+            "excludeByName": {"Time": true, "job": true, "instance": true, "__name__": true},
             "indexByName": {},
-            "renameByName": {
-              "date": "Date",
-              "model": "Model",
-              "Value": "Cost"
-            }
+            "renameByName": {"date": "Date", "model": "Model", "Value": "Cost"}
           }
         },
         {
           "id": "sortBy",
+          "options": {"fields": [{"displayName": "Date", "desc": false}]}
+        }
+      ],
+      "type": "barchart"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {"fillOpacity": 80},
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 53},
+      "id": 18,
+      "options": {
+        "barRadius": 0.05,
+        "barWidth": 0.9,
+        "fillOpacity": 80,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": ["sum"],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "stacking": "normal",
+        "tooltip": {"mode": "multi", "sort": "desc"},
+        "xField": "Date",
+        "xTickLabelRotation": -45,
+        "xTickLabelSpacing": 100
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
+          "editorMode": "code",
+          "expr": "ccusage_daily_input_tokens",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "A"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
+          "editorMode": "code",
+          "expr": "ccusage_daily_output_tokens",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "B"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
+          "editorMode": "code",
+          "expr": "ccusage_daily_cache_creation_tokens",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "C"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
+          "editorMode": "code",
+          "expr": "ccusage_daily_cache_read_tokens",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "D"
+        }
+      ],
+      "title": "Daily Token Breakdown",
+      "transformations": [
+        {
+          "id": "organize",
           "options": {
-            "fields": [
-              {
-                "displayName": "Date",
-                "desc": false
-              }
-            ]
+            "excludeByName": {"Time": true, "job": true, "instance": true, "__name__": true},
+            "indexByName": {},
+            "renameByName": {
+              "date": "Date",
+              "Value #A": "Input",
+              "Value #B": "Output",
+              "Value #C": "Cache Creation",
+              "Value #D": "Cache Read"
+            }
           }
+        },
+        {
+          "id": "joinByField",
+          "options": {"byField": "Date", "mode": "outer"}
+        },
+        {
+          "id": "sortBy",
+          "options": {"fields": [{"displayName": "Date", "desc": false}]}
         }
       ],
       "type": "barchart"
@@ -1382,9 +1352,7 @@
   "refresh": "30s",
   "schemaVersion": 37,
   "style": "dark",
-  "tags": [
-    "claude-code"
-  ],
+  "tags": ["claude-code"],
   "templating": {
     "list": [
       {
@@ -1394,10 +1362,7 @@
           "text": "All",
           "value": "$__all"
         },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus-eink"
-        },
+        "datasource": {"type": "prometheus", "uid": "prometheus-eink"},
         "definition": "label_values(claude_code_cost_usage_USD_total, project_name)",
         "hide": 0,
         "includeAll": true,
@@ -1416,10 +1381,7 @@
       }
     ]
   },
-  "time": {
-    "from": "now-30d",
-    "to": "now"
-  },
+  "time": {"from": "now-30d", "to": "now"},
   "timepicker": {},
   "timezone": "",
   "title": "Claude Code",
