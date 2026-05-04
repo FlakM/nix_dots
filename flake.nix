@@ -69,7 +69,7 @@
     };
 
     eink-bridge = {
-      url = "github:FlakM/eink-bridge";
+      url = "path:/home/flakm/programming/flakm/eink-bridge";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
