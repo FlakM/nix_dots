@@ -1,8 +1,9 @@
 module github.com/coralogix/cx-grpc-web-shim
 
-go 1.23
+go 1.24.0
 
 require (
+	github.com/go-sql-driver/mysql v1.4.0
 	github.com/improbable-eng/grpc-web v0.15.0
 	github.com/mwitkow/grpc-proxy v0.0.0-20230212185441-f345521cb9c9
 	google.golang.org/grpc v1.55.0
@@ -17,6 +18,7 @@ require (
 	golang.org/x/net v0.8.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
 	golang.org/x/text v0.8.0 // indirect
+	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
 	nhooyr.io/websocket v1.8.6 // indirect
 )

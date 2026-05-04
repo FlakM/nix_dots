@@ -46,7 +46,7 @@ let
     pname = "cx-grpc-web-shim";
     version = "0.1.0";
     src = ./cx-grpc-web-shim;
-    vendorHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+    vendorHash = "sha256-v0/xbXlziAevFCDrGNtNDiJ4S+hNNxzLkz6RN0ztkJY=";
   };
 
   upstreams = ''
@@ -55,6 +55,16 @@ let
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
     proxy_set_header X-Forwarded-Host $host;
+    # sso-service's /v2/saml/ssologin uses Origin to derive the team slug
+    # (subdomain), and rejects with 400 when missing. Browsers omit Origin
+    # on same-origin GETs — synthesize from $http_host in that case, but
+    # preserve the real Origin on cross-origin XHRs (otherwise the team
+    # slug extraction picks `dashboard` instead of the real team host).
+    set $effective_origin $http_origin;
+    if ($effective_origin = "") {
+        set $effective_origin "$scheme://$http_host";
+    }
+    proxy_set_header Origin $effective_origin;
     proxy_http_version 1.1;
     proxy_redirect off;
     proxy_connect_timeout 60s;
@@ -95,11 +105,80 @@ let
       proxyPass = "http://sts-upstream";
       extraConfig = "${upstreams}";
     };
-    # gRPC-Web → gRPC translation via Envoy (port 8085) to identity-service:6666.
-    # Browsers can't speak native gRPC (no JS API for HTTP/2 trailers); Envoy's
-    # `grpc_web` http_filter parses the HTTP/1.1 grpc-web body framing and
-    # re-emits it as HTTP/2 gRPC to the upstream. nginx is plain proxy_pass.
+    # Internal subrequest used by `auth_request` below. Hits cx-grpc-shim's
+    # /auth-context endpoint, which reads `coralogix_global_session`,
+    # validates it against STS (with an in-shim TTL cache so we don't
+    # hammer STS once per REST call), and returns 200 with the minted
+    # `x-coralogix-auth` header (the AuthContext that Istio normally
+    # synthesises in prod). 401 if the cookie is missing or rejected.
+    "= /_auth_context" = {
+      extraConfig = ''
+        internal;
+        proxy_pass http://envoy-grpc-upstream/auth-context;
+        proxy_pass_request_body off;
+        proxy_set_header Content-Length "";
+        proxy_set_header Host $host;
+        proxy_set_header Cookie $http_cookie;
+        proxy_set_header Origin $effective_origin;
+      '';
+    };
+    # webapi REST endpoints — local Node.js process on :8086. webapi expects
+    # `x-coralogix-auth` (Istio's AuthContext header) — it can't authenticate
+    # purely from the cookie. We mint that header via the auth_request
+    # subrequest above, then forward to webapi.
+    "/api/v1/" = {
+      proxyPass = "http://webapi-upstream";
+      extraConfig = ''
+        ${upstreams}
+        auth_request /_auth_context;
+        auth_request_set $auth_ctx $upstream_http_x_coralogix_auth;
+        proxy_set_header X-Coralogix-Auth $auth_ctx;
+      '';
+    };
+    "/api/v2/" = {
+      proxyPass = "http://webapi-upstream";
+      extraConfig = ''
+        ${upstreams}
+        auth_request /_auth_context;
+        auth_request_set $auth_ctx $upstream_http_x_coralogix_auth;
+        proxy_set_header X-Coralogix-Auth $auth_ctx;
+      '';
+    };
+    # gRPC-Web → gRPC translation via the cx-grpc-web-shim (port 8085).
+    # Browsers can't speak native gRPC (no JS API for HTTP/2 trailers); the
+    # shim parses the HTTP/1.1 grpc-web body framing and re-emits it as
+    # HTTP/2 gRPC to the right upstream (identity:6666 or permissions:8083),
+    # injecting `x-coralogix-auth` minted from the session cookie. nginx is
+    # plain proxy_pass; the shim handles backend routing by service prefix.
     "/com.coralogix.identity." = {
+      proxyPass = "http://envoy-grpc-upstream";
+      extraConfig = "${upstreams}";
+    };
+    "/com.coralogix.permissions." = {
+      proxyPass = "http://envoy-grpc-upstream";
+      extraConfig = "${upstreams}";
+    };
+    "/com.coralogix.landingpage." = {
+      proxyPass = "http://envoy-grpc-upstream";
+      extraConfig = "${upstreams}";
+    };
+    "/com.coralogix.organisations." = {
+      proxyPass = "http://envoy-grpc-upstream";
+      extraConfig = "${upstreams}";
+    };
+    "/com.coralogix.provisioning." = {
+      proxyPass = "http://envoy-grpc-upstream";
+      extraConfig = "${upstreams}";
+    };
+    "/com.coralogixapis." = {
+      proxyPass = "http://envoy-grpc-upstream";
+      extraConfig = "${upstreams}";
+    };
+    "/com.coralogix.apikeys." = {
+      proxyPass = "http://envoy-grpc-upstream";
+      extraConfig = "${upstreams}";
+    };
+    "/com.coralogix.users." = {
       proxyPass = "http://envoy-grpc-upstream";
       extraConfig = "${upstreams}";
     };
@@ -248,6 +327,9 @@ in
       upstream envoy-grpc-upstream {
         server 127.0.0.1:8085;
       }
+      upstream webapi-upstream {
+        server 127.0.0.1:8086;
+      }
     '';
     virtualHosts = {
       "aaa-multisaml-testing.cx.test" = teamHost "aaa-multisaml-testing.cx.test";
@@ -270,18 +352,37 @@ in
   # Istio. Locally we mint it: read the coralogix_global_session cookie,
   # call STS /auth/v1/session (cookie-validated) to resolve user/team, then
   # encode and forward as gRPC over HTTP/2 to identity-service:6666.
-  systemd.services.cx-grpc-shim = {
+  systemd.services.cx-grpc-shim = let
+    # Fetch MySQL creds from staging k8s secret at startup. The shim needs
+    # them to look up `users.id` UUID by (user_account_id, team_id) — the
+    # AuthContext field 1 must be the UUID, not the user_account_id, or
+    # identity-service handlers 404 with "User not found".
+    runWrapper = pkgs.writeShellScript "cx-grpc-shim-wrapper" ''
+      set -euo pipefail
+      export PATH=${pkgs.kubectl}/bin:${pkgs.coreutils}/bin:$PATH
+      decode() {
+        ${pkgs.kubectl}/bin/kubectl --kubeconfig=/home/flakm/.kube/config \
+          get secret -n default external-secret-a-a-a \
+          -o "jsonpath={.data.$1}" | ${pkgs.coreutils}/bin/base64 -d
+      }
+      export APP_MYSQL_HOST="$(decode MYSQL_HOST | ${pkgs.gnused}/bin/sed 's/\.$//')"
+      export APP_MYSQL_PORT="$(decode MYSQL_PORT)"
+      export APP_MYSQL_USERNAME="$(decode MYSQL_USERNAME)"
+      export APP_MYSQL_PASSWORD="$(decode MYSQL_PASSWORD)"
+      export APP_MYSQL_SCHEMA=Coralogix
+      exec ${cxGrpcShim}/bin/cx-grpc-web-shim
+    '';
+  in {
     description = "gRPC-Web → gRPC translator with cookie→AuthContext minting";
     wantedBy = [ "multi-user.target" ];
     after = [ "network-online.target" ];
     requires = [ "network-online.target" ];
     serviceConfig = {
-      ExecStart = "${cxGrpcShim}/bin/cx-grpc-web-shim";
+      ExecStart = "${runWrapper}";
       Restart = "on-failure";
       RestartSec = 2;
-      DynamicUser = true;
-      ProtectSystem = "strict";
-      ProtectHome = true;
+      User = "flakm";
+      Group = "users";
       NoNewPrivileges = true;
       RestrictAddressFamilies = [ "AF_INET" "AF_INET6" ];
     };

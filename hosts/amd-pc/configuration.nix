@@ -20,6 +20,7 @@ in
     ../../shared/mount-atuin.nix
     #./clickhouse.nix
     ./microvm.nix
+    ./coralogix-dev-proxy.nix
   ];
 
   # Root dataset still needs a fileSystems entry even when we rely on ZFS
@@ -92,6 +93,16 @@ in
     ''
       127.0.0.1 modivo.local
       fdf3:e1c5:2572::f:9:1 eobuwie-db.local
+
+      # cx.test — local-dev parent domain (RFC 6761 reserved-for-testing TLD)
+      # so SSO cookies set with domain=cx.test are sent to all team
+      # subdomains, mirroring the *.coralogix.com cookie sharing in
+      # staging/prod. Avoids `.localhost`'s special browser handling.
+      127.0.0.1 sso.cx.test
+      127.0.0.1 dashboard.cx.test
+      127.0.0.1 aaa-multisaml-testing.cx.test
+      127.0.0.1 aaa-multisaml-testing-org1.cx.test
+      127.0.0.1 aaa-multisaml-testing-org2.cx.test
     '';
 
 
@@ -99,20 +110,27 @@ in
   #boot.kernel.sysctl."net.ipv6.conf.all.forwarding" = 1;
   programs.hyprland = {
     enable = true;
+    package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
+    portalPackage = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
     systemd.setPath.enable = true;
     withUWSM = true;
   };
 
+  # Route UWSM through start-hyprland so Hyprland gets its watchdog fd and stops
+  # warning "Hyprland was started without start-hyprland". The nixpkgs module
+  # hardcodes binPath to the bare Hyprland binary.
+  programs.uwsm.waylandCompositors.hyprland.binPath = lib.mkForce "/run/current-system/sw/bin/start-hyprland";
+
   xdg.portal = {
     enable = true;
     xdgOpenUsePortal = true;
-    extraPortals = with pkgs; [
-      xdg-desktop-portal-hyprland
-      xdg-desktop-portal-gtk
+    extraPortals = [
+      inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland
+      pkgs.xdg-desktop-portal-gtk
     ];
-    configPackages = with pkgs; [
-      xdg-desktop-portal-gtk
-      xdg-desktop-portal-hyprland
+    configPackages = [
+      pkgs.xdg-desktop-portal-gtk
+      inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland
     ];
   };
 
@@ -173,6 +191,9 @@ in
   };
   programs.xfconf.enable = true;
 
+  # nix-ld lets dynamically-linked binaries from non-Nix sources run
+  # (e.g. fnm-installed Node, prebuilt vendor toolchains).
+  programs.nix-ld.enable = true;
 
   security.rtkit.enable = true;
   security.pam.services.hyprlock = { }; # allow hyprlock to authenticate
@@ -250,10 +271,6 @@ in
   services.dbus.enable = true;
 
 
-  boot.kernelParams = [
-    "video=DP-1:5120x1440@144"
-  ];
-
   hardware = {
     graphics = {
       enable = true;
@@ -261,8 +278,6 @@ in
         mesa
         libva
         libva-utils
-        libvdpau-va-gl
-        libva-vdpau-driver
       ];
       extraPackages32 = with pkgs.pkgsi686Linux; [
         mesa
