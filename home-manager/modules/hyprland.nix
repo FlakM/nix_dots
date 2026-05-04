@@ -25,9 +25,9 @@ let
       # Set Qt style for dark theme
       export QT_STYLE_OVERRIDE=Adwaita-Dark
 
-      # Restart CopyQ to apply theme
+      # Live-swap CopyQ theme (no restart needed)
       if pgrep -x copyq > /dev/null; then
-        QT_STYLE_OVERRIDE=Adwaita-Dark copyq exit && sleep 0.5 && QT_STYLE_OVERRIDE=Adwaita-Dark copyq &
+        copyq loadTheme ${config.home.homeDirectory}/.config/copyq/themes/dark.ini || true
       fi
 
       for server in $(nvr --serverlist); do
@@ -42,9 +42,8 @@ let
       # Set Qt style for light theme
       export QT_STYLE_OVERRIDE=Adwaita
 
-      # Restart CopyQ to apply theme
       if pgrep -x copyq > /dev/null; then
-        QT_STYLE_OVERRIDE=Adwaita copyq exit && sleep 0.5 && QT_STYLE_OVERRIDE=Adwaita copyq &
+        copyq loadTheme ${config.home.homeDirectory}/.config/copyq/themes/light.ini || true
       fi
 
       for server in $(nvr --serverlist); do
@@ -59,9 +58,8 @@ let
       # Set Qt style for light theme
       export QT_STYLE_OVERRIDE=Adwaita
 
-      # Restart CopyQ to apply theme
       if pgrep -x copyq > /dev/null; then
-        QT_STYLE_OVERRIDE=Adwaita copyq exit && sleep 0.5 && QT_STYLE_OVERRIDE=Adwaita copyq &
+        copyq loadTheme ${config.home.homeDirectory}/.config/copyq/themes/light.ini || true
       fi
 
       for server in $(nvr --serverlist); do
@@ -114,42 +112,6 @@ in
 {
 
 
-  xdg = {
-    portal = {
-      enable = true;
-
-      config = {
-        common = {
-          default = [
-            "hyprland"
-            "gtk"
-          ];
-        };
-        hyprland = {
-          default = [
-            "hyprland"
-            "gtk"
-          ];
-          "org.freedesktop.impl.portal.Settings" = [
-            "gtk"
-          ];
-          "org.freedesktop.impl.portal.ScreenCast" = [
-            "hyprland"
-          ];
-          "org.freedesktop.impl.portal.Screenshot" = [
-            "hyprland"
-          ];
-        };
-      };
-
-      xdgOpenUsePortal = true;
-
-      extraPortals = [
-        inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland
-        pkgs.xdg-desktop-portal-gtk
-      ];
-    };
-  };
 
   # define session variables
   home.sessionVariables = {
@@ -543,6 +505,63 @@ in
       tab_bar_item_css="\n    ;color: #6c7086\n    ;background: #1e1e2e\n    ;padding: 6px\n    ;margin: 2px"
       tab_bar_scroll_buttons_css=
       tab_bar_sel_item_css="\n    ;background: #313244\n    ;color: #89b4fa\n    ;border-bottom: 2px solid #89b4fa"
+      tab_bar_tab_close_button_css=
+      tab_tree_css=
+      tab_tree_item_css=
+      tab_tree_sel_item_css=
+      tool_bar_css=
+      tool_button_css=
+      use_system_icons=false
+    '';
+  };
+
+  xdg.configFile."copyq/themes/light.ini" = {
+    text = ''
+      [General]
+      alt_bg=#eff1f5
+      alt_item_css=
+      bg=#eff1f5
+      cur_item_css="\n    ;border: 2px solid #1e66f5\n    ;background: #dce0e8"
+      css=
+      css_template_items=
+      css_template_main_window=
+      css_template_menu=
+      css_template_notification=
+      edit_bg=#e6e9ef
+      edit_fg=#4c4f69
+      edit_font=
+      fg=#4c4f69
+      find_bg=#1e66f5
+      find_fg=#eff1f5
+      font=FiraCode Nerd Font,14,-1,5,50,0,0,0,0,0
+      font_antialiasing=true
+      hover_item_css=
+      icon_size=16
+      item_css="\n    ;padding: 4px\n    ;margin: 2px"
+      item_spacing=2
+      menu_bar_css="\n    ;background: #e6e9ef\n    ;color: #4c4f69"
+      menu_bar_selected_css="\n    ;background: #1e66f5\n    ;color: #eff1f5"
+      menu_bar_disabled_css=
+      menu_css=
+      notes_bg=#e6e9ef
+      notes_fg=#4c4f69
+      notes_font=
+      notification_bg=#e6e9ef
+      notification_fg=#4c4f69
+      notification_font=
+      num_fg=#1e66f5
+      search_bar="\n    ;background: #e6e9ef\n    ;color: #4c4f69\n    ;border: 1px solid #1e66f5\n    ;margin: 2px"
+      search_bar_focused="\n    ;border: 2px solid #1e66f5"
+      sel_bg=#1e66f5
+      sel_fg=#eff1f5
+      sel_item_css=
+      show_number=true
+      show_scrollbars=false
+      style_main_window=false
+      tab_bar_css="\n    ;background: #eff1f5"
+      tab_bar_item_css="\n    ;color: #9ca0b0\n    ;background: #eff1f5\n    ;padding: 6px\n    ;margin: 2px"
+      tab_bar_scroll_buttons_css=
+      tab_bar_sel_item_css="\n    ;background: #e6e9ef\n    ;color: #1e66f5\n    ;border-bottom: 2px solid #1e66f5"
       tab_bar_tab_close_button_css=
       tab_tree_css=
       tab_tree_item_css=
@@ -1271,7 +1290,6 @@ in
       enableXdgAutostart = true; # 🔑 start XDG‐autostart apps
     };
     package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
-    portalPackage = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
   };
 
 
@@ -1347,56 +1365,6 @@ in
     ];
   };
 
-  systemd.user.services.xdg-desktop-portal = {
-    Unit = {
-      Description = "Portal service";
-      PartOf = [ "graphical-session.target" ];
-      After = [ "graphical-session.target" "xdg-desktop-portal-hyprland.service" "xdg-desktop-portal-gtk.service" ];
-    };
-    Service = {
-      Type = "dbus";
-      BusName = "org.freedesktop.portal.Desktop";
-      ExecStart = "${pkgs.xdg-desktop-portal}/libexec/xdg-desktop-portal";
-      Slice = "session.slice";
-    };
-    Install = {
-      WantedBy = [ "graphical-session.target" ];
-    };
-  };
-
-  systemd.user.services.xdg-desktop-portal-hyprland = {
-    Unit = {
-      Description = "Portal service (Hyprland implementation)";
-      PartOf = [ "graphical-session.target" ];
-      After = [ "graphical-session.target" ];
-    };
-    Service = {
-      Type = "dbus";
-      BusName = "org.freedesktop.impl.portal.desktop.hyprland";
-      ExecStart = "${inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland}/libexec/xdg-desktop-portal-hyprland";
-      Slice = "session.slice";
-    };
-    Install = {
-      WantedBy = [ "graphical-session.target" ];
-    };
-  };
-
-  systemd.user.services.xdg-desktop-portal-gtk = {
-    Unit = {
-      Description = "Portal service (GTK/GNOME implementation)";
-      PartOf = [ "graphical-session.target" ];
-      After = [ "graphical-session.target" ];
-    };
-    Service = {
-      Type = "dbus";
-      BusName = "org.freedesktop.impl.portal.desktop.gtk";
-      ExecStart = "${pkgs.xdg-desktop-portal-gtk}/libexec/xdg-desktop-portal-gtk";
-      Slice = "session.slice";
-    };
-    Install = {
-      WantedBy = [ "graphical-session.target" ];
-    };
-  };
 
   systemd.user.services.walker = {
     Unit = {
@@ -1463,8 +1431,7 @@ in
             disable_hyprland_logo = true
             disable_splash_rendering = true
             force_default_wallpaper = 0
-            vfr = true
-            vrr = 0
+            vrr = 1
         }
 
         # For all categories, see https://wiki.hyprland.org/Configuring/Variables/
@@ -1545,30 +1512,45 @@ in
         exec-once = dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=Hyprland
 
 
-        windowrule = workspace 2,title:^(Firefox)(.*)$
+        windowrule {
+            name = firefox
+            match:class = ^(firefox)$
+            workspace = 2
+        }
+
         exec-once=[workspace 1 silent] kitty
         exec-once=[workspace 2 silent] uwsm app -- firefox
 
-        # Transparency via Hyprland
-        # windowrulev2 = opacity 0.90, class:^(kitty)$
-        windowrulev2 = opacity 1.00, class:^(firefox)$
-        windowrulev2 = opacity 1.00, class:^(spotify)$
+        windowrule {
+            name = spotify-opacity
+            match:class = ^(spotify)$
+            opacity = 1.00
+        }
 
-        # Floating calendar window
-        windowrulev2 = float, class:^(floating-calendar)$
-        windowrulev2 = size 1400 900, class:^(floating-calendar)$
-        windowrulev2 = center, class:^(floating-calendar)$
+        windowrule {
+            name = floating-calendar
+            match:class = ^(floating-calendar)$
+            float = yes
+            size = 1400 900
+            center = yes
+        }
 
-        # CopyQ clipboard manager - centered like Rofi
-        windowrulev2 = float, class:^(com.github.hluk.copyq)$
-        windowrulev2 = size 30% 50%, class:^(com.github.hluk.copyq)$
-        windowrulev2 = center, class:^(com.github.hluk.copyq)$
-        windowrulev2 = opacity 1.00, class:^(com.github.hluk.copyq)$
+        windowrule {
+            name = copyq
+            match:class = ^(com.github.hluk.copyq)$
+            float = yes
+            size = 30% 50%
+            center = yes
+        }
 
         exec-once=[workspace 3 silent] obsidian
         exec-once=[workspace 3 silent] kitty --title "obsidian" --directory /home/flakm/obsidian/work -- bash -c "tmux new-session -d -s obsidian 'nvim' && tmux attach-session -t obsidian"
-        windowrulev2 = float, title:^(obsidian)$
-        windowrulev2 = fullscreen, title:^(obsidian)$
+        windowrule {
+            name = obsidian
+            match:title = ^(obsidian)$
+            float = yes
+            fullscreen = yes
+        }
 
         exec-once=[workspace 4 silent] spotify
         exec-once=[workspace 6 silent] kdeconnect-app
