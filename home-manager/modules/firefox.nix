@@ -29,7 +29,9 @@
       settings = {
         # Hardware video acceleration (AMD VA-API)
         "media.ffmpeg.vaapi.enabled" = true;
-        "media.av1.enabled" = true;
+        # AV1 hardware decode on Raphael (VCN3) + Mesa produces green frames on
+        # YouTube; force VP9 fallback until upstream fixes it.
+        "media.av1.enabled" = false;
         "media.rdd-ffmpeg.enabled" = true;
         "media.rdd-vpx.enabled" = true;
         "media.navigator.mediadatadecoder_vpx_enabled" = true;

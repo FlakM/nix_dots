@@ -5,6 +5,8 @@
     kubectx
     kubectl
     istioctl
+    argo-workflows
+    argocd
   ];
 
   programs.k9s = {

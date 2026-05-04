@@ -37,7 +37,7 @@
     ./modules/starship.nix
     ./modules/zsh.nix
 
-    ./modules/zellij.nix
+    #./modules/zellij.nix
     ./modules/jira_cli.nix
 
     ./modules/scala.nix

@@ -17,10 +17,8 @@ let
       wrapProgram $out/bin/google-chrome-stable \
         --set NIXOS_OZONE_WL 1 \
         --add-flags "--ozone-platform=wayland" \
-        --add-flags "--enable-features=UseOzonePlatform,VaapiVideoDecoder,VaapiVideoEncoder,Vulkan" \
-        --add-flags "--use-gl=angle" \
-        --add-flags "--use-angle=vulkan" \
-        --add-flags "--enable-accelerated-video-decode"
+        --add-flags "--enable-features=UseOzonePlatform,VaapiVideoDecoder,VaapiVideoEncoder" \
+        --add-flags "--disable-features=VaapiAV1Decoder"
     '';
   };
 
