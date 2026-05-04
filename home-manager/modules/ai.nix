@@ -1,5 +1,10 @@
-{ config, pkgs, llm-agents-pkgs, ... }:
-
+{ config, pkgs, lib, llm-agents-pkgs, inputs, ... }:
+let
+  cxSkills = inputs.cx-cli.packages.${pkgs.system}.skills;
+  cxSkillFiles = lib.mapAttrs'
+    (name: _: lib.nameValuePair ".claude/skills/${name}" { force = true; source = "${cxSkills}/${name}"; })
+    (lib.filterAttrs (_: t: t == "directory") (builtins.readDir cxSkills));
+in
 {
   home.packages = with llm-agents-pkgs; [
     claude-code
@@ -10,6 +15,7 @@
     opencode
     amp
     rtk
+    inputs.cx-cli.packages.${pkgs.system}.default
   ];
 
   home.file = {
@@ -40,7 +46,8 @@
       name = ".claude/skills/${name}";
       value = { force = true; source = ./claude/skills/${name}; };
     })
-    (builtins.attrNames (builtins.readDir ./claude/skills)));
+    (builtins.attrNames (builtins.readDir ./claude/skills)))
+  // cxSkillFiles;
 
   xdg.configFile."opencode/opencode.json" = {
     force = true;

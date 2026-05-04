@@ -79,6 +79,8 @@
     };
 
     nix-openclaw.url = "github:openclaw/nix-openclaw";
+
+    cx-cli.url = "github:coralogix/cx-cli";
   };
 
   nixConfig = {
