@@ -96,6 +96,17 @@
           labels.instance = "otelcol";
         }];
       }
+      {
+        job_name = "multi-saml-poc";
+        scrape_interval = "15s";
+        metrics_path = "/metrics";
+        static_configs = [
+          { targets = [ "amd-pc:3030" ]; labels = { instance = "amd-pc"; service = "sso-service"; }; }
+          { targets = [ "amd-pc:8081" ]; labels = { instance = "amd-pc"; service = "identity-service"; }; }
+          { targets = [ "amd-pc:8082" ]; labels = { instance = "amd-pc"; service = "organisations-service"; }; }
+          { targets = [ "amd-pc:8083" ]; labels = { instance = "amd-pc"; service = "permissions-service"; }; }
+        ];
+      }
     ];
   };
 
