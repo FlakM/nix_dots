@@ -81,6 +81,11 @@
     nix-openclaw.url = "github:openclaw/nix-openclaw";
 
     cx-cli.url = "github:coralogix/cx-cli";
+
+    coralogix-private = {
+      url = "git+ssh://git@github.com/FlakM/nix-coralogix-private";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   nixConfig = {

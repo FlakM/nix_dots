@@ -20,7 +20,7 @@ in
     ../../shared/mount-atuin.nix
     #./clickhouse.nix
     ./microvm.nix
-    ./coralogix-dev-proxy.nix
+    inputs.coralogix-private.nixosModules.coralogixDevProxy
   ];
 
   # Root dataset still needs a fileSystems entry even when we rely on ZFS

@@ -5,7 +5,3 @@ result
 # Generated database configurations containing sensitive information
 # These should remain private and not be committed to the repository
 generated/
-
-# Go build artifacts
-hosts/amd-pc/cx-grpc-web-shim/cx-grpc-web-shim
-hosts/amd-pc/cx-grpc-web-shim/vendor/
