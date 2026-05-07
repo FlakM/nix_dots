@@ -1,14 +1,22 @@
-{ ... }: {
+{ pkgs, ... }: {
 
-  # one time setup of zfs permissions
-  # local:
-  #   sudo zfs allow -d backup create,receive,destroy,rollback,snapshot,hold,release,mount rpool/nixos/home/programming
-  # remote:
-  #   sudo zfs allow backup snapshot,send,receive,destroy tank/backup
   users.users.backup = {
     isNormalUser = true;
     home = "/home/backup";
     description = "Backup User";
+  };
+
+  systemd.services.zfs-allow-rpool-nixos-home-programming = {
+    description = "Ensure ZFS delegated permissions for syncoid backup user";
+    wantedBy = [ "syncoid-odroid-programming.service" ];
+    before = [ "syncoid-odroid-programming.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    script = ''
+      ${pkgs.zfs}/bin/zfs allow backup send,hold,snapshot,destroy,mount,create,receive,release,rollback rpool/nixos/home/programming
+    '';
   };
 
   services.syncoid = {

@@ -287,6 +287,10 @@ in
     bluetooth = {
       enable = true;
       powerOnBoot = true;
+      settings = {
+        General.Experimental = true;
+        Policy.ReconnectAttempts = 0;
+      };
     };
     # MediaTek MT7922 Bluetooth controller (0e8d:0616) requires firmware from linux-firmware
     # Without this, the controller fails with "wmt command timed out" and "Failed to send wmt patch dwnld"
@@ -613,6 +617,8 @@ in
 
   services.udev.extraRules = ''
     KERNEL=="i2c-[0-9]*", GROUP="i2c", MODE="0660"
+    # MediaTek MT7922 BT (0e8d:0616): firmware upload times out when USB autosuspend kicks in
+    SUBSYSTEM=="usb", ATTRS{idVendor}=="0e8d", ATTRS{idProduct}=="0616", ATTR{power/control}="on"
   '';
 
   # Add user to i2c group
@@ -645,6 +651,11 @@ in
   # enable gnome keyring for nextcloud-client to store the password
   services.gnome.gnome-keyring.enable = true;
   security.pam.services.gdm.enableGnomeKeyring = true;
+
+  services.zfs.autoScrub = {
+    enable = true;
+    interval = "monthly";
+  };
 
   services.bpftune.enable = true;
 

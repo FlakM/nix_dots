@@ -94,6 +94,10 @@
         eval "$(tmux show-environment -s WAYLAND_DISPLAY 2>/dev/null)"
       fi
 
+      if command -v cx >/dev/null 2>&1; then
+        source <(COMPLETE=zsh cx)
+      fi
+
       source ~/.zshrc_local 2>/dev/null || true
       source ~/.jfrog.env 2>/dev/null || true
       [ -f /run/secrets/jira_coralogix_token ] && export JIRA_API_TOKEN="$(cat /run/secrets/jira_coralogix_token)"

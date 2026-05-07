@@ -106,11 +106,16 @@
   };
 
   # ~/.gnupg/gpg-agent.conf
-  # Use pinentry-auto wrapper: GUI (gnome3) when no TTY (e.g. Claude Code),
-  # curses when running in a terminal.
+  # pinentry-auto: prefer GUI when a graphical session is available (Hyprland,
+  # X11, and Claude Code's spawned shells which inherit WAYLAND_DISPLAY/DISPLAY).
+  # The previous "fallback to GUI when no TTY" heuristic broke for Claude Code
+  # because its shells have a TTY but no interactive terminal driver, so curses
+  # pinentry hung waiting for input.
   xdg.configFile."/.gnupg/gpg-agent.conf".text = let
     pinentry-auto = pkgs.writeShellScript "pinentry-auto" ''
-      if [ -t 0 ]; then
+      if [ -n "$WAYLAND_DISPLAY" ] || [ -n "$DISPLAY" ]; then
+        exec ${pkgs.pinentry-gnome3}/bin/pinentry-gnome3 "$@"
+      elif [ -t 0 ]; then
         exec ${pkgs.pinentry-curses}/bin/pinentry-curses "$@"
       else
         exec ${pkgs.pinentry-gnome3}/bin/pinentry-gnome3 "$@"
