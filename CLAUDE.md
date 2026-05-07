@@ -45,8 +45,16 @@ nixos-rebuild switch --target-host flakm@odroid --use-remote-sudo --flake ~/prog
 # Local switch on the Mac itself
 sudo darwin-rebuild switch --flake ~/programming/flakm/nix_dots
 
-# Remote deploy from amd-pc (requires SSH access + NOPASSWD sudo on target)
-rsync -av --exclude='.git' --exclude='result' ~/programming/flakm/nix_dots/ flakm@<host>:~/programming/flakm/nix_dots/
+# Remote deploy from amd-pc (requires SSH access + NOPASSWD sudo on target).
+# Push first so the remote can pull the same HEAD — this avoids "untracked file"
+# pitfalls where files exist on disk but aren't in git ls-files (which Nix uses
+# for dirty-tree flake sources).
+git push
+ssh flakm@<host> "cd ~/programming/flakm/nix_dots && git fetch && git reset --hard origin/main && sudo darwin-rebuild switch --flake ."
+
+# If you have uncommitted local mods you want to test on the remote, rsync them
+# on top after the reset (still excluding .git so we don't clobber the just-reset state):
+rsync -av --exclude='.git' --exclude='result' --exclude='scratch.sock' ~/programming/flakm/nix_dots/ flakm@<host>:~/programming/flakm/nix_dots/
 ssh flakm@<host> "cd ~/programming/flakm/nix_dots && sudo darwin-rebuild switch --flake ."
 ```
 
