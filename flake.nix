@@ -297,6 +297,7 @@
                 pkgs-unstable = pkgs-unstable system;
                 pkgs-master = pkgs-master system;
                 llm-agents-pkgs = llm-agents.packages.${system};
+                flakeRoot = toString ./.;
               };
               home-manager.sharedModules = homeManagerSharedModules;
               home-manager.users.${userName} = import homeManagerConfig;
