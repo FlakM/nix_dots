@@ -48,11 +48,14 @@ in
   # /boot must be on the unencrypted bpool (GRUB cannot read encrypted rpool).
   # Required because zfs-root.fileSystems.generateDataMounts = false skips
   # auto-generated entries and bpool/nixos/root has mountpoint=legacy.
+  # No zfsutil: that option is for non-legacy mountpoints; with mountpoint=legacy
+  # mount.zfs refuses with "cannot be mounted using 'zfs mount'". neededForBoot
+  # is also not set — /boot only needs to be available in stage 2 (for
+  # bootloader install), and pulling bpool into initrd is unnecessary churn.
   fileSystems."/boot" = {
     device = "bpool/nixos/root";
     fsType = "zfs";
-    options = [ "zfsutil" "X-mount.mkdir" "noatime" ];
-    neededForBoot = true;
+    options = [ "X-mount.mkdir" "noatime" ];
   };
 
   nix.package = pkgs.nixVersions.latest;

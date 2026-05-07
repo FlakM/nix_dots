@@ -1456,7 +1456,7 @@ in
             sensitivity = 0
 
             touchpad {
-                natural_scroll = no
+                natural_scroll = false
             }
         }
     
@@ -1471,7 +1471,7 @@ in
         }
     
         animations {
-            enabled = yes
+            enabled = true
     
             # Some default animations, see https://wiki.hyprland.org/Configuring/Animations/ for more
     
@@ -1494,13 +1494,6 @@ in
             }
         }
     
-        dwindle {
-            # See https://wiki.hyprland.org/Configuring/Dwindle-Layout/ for more
-            pseudotile = yes # master switch for pseudotiling. Enabling is bound to mainMod + P in the keybinds section below
-            preserve_split = yes # you probably want this
-            force_split = 2 # 0 (default): split follows mouse, 1: always split to left/top, 2: always split to right/bottom
-        }
-
         master {
             # See https://wiki.hyprland.org/Configuring/Master-Layout/ for more
             new_status = slave # new windows go to slave stack (sides), not master (center)
@@ -1539,17 +1532,17 @@ in
         windowrule {
             name = floating-calendar
             match:class = ^(floating-calendar)$
-            float = yes
+            float = true
             size = 1400 900
-            center = yes
+            center = true
         }
 
         windowrule {
             name = copyq
             match:class = ^(com.github.hluk.copyq)$
-            float = yes
+            float = true
             size = 30% 50%
-            center = yes
+            center = true
         }
 
         exec-once=[workspace 3 silent] obsidian
@@ -1557,8 +1550,8 @@ in
         windowrule {
             name = obsidian
             match:title = ^(obsidian)$
-            float = yes
-            fullscreen = yes
+            float = true
+            fullscreen = true
         }
 
         exec-once=[workspace 4 silent] spotify
