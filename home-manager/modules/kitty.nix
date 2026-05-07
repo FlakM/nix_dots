@@ -199,6 +199,10 @@ in
     executable = true;
   };
 
+  # macOS note: nix-built kitty.app has a broken signature (the nix PATH wrapper
+  # replaces the signed binary), which is fixed by re-signing in the home-manager
+  # activation script in air.nix/work.nix. If that ever stops working on a future
+  # macOS, drop the `package` override below and add `kitty` to homebrew.casks.
   programs.kitty = {
     package = kitty;
     enable = true;

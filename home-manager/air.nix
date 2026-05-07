@@ -33,6 +33,12 @@
   };
 
 
+  # Disable the default ~/Applications/Home Manager Apps symlink directory —
+  # Launch Services follows the symlinks into /nix/store and registers the
+  # store paths, producing duplicate launcher entries that compete with the
+  # signed trampolines below. The trampolines fully replace it.
+  targets.darwin.linkApps.enable = false;
+
   # copied from https://github.com/LnL7/nix-darwin/issues/214#issuecomment-2050027696
   # to enable trampolines for home-manager
   home.activation = {
@@ -44,12 +50,16 @@
       app_target="$app_target_base/$moniker"
       mkdir -p "$app_target"
       ${pkgs.rsync}/bin/rsync $rsyncArgs "$apps_source/" "$app_target" || true
-      # nix wrappers replace signed binaries, breaking the .app code signatures;
-      # re-sign with ad-hoc so macOS treats them as launchable apps
+      # Nix wraps binaries inside .app/Contents/MacOS, replacing the originally
+      # signed executable and breaking the bundle's resource seal. Without a valid
+      # signature macOS won't surface the app in Spotlight. Re-sign with ad-hoc.
       for app in "$app_target"/*.app; do
         [ -d "$app" ] || continue
-        chmod -R u+w "$app" || true
-        /usr/bin/codesign --force --deep --sign - "$app" 2>/dev/null || true
+        if /usr/bin/codesign -v "$app" >/dev/null 2>&1; then
+          continue
+        fi
+        chmod -R u+w "$app" 2>/dev/null || true
+        /usr/bin/codesign --force --deep --sign - "$app" || true
       done
     '';
   };

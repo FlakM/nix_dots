@@ -48,15 +48,12 @@
   services.tailscale.enable = true;
 
 
-  #system.activationScripts.postUserActivation.text = ''
-  #  rsyncArgs="--archive --checksum --chmod=-w --copy-unsafe-links --delete"
-  #  apps_source="${config.system.build.applications}/Applications"
-  #  moniker="Nix Trampolines"
-  #  app_target_base="$HOME/Applications"
-  #  app_target="$app_target_base/$moniker"
-  #  mkdir -p "$app_target"
-  #  # shellcheck disable=SC2086
-  #  ${pkgs.rsync}/bin/rsync $rsyncArgs "$apps_source/" "$app_target"
-  #'';
+  # The previous home-manager generations created a root-owned ~/Applications/Home
+  # Manager Apps/ with symlinks into /nix/store. linkApps is now disabled, but the
+  # stale directory persists and Launch Services keeps re-registering the store
+  # paths from it. Remove it as root on each system activation.
+  system.activationScripts.extraActivation.text = ''
+    rm -rf "/Users/maciek/Applications/Home Manager Apps"
+  '';
 
 }

@@ -104,6 +104,14 @@
     flakm ALL=(ALL) NOPASSWD: /run/current-system/sw/bin/darwin-rebuild, /run/current-system/sw/bin/nix*, /run/current-system/sw/bin/launchctl, /usr/bin/env nix*
   '';
 
+  # The previous home-manager generations created a root-owned ~/Applications/Home
+  # Manager Apps/ with symlinks into /nix/store. linkApps is now disabled, but the
+  # stale directory persists and Launch Services keeps re-registering the store
+  # paths from it. Remove it as root on each system activation.
+  system.activationScripts.extraActivation.text = ''
+    rm -rf "/Users/flakm/Applications/Home Manager Apps"
+  '';
+
   homebrew = {
     enable = true;
 
