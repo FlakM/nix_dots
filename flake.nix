@@ -289,7 +289,7 @@
             home-manager.darwinModules.home-manager
             nix-homebrew.darwinModules.nix-homebrew
           ] ++ extraModules ++ [
-            ({
+            {
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
               home-manager.extraSpecialArgs = {
@@ -302,10 +302,9 @@
               home-manager.users.${userName} = import homeManagerConfig;
               system.primaryUser = userName;
             }
-            // nixpkgs.lib.optionalAttrs (homeManagerBackupFileExtension != null) {
-              home-manager.backupFileExtension = homeManagerBackupFileExtension;
-            })
-          ];
+          ] ++ nixpkgs.lib.optional (homeManagerBackupFileExtension != null) {
+            home-manager.backupFileExtension = homeManagerBackupFileExtension;
+          };
         };
 
     in
