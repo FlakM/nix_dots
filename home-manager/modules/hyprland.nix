@@ -1,5 +1,14 @@
 { config, pkgs, inputs, pkgs-unstable, lib, osConfig, ... }:
 let
+  # Workaround for upstream Hyprland regression (2026-05-06, rev 78b8ce22):
+  # example/hyprland.conf was removed but CMakeLists.txt still installs it.
+  # Drop this override once upstream fixes either the install rule or the file.
+  hyprland-fixed = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland.overrideAttrs (old: {
+    postPatch = (old.postPatch or "") + ''
+      touch example/hyprland.conf
+    '';
+  });
+
   path = "${config.home.homeDirectory}/.config/current-color_scheme";
   apply-theme-script = pkgs.writeScript "apply-theme" ''
     set -e
@@ -1289,7 +1298,7 @@ in
       variables = [ "--all" ];
       enableXdgAutostart = true; # 🔑 start XDG‐autostart apps
     };
-    package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
+    package = hyprland-fixed;
   };
 
 

@@ -4,6 +4,19 @@
 
 let
   fenix = inputs.fenix.packages.${pkgs.stdenv.hostPlatform.system}.stable;
+
+  # Workaround for upstream Hyprland regression (2026-05-06, rev 78b8ce22):
+  # example/hyprland.conf was removed but CMakeLists.txt still installs it.
+  # Drop this override once upstream fixes either the install rule or the file.
+  hyprland-pkgs = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system};
+  hyprland-fixed = hyprland-pkgs.hyprland.overrideAttrs (old: {
+    postPatch = (old.postPatch or "") + ''
+      touch example/hyprland.conf
+    '';
+  });
+  xdph-fixed = hyprland-pkgs.xdg-desktop-portal-hyprland.override {
+    hyprland = hyprland-fixed;
+  };
 in
 
 {
@@ -27,6 +40,16 @@ in
   # mountpoint properties for everything else.
   fileSystems."/" = {
     device = "rpool/nixos/root";
+    fsType = "zfs";
+    options = [ "zfsutil" "X-mount.mkdir" "noatime" ];
+    neededForBoot = true;
+  };
+
+  # /boot must be on the unencrypted bpool (GRUB cannot read encrypted rpool).
+  # Required because zfs-root.fileSystems.generateDataMounts = false skips
+  # auto-generated entries and bpool/nixos/root has mountpoint=legacy.
+  fileSystems."/boot" = {
+    device = "bpool/nixos/root";
     fsType = "zfs";
     options = [ "zfsutil" "X-mount.mkdir" "noatime" ];
     neededForBoot = true;
@@ -110,8 +133,8 @@ in
   #boot.kernel.sysctl."net.ipv6.conf.all.forwarding" = 1;
   programs.hyprland = {
     enable = true;
-    package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
-    portalPackage = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
+    package = hyprland-fixed;
+    portalPackage = xdph-fixed;
     systemd.setPath.enable = true;
     withUWSM = true;
   };
@@ -125,12 +148,12 @@ in
     enable = true;
     xdgOpenUsePortal = true;
     extraPortals = [
-      inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland
+      xdph-fixed
       pkgs.xdg-desktop-portal-gtk
     ];
     configPackages = [
       pkgs.xdg-desktop-portal-gtk
-      inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland
+      xdph-fixed
     ];
   };
 
