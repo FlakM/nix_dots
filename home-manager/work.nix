@@ -69,6 +69,13 @@
       app_target="$app_target_base/$moniker"
       mkdir -p "$app_target"
       ${pkgs.rsync}/bin/rsync $rsyncArgs "$apps_source/" "$app_target" 2>/dev/null || true
+      # nix wrappers replace signed binaries, breaking the .app code signatures;
+      # re-sign with ad-hoc so macOS treats them as launchable apps
+      for app in "$app_target"/*.app; do
+        [ -d "$app" ] || continue
+        chmod -R u+w "$app" || true
+        /usr/bin/codesign --force --deep --sign - "$app" 2>/dev/null || true
+      done
     '';
   };
 
