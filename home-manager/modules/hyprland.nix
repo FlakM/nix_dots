@@ -1507,37 +1507,37 @@ in
     -- Keybinds
     local mod = "ALT"
 
-    hl.bind("ALT SHIFT + Q",          hl.dsp.window.close())
-    hl.bind(mod .. " + F",            hl.dsp.window.fullscreen())
-    hl.bind(mod .. " + D",            hl.dsp.exec_cmd("rofi -show drun"))
-    hl.bind("ALT CTRL + N",           hl.dsp.exec_cmd("${config.home.homeDirectory}/.config/theme-switch.sh"))
-    hl.bind(mod .. " SHIFT + W",      hl.dsp.exec_cmd([=[hyprctl hyprpaper wallpaper "DP-1,${config.home.homeDirectory}/.config/wallpaper.png"]=]))
-    hl.bind(mod .. " SHIFT + RETURN", hl.dsp.exec_cmd("kitty"))
+    hl.bind("ALT + SHIFT + Q",            hl.dsp.window.close())
+    hl.bind(mod .. " + F",                hl.dsp.window.fullscreen())
+    hl.bind(mod .. " + D",                hl.dsp.exec_cmd("rofi -show drun"))
+    hl.bind("ALT + CTRL + N",             hl.dsp.exec_cmd("${config.home.homeDirectory}/.config/theme-switch.sh"))
+    hl.bind(mod .. " + SHIFT + W",        hl.dsp.exec_cmd([=[hyprctl hyprpaper wallpaper "DP-1,${config.home.homeDirectory}/.config/wallpaper.png"]=]))
+    hl.bind(mod .. " + SHIFT + RETURN",   hl.dsp.exec_cmd("kitty"))
 
     -- Workspaces 1-10 (key "0" maps to workspace 10)
     for i = 1, 10 do
         local k = i % 10
-        hl.bind(mod .. " + "       .. k, hl.dsp.focus({ workspace = i }))
-        hl.bind(mod .. " SHIFT + " .. k, hl.dsp.window.move({ workspace = i }))
+        hl.bind(mod .. " + "         .. k, hl.dsp.focus({ workspace = i }))
+        hl.bind(mod .. " + SHIFT + " .. k, hl.dsp.window.move({ workspace = i }))
     end
 
     -- Focus movement
-    hl.bind("CTRL SHIFT + h", hl.dsp.focus({ direction = "left"  }))
-    hl.bind("CTRL SHIFT + l", hl.dsp.focus({ direction = "right" }))
-    hl.bind("CTRL SHIFT + k", hl.dsp.focus({ direction = "up"    }))
-    hl.bind("CTRL SHIFT + j", hl.dsp.focus({ direction = "down"  }))
+    hl.bind("CTRL + SHIFT + h", hl.dsp.focus({ direction = "left"  }))
+    hl.bind("CTRL + SHIFT + l", hl.dsp.focus({ direction = "right" }))
+    hl.bind("CTRL + SHIFT + k", hl.dsp.focus({ direction = "up"    }))
+    hl.bind("CTRL + SHIFT + j", hl.dsp.focus({ direction = "down"  }))
 
     -- Window movement
-    hl.bind(mod .. " CTRL + H", hl.dsp.window.move({ direction = "left"  }))
-    hl.bind(mod .. " CTRL + L", hl.dsp.window.move({ direction = "right" }))
-    hl.bind(mod .. " CTRL + K", hl.dsp.window.move({ direction = "up"    }))
-    hl.bind(mod .. " CTRL + J", hl.dsp.window.move({ direction = "down"  }))
+    hl.bind(mod .. " + CTRL + H", hl.dsp.window.move({ direction = "left"  }))
+    hl.bind(mod .. " + CTRL + L", hl.dsp.window.move({ direction = "right" }))
+    hl.bind(mod .. " + CTRL + K", hl.dsp.window.move({ direction = "up"    }))
+    hl.bind(mod .. " + CTRL + J", hl.dsp.window.move({ direction = "down"  }))
 
     -- Resize
-    hl.bind(mod .. " CTRL SHIFT + l", hl.dsp.window.resize({ x =  100, y =    0, relative = true }))
-    hl.bind(mod .. " CTRL SHIFT + h", hl.dsp.window.resize({ x = -100, y =    0, relative = true }))
-    hl.bind(mod .. " CTRL SHIFT + k", hl.dsp.window.resize({ x =    0, y = -100, relative = true }))
-    hl.bind(mod .. " CTRL SHIFT + j", hl.dsp.window.resize({ x =    0, y =  100, relative = true }))
+    hl.bind(mod .. " + CTRL + SHIFT + l", hl.dsp.window.resize({ x =  100, y =    0, relative = true }))
+    hl.bind(mod .. " + CTRL + SHIFT + h", hl.dsp.window.resize({ x = -100, y =    0, relative = true }))
+    hl.bind(mod .. " + CTRL + SHIFT + k", hl.dsp.window.resize({ x =    0, y = -100, relative = true }))
+    hl.bind(mod .. " + CTRL + SHIFT + j", hl.dsp.window.resize({ x =    0, y =  100, relative = true }))
 
     -- Clipboard / emoji
     hl.bind(mod .. " + V",      hl.dsp.exec_cmd("copyq toggle"))
@@ -1546,11 +1546,11 @@ in
     -- Screenshots
     hl.bind("Print",              hl.dsp.exec_cmd("grimblast --scale 2 --wait 2 copy screen"))
     hl.bind("SHIFT + Print",      hl.dsp.exec_cmd("grimblast --scale 2 copy area"))
-    hl.bind("CTRL SHIFT + Print", hl.dsp.exec_cmd("grimblast --scale 2 --freeze copy area"))
-    hl.bind(mod .. " + Print",    hl.dsp.exec_cmd([=[grimblast --scale 2 --wait 2 save area ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png]=]))
+    hl.bind("CTRL + SHIFT + Print", hl.dsp.exec_cmd("grimblast --scale 2 --freeze copy area"))
+    hl.bind(mod .. " + Print",      hl.dsp.exec_cmd([=[grimblast --scale 2 --wait 2 save area ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png]=]))
 
     -- Lock / notifications
-    hl.bind(mod .. " SHIFT + L", hl.dsp.exec_cmd("hyprlock"))
+    hl.bind(mod .. " + SHIFT + L", hl.dsp.exec_cmd("hyprlock"))
     hl.bind(mod .. " + N",       hl.dsp.exec_cmd("swaync-client -t -sw"))
 
     -- Audio (binde -> repeating; locked = usable on lockscreen)
