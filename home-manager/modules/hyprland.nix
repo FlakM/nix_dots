@@ -1,14 +1,5 @@
 { config, pkgs, inputs, pkgs-unstable, lib, osConfig, ... }:
 let
-  # Workaround for upstream Hyprland regression (2026-05-06, rev 78b8ce22):
-  # example/hyprland.conf was removed but CMakeLists.txt still installs it.
-  # Drop this override once upstream fixes either the install rule or the file.
-  hyprland-fixed = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland.overrideAttrs (old: {
-    postPatch = (old.postPatch or "") + ''
-      touch example/hyprland.conf
-    '';
-  });
-
   path = "${config.home.homeDirectory}/.config/current-color_scheme";
   apply-theme-script = pkgs.writeScript "apply-theme" ''
     set -e
@@ -1298,7 +1289,7 @@ in
       variables = [ "--all" ];
       enableXdgAutostart = true; # 🔑 start XDG‐autostart apps
     };
-    package = hyprland-fixed;
+    package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
   };
 
 
@@ -1416,6 +1407,166 @@ in
 
   };
 
+
+  # Hyprland 0.55+ lua config. ACTIVE: Hyprland prefers hyprland.lua over
+  # hyprland.conf at startup (src/config/ConfigManager.cpp). The .conf block
+  # below is kept as a safety net — `rm ~/.config/hypr/hyprland.lua` and
+  # re-login falls back to it without a rebuild. Choice of config type is
+  # made only at startup, so `hyprctl reload` will not switch managers.
+  xdg.configFile."hypr/hyprland.lua".text = ''
+    -- Monitors
+    hl.monitor({ output = "desc:LG Electronics LG ULTRAWIDE 404NTMXDC219", mode = "5120x1440@143.98Hz", position = "auto", scale = 1 })
+    hl.monitor({ output = "",                                              mode = "preferred",          position = "auto", scale = 1 })
+
+    -- Environment
+    hl.env("XCURSOR_SIZE",    "32")
+    hl.env("XKB_CONFIG_ROOT", "${pkgs.xkeyboard-config}/share/X11/xkb")
+
+    -- Core config tables
+    hl.config({
+        xwayland = { force_zero_scaling = true },
+        debug    = { disable_logs = false },
+        misc = {
+            mouse_move_enables_dpms  = true,
+            key_press_enables_dpms   = true,
+            disable_hyprland_logo    = true,
+            disable_splash_rendering = true,
+            force_default_wallpaper  = 0,
+            vrr                      = 1,
+        },
+        input = {
+            kb_layout    = "pl",
+            kb_variant   = "",
+            kb_model     = "",
+            kb_rules     = "",
+            kb_options   = "altwin:ctrl_win",
+            repeat_delay = 250,
+            repeat_rate  = 33,
+            follow_mouse = 1,
+            sensitivity  = 0,
+            touchpad     = { natural_scroll = false },
+        },
+        general = {
+            gaps_in     = 5,
+            gaps_out    = 10,
+            border_size = 5,
+            col = {
+                active_border   = { colors = { "rgba(33ccffee)", "rgba(00ff99ee)" }, angle = 45 },
+                inactive_border = "rgba(595959aa)",
+            },
+            layout = "master",
+        },
+        decoration = {
+            rounding = 10,
+            blur = { enabled = true, size = 8, passes = 1 },
+        },
+        animations = { enabled = true },
+        master = {
+            -- new windows go to slave stack (sides), not master (center)
+            new_status  = "slave",
+            new_on_top  = true,
+            mfact       = 0.55,
+            orientation = "center",
+        },
+    })
+
+    -- Animations
+    hl.curve("myBezier", { type = "bezier", points = { {0.05, 0.9}, {0.1, 1.05} } })
+    hl.animation({ leaf = "windows",     enabled = true, speed = 7,  bezier = "myBezier" })
+    hl.animation({ leaf = "windowsOut",  enabled = true, speed = 7,  bezier = "default",  style = "popin 80%" })
+    hl.animation({ leaf = "border",      enabled = true, speed = 10, bezier = "default" })
+    hl.animation({ leaf = "borderangle", enabled = true, speed = 8,  bezier = "default" })
+    hl.animation({ leaf = "fade",        enabled = true, speed = 7,  bezier = "default" })
+    hl.animation({ leaf = "workspaces",  enabled = true, speed = 6,  bezier = "default" })
+
+    -- Autostart (was exec-once)
+    hl.on("hyprland.start", function()
+        hl.exec_cmd("copyq --start-server")
+        hl.exec_cmd("${configure-gtk-dark}/bin/configure-gtk-dark")
+        hl.exec_cmd("hyprpaper")
+        hl.exec_cmd("swaync")
+        hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=Hyprland")
+
+        hl.exec_cmd("[workspace 1 silent] kitty")
+        hl.exec_cmd("[workspace 2 silent] uwsm app -- firefox")
+        hl.exec_cmd("[workspace 3 silent] obsidian")
+        hl.exec_cmd([=[[workspace 3 silent] kitty --title "obsidian" --directory /home/flakm/obsidian/work -- bash -c "tmux new-session -d -s obsidian 'nvim' && tmux attach-session -t obsidian"]=])
+        hl.exec_cmd("[workspace 4 silent] spotify")
+        hl.exec_cmd("[workspace 6 silent] kdeconnect-app")
+        hl.exec_cmd("[workspace 9 silent] thunderbird")
+        hl.exec_cmd("[workspace 10 silent] slack")
+    end)
+
+    -- Window rules
+    hl.window_rule({ name = "firefox",           match = { class = "^(firefox)$" },               workspace = 2 })
+    hl.window_rule({ name = "spotify-opacity",   match = { class = "^(spotify)$" },               opacity = 1.00 })
+    hl.window_rule({ name = "floating-calendar", match = { class = "^(floating-calendar)$" },     float = true, size = "1400 900", center = true })
+    hl.window_rule({ name = "copyq",             match = { class = "^(com.github.hluk.copyq)$" }, float = true, size = "30% 50%",  center = true })
+    hl.window_rule({ name = "obsidian",          match = { title = "^(obsidian)$" },              float = true, fullscreen = true })
+
+    -- Keybinds
+    local mod = "ALT"
+
+    hl.bind("ALT SHIFT + Q",          hl.dsp.window.close())
+    hl.bind(mod .. " + F",            hl.dsp.window.fullscreen())
+    hl.bind(mod .. " + D",            hl.dsp.exec_cmd("rofi -show drun"))
+    hl.bind("ALT CTRL + N",           hl.dsp.exec_cmd("${config.home.homeDirectory}/.config/theme-switch.sh"))
+    hl.bind(mod .. " SHIFT + W",      hl.dsp.exec_cmd([=[hyprctl hyprpaper wallpaper "DP-1,${config.home.homeDirectory}/.config/wallpaper.png"]=]))
+    hl.bind(mod .. " SHIFT + RETURN", hl.dsp.exec_cmd("kitty"))
+
+    -- Workspaces 1-10 (key "0" maps to workspace 10)
+    for i = 1, 10 do
+        local k = i % 10
+        hl.bind(mod .. " + "       .. k, hl.dsp.focus({ workspace = i }))
+        hl.bind(mod .. " SHIFT + " .. k, hl.dsp.window.move({ workspace = i }))
+    end
+
+    -- Focus movement
+    hl.bind("CTRL SHIFT + h", hl.dsp.focus({ direction = "left"  }))
+    hl.bind("CTRL SHIFT + l", hl.dsp.focus({ direction = "right" }))
+    hl.bind("CTRL SHIFT + k", hl.dsp.focus({ direction = "up"    }))
+    hl.bind("CTRL SHIFT + j", hl.dsp.focus({ direction = "down"  }))
+
+    -- Window movement
+    hl.bind(mod .. " CTRL + H", hl.dsp.window.move({ direction = "left"  }))
+    hl.bind(mod .. " CTRL + L", hl.dsp.window.move({ direction = "right" }))
+    hl.bind(mod .. " CTRL + K", hl.dsp.window.move({ direction = "up"    }))
+    hl.bind(mod .. " CTRL + J", hl.dsp.window.move({ direction = "down"  }))
+
+    -- Resize
+    hl.bind(mod .. " CTRL SHIFT + l", hl.dsp.window.resize({ x =  100, y =    0, relative = true }))
+    hl.bind(mod .. " CTRL SHIFT + h", hl.dsp.window.resize({ x = -100, y =    0, relative = true }))
+    hl.bind(mod .. " CTRL SHIFT + k", hl.dsp.window.resize({ x =    0, y = -100, relative = true }))
+    hl.bind(mod .. " CTRL SHIFT + j", hl.dsp.window.resize({ x =    0, y =  100, relative = true }))
+
+    -- Clipboard / emoji
+    hl.bind(mod .. " + V",      hl.dsp.exec_cmd("copyq toggle"))
+    hl.bind(mod .. " + period", hl.dsp.exec_cmd("rofimoji | wl-copy"))
+
+    -- Screenshots
+    hl.bind("Print",              hl.dsp.exec_cmd("grimblast --scale 2 --wait 2 copy screen"))
+    hl.bind("SHIFT + Print",      hl.dsp.exec_cmd("grimblast --scale 2 copy area"))
+    hl.bind("CTRL SHIFT + Print", hl.dsp.exec_cmd("grimblast --scale 2 --freeze copy area"))
+    hl.bind(mod .. " + Print",    hl.dsp.exec_cmd([=[grimblast --scale 2 --wait 2 save area ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png]=]))
+
+    -- Lock / notifications
+    hl.bind(mod .. " SHIFT + L", hl.dsp.exec_cmd("hyprlock"))
+    hl.bind(mod .. " + N",       hl.dsp.exec_cmd("swaync-client -t -sw"))
+
+    -- Audio (binde -> repeating; locked = usable on lockscreen)
+    hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+"), { locked = true, repeating = true })
+    hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%-"), { locked = true, repeating = true })
+    hl.bind("XF86AudioMute",        hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"),       { locked = true })
+
+    -- Media keys
+    hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
+    hl.bind("XF86AudioNext", hl.dsp.exec_cmd("playerctl next"),       { locked = true })
+    hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"),   { locked = true })
+
+    -- Brightness (DDC, external monitor)
+    hl.bind("SHIFT + F12", hl.dsp.exec_cmd("ddcutil setvcp 10 + 10"), { repeating = true })
+    hl.bind("SHIFT + F11", hl.dsp.exec_cmd("ddcutil setvcp 10 - 10"), { repeating = true })
+  '';
 
   wayland.windowManager.hyprland.extraConfig = ''
         # See https://wiki.hyprland.org/Configuring/Monitors/
