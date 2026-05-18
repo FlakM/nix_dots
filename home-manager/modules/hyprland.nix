@@ -1463,10 +1463,14 @@ in
         animations = { enabled = true },
         master = {
             -- new windows go to slave stack (sides), not master (center)
-            new_status  = "slave",
-            new_on_top  = true,
-            mfact       = 0.55,
-            orientation = "center",
+            new_status                    = "slave",
+            new_on_top                    = true,
+            mfact                         = 0.55,
+            orientation                   = "center",
+            -- center the master even with 0 slaves, and keep it at mfact
+            -- width (don't expand to fullscreen) when alone on the workspace
+            slave_count_for_center_master = 0,
+            always_keep_position          = true,
         },
     })
 
