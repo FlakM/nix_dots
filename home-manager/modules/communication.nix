@@ -17,8 +17,19 @@ let
       wrapProgram $out/bin/google-chrome-stable \
         --set NIXOS_OZONE_WL 1 \
         --add-flags "--ozone-platform=wayland" \
-        --add-flags "--enable-features=UseOzonePlatform,VaapiVideoDecoder,VaapiVideoEncoder" \
-        --add-flags "--disable-features=VaapiAV1Decoder"
+        --add-flags "--enable-features=UseOzonePlatform,VaapiVideoEncoder" \
+        --add-flags "--disable-features=VaapiVideoDecoder,VaapiAV1Decoder"
+
+      # Replace symlinked .desktop file so launcher-spawned Chrome goes
+      # through the wrapper too (otherwise the .desktop Exec= points
+      # straight at the underlying binary, bypassing all wrapper flags).
+      rm $out/share/applications/google-chrome.desktop
+      cp ${pkgs.google-chrome}/share/applications/google-chrome.desktop \
+         $out/share/applications/google-chrome.desktop
+      chmod +w $out/share/applications/google-chrome.desktop
+      substituteInPlace $out/share/applications/google-chrome.desktop \
+        --replace ${pkgs.google-chrome}/bin/google-chrome-stable \
+                  $out/bin/google-chrome-stable
     '';
   };
 

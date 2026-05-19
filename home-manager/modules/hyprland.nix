@@ -1460,6 +1460,11 @@ in
             rounding = 10,
             blur = { enabled = true, size = 8, passes = 1 },
         },
+        -- Disable wp_color_manager_v1 / CM pipeline. Hyprland 0.55's CM
+        -- causes wrong colors (solid-green YUV) on Chrome video surfaces,
+        -- while Firefox is fine because it uses a different surface path.
+        -- Requires a Hyprland session restart (not just hyprctl reload).
+        render = { cm_enabled = false },
         animations = { enabled = true },
         master = {
             -- new windows go to slave stack (sides), not master (center)
