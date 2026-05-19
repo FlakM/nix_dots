@@ -4,13 +4,17 @@ let
   cxSkillFiles = lib.mapAttrs'
     (name: _: lib.nameValuePair ".claude/skills/${name}" { force = true; source = "${cxSkills}/${name}"; })
     (lib.filterAttrs (_: t: t == "directory") (builtins.readDir cxSkills));
+
+  cxPrivateSkills = inputs.coralogix-private.packages.${pkgs.system}.skills;
+  cxPrivateSkillFiles = lib.mapAttrs'
+    (name: _: lib.nameValuePair ".claude/skills/${name}" { force = true; source = "${cxPrivateSkills}/${name}"; })
+    (lib.filterAttrs (_: t: t == "directory") (builtins.readDir cxPrivateSkills));
 in
 {
   home.packages = with llm-agents-pkgs; [
     claude-code
     codex
     ccusage
-    ccusage-codex
     opencode
     amp
     rtk
@@ -46,7 +50,8 @@ in
       value = { force = true; source = ./claude/skills/${name}; };
     })
     (builtins.attrNames (builtins.readDir ./claude/skills)))
-  // cxSkillFiles;
+  // cxSkillFiles
+  // cxPrivateSkillFiles;
 
   xdg.configFile."opencode/opencode.json" = {
     force = true;
