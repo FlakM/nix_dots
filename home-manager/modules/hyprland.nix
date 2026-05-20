@@ -1299,18 +1299,7 @@ in
     settings =
       {
         general = {
-          after_sleep_cmd = "hyprctl dispatch dpms on";
-          before_sleep_cmd = "hyprctl dispatch dpms on";
-          ignore_dbus_inhibit = false;
-          lock_cmd = "hyprlock";
-          # show a blurred screenshot background
-          blur-background = "yes";
-          blur-radius = 15;
-          font = "FiraCode Nerd Font";
-          disable_loading_bar = true;
-          grace = 2;
           hide_cursor = true;
-          no_fade_in = false;
         };
         background = [
           {
@@ -1323,9 +1312,10 @@ in
 
         label =
           {
-            # hourly clock
             text = "cmd[update:1000] date +\"%-I:%M %p\"";
-            position = "top";
+            position = "0, -100";
+            halign = "center";
+            valign = "top";
           };
 
         input-field = [
@@ -1389,7 +1379,7 @@ in
       general = {
         lock_cmd = "pidof hyprlock || hyprlock";
         before_sleep_cmd = "loginctl lock-session";
-        after_sleep_cmd = "hyprctl dispatch dpms on";
+        after_sleep_cmd = "hyprctl dispatch 'hl.dsp.dpms(\"on\")'";
         ignore_dbus_inhibit = false;
       };
       listener = [
@@ -1398,9 +1388,11 @@ in
           on-timeout = "hyprlock";
         }
         {
+          # Hyprland 0.55 lua config: hyprctl dispatch args are Lua, so the
+          # old `dpms off` form parses as `hl.dispatch(dpms off)` and fails.
           timeout = 600; # 10 minutes - turn off displays
-          on-timeout = "hyprctl dispatch dpms off";
-          on-resume = "hyprctl dispatch dpms on; sleep 1; hyprctl reload";
+          on-timeout = "hyprctl dispatch 'hl.dsp.dpms(\"off\")'";
+          on-resume = "hyprctl dispatch 'hl.dsp.dpms(\"on\")'; sleep 1; hyprctl reload";
         }
       ];
     };
