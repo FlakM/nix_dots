@@ -133,6 +133,14 @@ in
       THEMES=~/.config/kitty/themes
       THEME_CONF=~/.config/kitty/current-theme.conf
 
+      tmux_theme() {
+        # Swap the tmux palette and live-reload any running server
+        local variant=$1
+        mkdir -p ~/.config/tmux 2>/dev/null
+        cp ~/.config/tmux/themes/$variant.conf ~/.config/tmux/current-theme.conf 2>/dev/null || true
+        tmux source-file ~/.config/tmux/current-theme.conf 2>/dev/null || true
+      }
+
       claude_theme() {
         # ~/.claude.json: absent/null = dark, "light" = light
         local mode=$1
@@ -153,6 +161,7 @@ in
         echo "dark-mode --dark" > ~/.config/delta/theme 2>/dev/null || true
         echo "prefer-dark" > ~/.config/current-color_scheme 2>/dev/null || true
         { cat "${aerc}/stylesets/dark" > "${aerc}/stylesets/current"; } 2>/dev/null || true
+        tmux_theme dark
         claude_theme dark
       }
 
@@ -161,6 +170,7 @@ in
         echo "light-mode" > ~/.config/delta/theme 2>/dev/null || true
         echo "prefer-light" > ~/.config/current-color_scheme 2>/dev/null || true
         { cat "${aerc}/stylesets/light" > "${aerc}/stylesets/current"; } 2>/dev/null || true
+        tmux_theme light
         claude_theme light
       }
 
@@ -169,6 +179,7 @@ in
         echo "light-mode" > ~/.config/delta/theme 2>/dev/null || true
         echo "prefer-sunlight" > ~/.config/current-color_scheme 2>/dev/null || true
         { cat "${aerc}/stylesets/light" > "${aerc}/stylesets/current"; } 2>/dev/null || true
+        tmux_theme sunlight
         claude_theme light
       }
 
