@@ -1386,6 +1386,8 @@ in
         {
           timeout = 300; # 5 minutes - lock screen
           on-timeout = "hyprlock";
+          # Reload on unlock to reset the Hyprland 0.55 xdg_popup drift (see ALT+SHIFT+R bind).
+          on-resume = "hyprctl reload";
         }
         {
           # Hyprland 0.55 lua config: hyprctl dispatch args are Lua, so the
@@ -1514,6 +1516,9 @@ in
     hl.bind("ALT + CTRL + N",             hl.dsp.exec_cmd("${config.home.homeDirectory}/.config/theme-switch.sh"))
     hl.bind(mod .. " + SHIFT + W",        hl.dsp.exec_cmd([=[hyprctl hyprpaper wallpaper "DP-1,${config.home.homeDirectory}/.config/wallpaper.png"]=]))
     hl.bind(mod .. " + SHIFT + RETURN",   hl.dsp.exec_cmd("kitty"))
+    -- Hyprland 0.55 drifts into a state where xdg_popups (e.g. Firefox context
+    -- menus) stop mapping; a config reload resets it without restarting clients.
+    hl.bind(mod .. " + SHIFT + R",        hl.dsp.exec_cmd("hyprctl reload"))
 
     -- Workspaces 1-10 (key "0" maps to workspace 10)
     for i = 1, 10 do
