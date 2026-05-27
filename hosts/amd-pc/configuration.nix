@@ -62,6 +62,7 @@ in
 
   system.autoUpgrade = {
     enable = true;
+    operation = "boot";
     flake = "github:FlakM/nix_dots#amd-pc";
     flags = [
       "-L"
@@ -222,6 +223,7 @@ in
   programs.nix-ld.enable = true;
 
   security.rtkit.enable = true;
+  security.sudo.extraConfig = "Defaults env_keep += \"SSH_AUTH_SOCK\"";
   security.pam.services.hyprlock = { }; # allow hyprlock to authenticate
 
   services.blueman.enable = true;

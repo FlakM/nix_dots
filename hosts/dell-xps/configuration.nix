@@ -12,6 +12,7 @@ in
 
   system.autoUpgrade = {
     enable = true;
+    operation = "boot";
     flake = "github:FlakM/nix_dots#dell-xps";
     flags = [
       "-L" # print build logs
