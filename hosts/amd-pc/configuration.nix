@@ -17,6 +17,14 @@ let
   xdph-fixed = hyprland-pkgs.xdg-desktop-portal-hyprland.override {
     hyprland = hyprland-fixed;
   };
+  # UWSM derives the compositor ID (and XDG_CURRENT_DESKTOP) from the binPath
+  # basename. We want both start-hyprland (for the watchdog fd) and
+  # XDG_CURRENT_DESKTOP=Hyprland (so xdg-desktop-portal loads the hyprland
+  # backend — without it, hyprland-portals.conf and hyprland.portal UseIn don't
+  # match, ScreenCast/Screenshot disappear, and screen-share pickers break).
+  hyprland-start = pkgs.writeShellScriptBin "Hyprland" ''
+    exec ${hyprland-fixed}/bin/start-hyprland --path ${hyprland-fixed}/bin/Hyprland "$@"
+  '';
 in
 
 {
@@ -143,10 +151,10 @@ in
     withUWSM = true;
   };
 
-  # Route UWSM through start-hyprland so Hyprland gets its watchdog fd and stops
-  # warning "Hyprland was started without start-hyprland". The nixpkgs module
-  # hardcodes binPath to the bare Hyprland binary.
-  programs.uwsm.waylandCompositors.hyprland.binPath = lib.mkForce "/run/current-system/sw/bin/start-hyprland";
+  # Use a wrapper named "Hyprland" (not "start-hyprland") so UWSM's compositor
+  # ID — and the resulting XDG_CURRENT_DESKTOP — stay "Hyprland". The wrapper
+  # still execs start-hyprland for the watchdog fd. See hyprland-start above.
+  programs.uwsm.waylandCompositors.hyprland.binPath = lib.mkForce "${hyprland-start}/bin/Hyprland";
 
   xdg.portal = {
     enable = true;
@@ -647,6 +655,10 @@ in
     KERNEL=="i2c-[0-9]*", GROUP="i2c", MODE="0660"
     # MediaTek MT7922 BT (0e8d:0616): firmware upload times out when USB autosuspend kicks in
     SUBSYSTEM=="usb", ATTRS{idVendor}=="0e8d", ATTRS{idProduct}=="0616", ATTR{power/control}="on"
+    # AMD 1022:43f7 xHCI controllers (one hosts the MT7922 BT): runtime D3 resume
+    # hits a Save/Restore Error ("xHC error in resume, USBSTS 0x401") that wedges
+    # the BT chip until a cold boot. Keep them powered so they never suspend.
+    SUBSYSTEM=="pci", ATTR{vendor}=="0x1022", ATTR{device}=="0x43f7", ATTR{power/control}="on"
   '';
 
   # Add user to i2c group
