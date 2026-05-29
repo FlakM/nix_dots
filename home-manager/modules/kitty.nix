@@ -134,11 +134,20 @@ in
       THEME_CONF=~/.config/kitty/current-theme.conf
 
       tmux_theme() {
-        # Swap the tmux palette and live-reload any running server
+        # Swap the tmux palette and live-reload any running server.
+        # `install -m 0644` instead of `cp` — sources live in /nix/store (0444),
+        # and cp preserves source mode, leaving the destination read-only so the
+        # next switch silently no-ops.
+        # Loop over both default socket dirs — when fired from hyprland's exec
+        # dispatch the env has no TMUX_TMPDIR, so a bare `tmux` would hit
+        # /tmp/tmux-UID/default and miss a session running under $XDG_RUNTIME_DIR.
         local variant=$1
+        local uid; uid=$(id -u)
         mkdir -p ~/.config/tmux 2>/dev/null
-        cp ~/.config/tmux/themes/$variant.conf ~/.config/tmux/current-theme.conf 2>/dev/null || true
-        tmux source-file ~/.config/tmux/current-theme.conf 2>/dev/null || true
+        install -m 0644 ~/.config/tmux/themes/$variant.conf ~/.config/tmux/current-theme.conf 2>/dev/null || true
+        for sock in "$XDG_RUNTIME_DIR/tmux-$uid/default" "/tmp/tmux-$uid/default"; do
+          [ -S "$sock" ] && tmux -S "$sock" source-file ~/.config/tmux/current-theme.conf 2>/dev/null
+        done
       }
 
       claude_theme() {
@@ -157,7 +166,7 @@ in
       }
 
       dark() {
-        cp "$THEMES/dark.conf" "$THEME_CONF"
+        install -m 0644 "$THEMES/dark.conf" "$THEME_CONF"
         echo "dark-mode --dark" > ~/.config/delta/theme 2>/dev/null || true
         echo "prefer-dark" > ~/.config/current-color_scheme 2>/dev/null || true
         { cat "${aerc}/stylesets/dark" > "${aerc}/stylesets/current"; } 2>/dev/null || true
@@ -166,7 +175,7 @@ in
       }
 
       light() {
-        cp "$THEMES/light.conf" "$THEME_CONF"
+        install -m 0644 "$THEMES/light.conf" "$THEME_CONF"
         echo "light-mode" > ~/.config/delta/theme 2>/dev/null || true
         echo "prefer-light" > ~/.config/current-color_scheme 2>/dev/null || true
         { cat "${aerc}/stylesets/light" > "${aerc}/stylesets/current"; } 2>/dev/null || true
@@ -175,7 +184,7 @@ in
       }
 
       sunlight() {
-        cp "$THEMES/sunlight.conf" "$THEME_CONF"
+        install -m 0644 "$THEMES/sunlight.conf" "$THEME_CONF"
         echo "light-mode" > ~/.config/delta/theme 2>/dev/null || true
         echo "prefer-sunlight" > ~/.config/current-color_scheme 2>/dev/null || true
         { cat "${aerc}/stylesets/light" > "${aerc}/stylesets/current"; } 2>/dev/null || true

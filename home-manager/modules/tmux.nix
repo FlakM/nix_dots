@@ -27,6 +27,11 @@
     set -g mode-style "bg=#264f78,fg=#e6edf3"
     set -g pane-border-style "fg=#30363d"
     set -g pane-active-border-style "fg=#79c0ff"
+    set -g menu-style "bg=#161b22,fg=#e6edf3"
+    set -g menu-selected-style "bg=#264f78,fg=#e6edf3,bold"
+    set -g menu-border-style "fg=#30363d"
+    set -g popup-style "bg=#0d1117"
+    set -g popup-border-style "fg=#30363d"
   '';
 
   xdg.configFile."tmux/themes/light.conf".text = ''
@@ -43,6 +48,11 @@
     set -g mode-style "bg=#DAF1FF,fg=#373a41"
     set -g pane-border-style "fg=#cccccc"
     set -g pane-active-border-style "fg=#275fe4"
+    set -g menu-style "bg=#E6E5E5,fg=#373a41"
+    set -g menu-selected-style "bg=#DAF1FF,fg=#275fe4,bold"
+    set -g menu-border-style "fg=#cccccc"
+    set -g popup-style "bg=#f9f9f9"
+    set -g popup-border-style "fg=#cccccc"
   '';
 
   xdg.configFile."tmux/themes/sunlight.conf".text = ''
@@ -59,6 +69,11 @@
     set -g mode-style "bg=#b3d4f0,fg=#1c1c1c"
     set -g pane-border-style "fg=#c0bbb3"
     set -g pane-active-border-style "fg=#0060c0"
+    set -g menu-style "bg=#ddd8d0,fg=#1c1c1c"
+    set -g menu-selected-style "bg=#b3d4f0,fg=#0060c0,bold"
+    set -g menu-border-style "fg=#c0bbb3"
+    set -g popup-style "bg=#f5f0e8"
+    set -g popup-border-style "fg=#c0bbb3"
   '';
 
 
@@ -120,6 +135,15 @@
       # ── Active pane: heavy accent border + arrow indicator ──
       set -g pane-border-lines heavy
       set -g pane-border-indicators arrows
+
+      # ── Menu/popup defaults (dark; themes override on switch) ──
+      set -g menu-style "bg=#161b22,fg=#e6edf3"
+      set -g menu-selected-style "bg=#264f78,fg=#e6edf3,bold"
+      set -g menu-border-style "fg=#30363d"
+      set -g menu-border-lines rounded
+      set -g popup-style "bg=#0d1117"
+      set -g popup-border-style "fg=#30363d"
+      set -g popup-border-lines rounded
 
       # Live theme written by kitty/switch.sh on dark/light/sunlight flip
       source-file -q ~/.config/tmux/current-theme.conf
