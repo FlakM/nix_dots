@@ -5,7 +5,7 @@ in {
 
   services.nextcloud = {
     enable = true;
-    package = pkgs.nextcloud32;
+    package = pkgs.nextcloud33;
     hostName = "nextcloud.house.flakm.com";
     config.adminpassFile = "/etc/nextcloud-admin-pass";
 
@@ -13,8 +13,8 @@ in {
 
       inherit (config.services.nextcloud.package.packages.apps) contacts calendar tasks previewgenerator notes memories cookbook mail bookmarks spreed;
       news = pkgs.fetchNextcloudApp {
-        sha256 = "sha256-eR4lfbdrQJz6pFI189jssp4hxyCwMSWiJn9U2OgrgKE=";
-        url = "https://github.com/nextcloud/news/releases/download/27.2.0/news.tar.gz";
+        sha256 = "sha256-e2lledOH4LzB+/nWjL+wsCuJJTi50yNgPDnGVkl7FNk=";
+        url = "https://github.com/nextcloud/news/releases/download/28.4.1/news.tar.gz";
         license = "gpl3";
       };
 

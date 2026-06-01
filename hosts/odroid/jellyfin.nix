@@ -30,7 +30,8 @@
       DeviceAllow = [ "/dev/dri/renderD128 rw" ];
 
       ProtectHome = true;
-      ProtectSystem = "strict";
+      # 26.05's jellyfin module now sets ProtectSystem = true; override to strict.
+      ProtectSystem = lib.mkForce "strict";
       ReadWritePaths = [ "/var/lib/jellyfin" "/var/cache/jellyfin" ];
       # ZFS mounts need explicit BindPaths for proper write access within the namespace
       BindPaths = [ "/var/media" ];
@@ -137,13 +138,25 @@
 
 
 
-  services.jellyseerr = {
+  services.seerr = {
     enable = true;
   };
 
   services.sonarr.enable = true;
 
-  services.sabnzbd.enable = true;
+  services.sabnzbd = {
+    enable = true;
+    # 26.05 deprecates configFile in favour of settings. With stateVersion < 26.05
+    # allowConfigWrite defaults true, so the existing /var/lib/sabnzbd/sabnzbd.ini
+    # (servers, api keys, paths) is merged in as the base; we only re-assert the
+    # few misc values whose option defaults would otherwise reset the live ones.
+    configFile = null;
+    settings.misc = {
+      bandwidth_max = "1024M";
+      bandwidth_perc = 100;
+      cache_limit = "1G";
+    };
+  };
 
   services.radarr.enable = true;
 

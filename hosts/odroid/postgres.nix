@@ -3,13 +3,12 @@
   services.postgresql = {
     enable = true;
     package = pkgs.postgresql_14;
-    ensureDatabases = [ "tandoor" "nextcloud" "users" "hass" ];
+    ensureDatabases = [ "nextcloud" "users" "hass" ];
 
     identMap = ''
       # ArbitraryMapName systemUser DBUser
          superuser_map      root      postgres
          superuser_map      postgres  postgres
-         superuser_map      flakm     tandoor
          superuser_map      flakm     nextcloud
          superuser_map      nextcloud     nextcloud
          superuser_map      flakm     zabbix
@@ -24,9 +23,6 @@
 
 
     initialScript = pkgs.writeText "backend-initScript" ''
-      CREATE ROLE tandoor WITH LOGIN;
-      GRANT ALL PRIVILEGES ON DATABASE tandoor TO tandoor;
-
       CREATE ROLE nextcloud WITH LOGIN;
       GRANT ALL PRIVILEGES ON DATABASE nextcloud TO nextcloud;
 

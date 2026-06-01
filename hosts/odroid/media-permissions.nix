@@ -9,7 +9,7 @@
       "readarr"
       "radarr"
       "jellyfin"
-      "jellyseerr"
+      "seerr"
       "audiobookshelf"
       "flakm"
     ];

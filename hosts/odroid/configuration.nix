@@ -6,7 +6,6 @@
 
   imports = [
     ./nextcloud.nix
-    ./tandoor.nix
     ./postgres.nix
     ./jellyfin.nix
     ./deluged.nix
@@ -41,7 +40,6 @@
     ./mosquitto.nix
 
     ../../shared/syncthing/odroid.nix
-    ../../shared/mount-atuin.nix
 
     ./monitoring.nix
 
@@ -80,7 +78,7 @@
     "nextcloud"
     "sabnzbd"
     "sonarr"
-    "jellyseerr"
+    "seerr"
     "flakm"
   ];
 
