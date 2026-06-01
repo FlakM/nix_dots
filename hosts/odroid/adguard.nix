@@ -15,6 +15,10 @@
         ${lib.getExe pkgs.gnused} -i 's/protection_disabled_until: \([0-9-]*\) \([0-9]\)/protection_disabled_until: \1T\2/' "$STATE_DIRECTORY/AdGuardHome.yaml"
       fi
     '';
+    # `sed -i` above fchown()s the in-place temp file on close; the module's
+    # SystemCallFilter (~@privileged) blocks chown and the kernel kills sed with
+    # SIGSYS, looping the unit. Re-allow the chown family for this service.
+    serviceConfig.SystemCallFilter = lib.mkAfter [ "@chown" ];
   };
 
   # Health check: restart AdGuard Home if DNS stops responding.
