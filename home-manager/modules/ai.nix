@@ -19,6 +19,7 @@ in
     amp
     rtk
     inputs.cx-cli.packages.${pkgs.system}.default
+    inputs.coralogix-private.packages.${pkgs.system}.aaa-help
   ];
 
   home.file = {

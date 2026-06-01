@@ -84,7 +84,8 @@
 
     coralogix-private = {
       url = "git+ssh://git@github.com/FlakM/nix-coralogix-private";
-      inputs.nixpkgs.follows = "nixpkgs";
+      # Don't override nixpkgs: aaa-help's deps (cx_* common-rs crates) need
+      # rustc 1.92+, which 25.11 stable doesn't ship.
     };
   };
 
