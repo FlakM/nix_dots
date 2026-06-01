@@ -40,7 +40,7 @@ end)
 
 -- print item's docs
 map("n", "K", function()
-    vim.lsp.buf.hover()
+    vim.lsp.buf.hover({ border = "rounded", max_width = 80, max_height = 40 })
 end)
 
 -- go to implementation
@@ -72,7 +72,7 @@ map("n", "<leader>cl", function()
 end)
 
 map("n", "<leader>sh", function()
-    vim.lsp.buf.signature_help()
+    vim.lsp.buf.signature_help({ border = "rounded", max_width = 80, max_height = 20 })
 end)
 
 map("n", "<leader>FF", function()

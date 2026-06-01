@@ -3,6 +3,9 @@
   services.grafana = {
     enable = true;
     settings = {
+      # 26.05 dropped the built-in default; keep the historical default key so
+      # existing DB-encrypted datasource secrets stay readable (local instance).
+      security.secret_key = "SW2YcwTIb9zpOOhoPsMm";
       server = {
         # Listening Address
         http_addr = "127.0.0.1";
@@ -45,9 +48,9 @@
   };
 
 
-  services.nginx.virtualHosts.${config.services.grafana.domain} = {
+  services.nginx.virtualHosts.${config.services.grafana.settings.server.domain} = {
     locations."/" = {
-      proxyPass = "http://127.0.0.1:${toString config.services.grafana.port}";
+      proxyPass = "http://127.0.0.1:${toString config.services.grafana.settings.server.http_port}";
       proxyWebsockets = true;
     };
   };

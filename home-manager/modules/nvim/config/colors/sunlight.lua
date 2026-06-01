@@ -373,24 +373,5 @@ hi("CmpItemKindKeyword",    { fg = blue,    bold = true })
 hi("CmpItemKindConstant",   { fg = purple,  bold = true })
 hi("CmpItemKindSnippet",    { fg = fuchsia })
 
--- ── LSP hover border (override handler so K shows a rounded border) ──────────
-vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(
-  vim.lsp.handlers.hover,
-  {
-    border     = "rounded",
-    max_width  = 80,
-    max_height = 40,
-    pad_top    = 1,
-    pad_bottom = 1,
-  }
-)
-vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(
-  vim.lsp.handlers.signature_help,
-  {
-    border     = "rounded",
-    max_width  = 80,
-    max_height = 20,
-    pad_top    = 1,
-    pad_bottom = 1,
-  }
-)
+-- LSP hover/signature borders are configured at the call sites in
+-- lsp-config.lua (vim.lsp.buf.hover/signature_help opts) on Neovim 0.11+.

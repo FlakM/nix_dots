@@ -38,11 +38,17 @@ in
     ./grafana.nix
     ./performance.nix
     ./vpn.nix
-    ../../shared/mount-atuin.nix
     #./clickhouse.nix
     ./microvm.nix
     inputs.coralogix-private.nixosModules.coralogixDevProxy
   ];
+
+  # Elephant backend for the walker launcher (user service).
+  services.elephant.enable = true;
+
+  # Voice dictation for Hyprland (user service). Local whisper-cpp on CPU;
+  # keybinds + model live in home-manager/amd-pc.nix.
+  services.hyprwhspr-rs.enable = true;
 
   # Root dataset still needs a fileSystems entry even when we rely on ZFS
   # mountpoint properties for everything else.
@@ -74,8 +80,10 @@ in
     flake = "github:FlakM/nix_dots#amd-pc";
     flags = [
       "-L"
-      "--update-input" "nixpkgs"
-      "--update-input" "nixpkgs-unstable"
+      "--update-input"
+      "nixpkgs"
+      "--update-input"
+      "nixpkgs-unstable"
     ];
     dates = "02:00";
     randomizedDelaySec = "45min";
@@ -109,6 +117,7 @@ in
   systemd.services.ollama-pull-qwen = {
     description = "Pull OCR models for eink-bridge";
     after = [ "ollama.service" "network-online.target" ];
+    wants = [ "network-online.target" ];
     requires = [ "ollama.service" ];
     wantedBy = [ "multi-user.target" ];
     serviceConfig = {
@@ -154,7 +163,10 @@ in
   # Use a wrapper named "Hyprland" (not "start-hyprland") so UWSM's compositor
   # ID — and the resulting XDG_CURRENT_DESKTOP — stay "Hyprland". The wrapper
   # still execs start-hyprland for the watchdog fd. See hyprland-start above.
-  programs.uwsm.waylandCompositors.hyprland.binPath = lib.mkForce "${hyprland-start}/bin/Hyprland";
+  programs.uwsm.waylandCompositors.hyprland = {
+    prettyName = "Hyprland";
+    binPath = lib.mkForce "${hyprland-start}/bin/Hyprland";
+  };
 
   xdg.portal = {
     enable = true;
@@ -222,7 +234,7 @@ in
   };
   programs.thunar = {
     enable = true;
-    plugins = with pkgs.xfce; [ thunar-volman ];
+    plugins = [ pkgs.thunar-volman ];
   };
   programs.xfconf.enable = true;
 
@@ -283,10 +295,18 @@ in
 
   services.libinput.enable = true;
 
-  services.displayManager.gdm = {
-    enable = true;
-    wayland = true;
-  };
+  # Login greeter: greetd + ReGreet (GTK on cage). Replaces GDM, which on
+  # GNOME/GDM 50 black-screens without a full GNOME install (nixpkgs#523332).
+  # ReGreet only discovers sessions via XDG_DATA_DIRS, and NixOS doesn't expose
+  # /run/current-system/sw/share/wayland-sessions, so point the greeter at the
+  # display-manager session bundle (which holds the Hyprland (UWSM) entry).
+  programs.regreet.enable = true;
+  services.greetd.settings.default_session.command = lib.mkForce (
+    "${pkgs.dbus}/bin/dbus-run-session ${lib.getExe pkgs.cage} -s -d -- "
+    + "${pkgs.coreutils}/bin/env "
+    + "XDG_DATA_DIRS=${config.services.displayManager.sessionData.desktops}/share "
+    + "${lib.getExe config.programs.regreet.package}"
+  );
 
 
   services.xserver = {
@@ -424,7 +444,7 @@ in
     glib
     linuxHeaders
 
-    xfce.xfce4-pulseaudio-plugin
+    xfce4-pulseaudio-plugin
     cifs-utils # For mounting Samba shares
 
     adwaita-icon-theme

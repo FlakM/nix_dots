@@ -29,7 +29,7 @@ require("obsidian").setup({
     legacy_commands = false,
 
     attachments = {
-        img_folder = "assets/imgs",
+        folder = "assets/imgs",
         img_name_func = function()
             return string.format("%s", os.date("%Y%m%d%H%M%S"))
         end,

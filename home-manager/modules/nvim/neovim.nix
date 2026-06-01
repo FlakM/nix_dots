@@ -1,7 +1,7 @@
 { config, lib, pkgs, pkgs-unstable, pkgs-master, inputs, flakeRoot, ... }:
 let
   inherit (pkgs) stdenv;
-  jump = inputs.jump.packages.${pkgs.system}.default;
+  jump = inputs.jump.packages.${pkgs.stdenv.hostPlatform.system}.default;
   nvim-dap-probe-rs = pkgs.vimUtils.buildVimPlugin {
     name = "nvim-dap-probe-rs";
     src = pkgs.fetchFromGitHub {
@@ -97,6 +97,9 @@ in
 
   programs.neovim = {
     enable = true;
+    # 26.05 flips these defaults to false; keep current behavior explicitly.
+    withPython3 = true;
+    withRuby = true;
     #package = pkgs-unstable.neovim-unwrapped;
     plugins = with pkgs.vimPlugins; [
       # VIM enhancments
@@ -194,7 +197,7 @@ in
       # git commands
       vim-fugitive
 
-    ] ++ lib.optionals (pkgs.stdenv.system != "aarch64-linux") [
+    ] ++ lib.optionals (pkgs.stdenv.hostPlatform.system != "aarch64-linux") [
       #vim-go
     ]
     ++ [
@@ -216,7 +219,7 @@ in
       clang
     ];
 
-    extraLuaConfig =
+    initLua =
       builtins.concatStringsSep "\n" [
         (builtins.readFile ./config/init.lua)
         (builtins.readFile ./config/databases.lua)

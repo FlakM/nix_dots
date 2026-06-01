@@ -600,13 +600,13 @@ autocmd("VimLeave", {
 
 
 -- Plugins --------------------------------------------------------------------
-require("nvim-treesitter.install").compilers = { "gcc" }
-require("nvim-treesitter.configs").setup({
-  highlight = {
-    enable = true,
-    disable = {},
-    additional_vim_regex_highlighting = false,
-  },
+-- nvim-treesitter (main branch) dropped the classic `.configs` API. Grammars
+-- come from nix (withAllGrammars), so we just start native treesitter
+-- highlighting per buffer; pcall skips filetypes without a parser.
+autocmd("FileType", {
+  callback = function(args)
+    pcall(vim.treesitter.start, args.buf)
+  end,
 })
 
 cmd([[runtime! plugin/python_setup.vim]])

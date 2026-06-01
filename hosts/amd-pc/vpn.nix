@@ -35,13 +35,13 @@
 
   services.resolved = {
     enable = true;
-    dnssec = "allow-downgrade";
-    fallbackDns = [ "1.1.1.1" ];
-    domains = [ "~." ];
-    extraConfig = ''
-      DNSStubListener=yes
-      ResolveUnicastSingleLabel=yes
-    '';
+    settings.Resolve = {
+      DNSSEC = "allow-downgrade";
+      FallbackDNS = [ "1.1.1.1" ];
+      Domains = [ "~." ];
+      DNSStubListener = "yes";
+      ResolveUnicastSingleLabel = "yes";
+    };
   };
 
   environment.systemPackages = with pkgs; [

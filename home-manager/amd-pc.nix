@@ -85,6 +85,8 @@
     };
     gtk3.extraConfig.gtk-application-prefer-dark-theme = 1;
     gtk4.extraConfig.gtk-application-prefer-dark-theme = 1;
+    # 26.05 changes the gtk4 theme default to null; keep theming gtk4 like gtk3.
+    gtk4.theme = config.gtk.theme;
     font = {
       name = "FiraCode";
       size = 11;
@@ -111,24 +113,26 @@
   # The previous "fallback to GUI when no TTY" heuristic broke for Claude Code
   # because its shells have a TTY but no interactive terminal driver, so curses
   # pinentry hung waiting for input.
-  xdg.configFile."/.gnupg/gpg-agent.conf".text = let
-    pinentry-auto = pkgs.writeShellScript "pinentry-auto" ''
-      if [ -n "$WAYLAND_DISPLAY" ] || [ -n "$DISPLAY" ]; then
-        exec ${pkgs.pinentry-gnome3}/bin/pinentry-gnome3 "$@"
-      elif [ -t 0 ]; then
-        exec ${pkgs.pinentry-curses}/bin/pinentry-curses "$@"
-      else
-        exec ${pkgs.pinentry-gnome3}/bin/pinentry-gnome3 "$@"
-      fi
+  xdg.configFile."/.gnupg/gpg-agent.conf".text =
+    let
+      pinentry-auto = pkgs.writeShellScript "pinentry-auto" ''
+        if [ -n "$WAYLAND_DISPLAY" ] || [ -n "$DISPLAY" ]; then
+          exec ${pkgs.pinentry-gnome3}/bin/pinentry-gnome3 "$@"
+        elif [ -t 0 ]; then
+          exec ${pkgs.pinentry-curses}/bin/pinentry-curses "$@"
+        else
+          exec ${pkgs.pinentry-gnome3}/bin/pinentry-gnome3 "$@"
+        fi
+      '';
+    in
+    ''
+      enable-ssh-support
+      write-env-file
+      use-standard-socket
+      default-cache-ttl 600
+      max-cache-ttl 7200
+      pinentry-program ${pinentry-auto}
     '';
-  in ''
-    enable-ssh-support
-    write-env-file
-    use-standard-socket
-    default-cache-ttl 600
-    max-cache-ttl 7200
-    pinentry-program ${pinentry-auto}
-  '';
 
   home.file.".zshrc_local".text = ''
     # Ensure SSH uses gpg-agent socket (YubiKey)
@@ -141,6 +145,27 @@
     qmk
     qmk_hid
   ];
+
+  # hyprwhspr-rs voice dictation (service enabled in hosts/amd-pc/configuration.nix).
+  # Trigger is the app's built-in global shortcut SUPER+ALT+R (needs the "input"
+  # group, already granted). whisper-cpp runs on CPU; model is fetched by Nix.
+  xdg.dataFile."hyprwhspr-rs/models/ggml-base.en.bin".source = pkgs.fetchurl {
+    url = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin";
+    hash = "sha256-oDd5yG3zMjB19eeWyyzlAp8A7Ihp7uP9+4l6/jbG0AI=";
+  };
+
+  xdg.configFile."hyprwhspr-rs/config.jsonc".text = ''
+    {
+      // base.en resolves to ggml-base.en.bin in the default models dir above.
+      // Bump to "small.en" (and add that model) if accuracy needs it.
+      "transcription": {
+        "provider": "whisper_cpp",
+        "whisper_cpp": {
+          "model": "base.en"
+        }
+      }
+    }
+  '';
 
 
   sops = {

@@ -189,8 +189,7 @@ in
     slurp
 
     pkgs-unstable.grimblast
-    # walker from flake to ensure compatibility with elephant
-    inputs.walker.packages.${pkgs.stdenv.hostPlatform.system}.default
+    walker
     brightnessctl # brightness control
     rofimoji
 
@@ -617,6 +616,22 @@ in
   xdg.configFile."wallpaper.png" = {
     source = "${inputs.self}/wallpapers/wallpaper.png";
   };
+
+  # Re-apply the wallpaper after each switch. hyprpaper keeps running across
+  # rebuilds but holds the old (eventually GC'd) nix store path, so the wallpaper
+  # silently vanishes. Re-issuing the IPC set command reloads it from the fresh
+  # path. No-op when hyprpaper isn't running (e.g. during boot before login).
+  home.activation.reloadHyprpaper = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    if ${pkgs.procps}/bin/pgrep -x hyprpaper > /dev/null 2>&1; then
+      hyprDir="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/hypr"
+      sig="$(ls -1t "$hyprDir" 2>/dev/null | head -n1)"
+      if [ -n "$sig" ]; then
+        run env HYPRLAND_INSTANCE_SIGNATURE="$sig" \
+          ${inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland}/bin/hyprctl \
+          hyprpaper wallpaper "DP-1,${config.home.homeDirectory}/.config/wallpaper.png" || true
+      fi
+    fi
+  '';
 
   # SwayNotificationCenter configuration
   xdg.configFile."swaync/config.json" = {
@@ -1284,6 +1299,8 @@ in
 
   wayland.windowManager.hyprland = {
     enable = true;
+    # 26.05 changes the default to "lua"; our settings/extraConfig are hyprlang.
+    configType = "hyprlang";
     systemd = {
       enable = true;
       variables = [ "--all" ];
@@ -1340,22 +1357,8 @@ in
   };
 
 
-  programs.elephant = {
-    enable = true;
-    installService = true;
-    providers = [
-      "desktopapplications"
-      "clipboard"
-      "calc"
-      "runner"
-      "files"
-      "websearch"
-      "symbols"
-      "unicode"
-    ];
-  };
-
-
+  # elephant runs as a user service via the NixOS services.elephant module
+  # (enabled per-host); walker (the launcher) talks to it over a socket.
   systemd.user.services.walker = {
     Unit = {
       Description = "Walker application launcher daemon";
@@ -1364,7 +1367,7 @@ in
       Requires = [ "elephant.service" ];
     };
     Service = {
-      ExecStart = "${inputs.walker.packages.${pkgs.stdenv.hostPlatform.system}.default}/bin/walker --gapplication-service";
+      ExecStart = "${pkgs.walker}/bin/walker --gapplication-service";
       Restart = "on-failure";
       RestartSec = 3;
     };
