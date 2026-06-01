@@ -3,6 +3,18 @@
 
   boot.zfs.forceImportRoot = false;
 
+  # ZFS requires an LTS kernel. 26.05's default jumped to 6.18 which ZFS does
+  # not support; pin to the 6.12 LTS (the kernel we already run).
+  boot.kernelPackages = pkgs.linuxPackages_6_12;
+
+  # rpool/nixos is the ZFS native-encryption root for / (and /home, /var/lib).
+  # Under systemd stage-1 initrd (26.05 default) the default `true` scans key
+  # status across all ~230 rpool datasets, which is slow enough that
+  # sysroot.mount times out before the passphrase prompt shows. Scoping the
+  # request to the single encryptionroot makes the prompt appear immediately;
+  # loading that one key unlocks the whole inheriting subtree.
+  boot.zfs.requestEncryptionCredentials = [ "rpool/nixos" ];
+
   programs.git.enable = true;
 
 

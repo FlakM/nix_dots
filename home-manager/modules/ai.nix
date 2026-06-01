@@ -1,14 +1,20 @@
 { config, pkgs, lib, llm-agents-pkgs, inputs, ... }:
 let
-  cxSkills = inputs.cx-cli.packages.${pkgs.system}.skills;
+  cxSkills = inputs.cx-cli.packages.${pkgs.stdenv.hostPlatform.system}.skills;
   cxSkillFiles = lib.mapAttrs'
     (name: _: lib.nameValuePair ".claude/skills/${name}" { force = true; source = "${cxSkills}/${name}"; })
     (lib.filterAttrs (_: t: t == "directory") (builtins.readDir cxSkills));
 
-  cxPrivateSkills = inputs.coralogix-private.packages.${pkgs.system}.skills;
-  cxPrivateSkillFiles = lib.mapAttrs'
-    (name: _: lib.nameValuePair ".claude/skills/${name}" { force = true; source = "${cxPrivateSkills}/${name}"; })
-    (lib.filterAttrs (_: t: t == "directory") (builtins.readDir cxPrivateSkills));
+  # coralogix-private only ships linux packages; skip on darwin (work/air).
+  hasCxPrivate = inputs.coralogix-private.packages ? ${pkgs.stdenv.hostPlatform.system};
+  cxPrivateSkills =
+    if hasCxPrivate then inputs.coralogix-private.packages.${pkgs.stdenv.hostPlatform.system}.skills else null;
+  cxPrivateSkillFiles =
+    if hasCxPrivate then
+      lib.mapAttrs'
+        (name: _: lib.nameValuePair ".claude/skills/${name}" { force = true; source = "${cxPrivateSkills}/${name}"; })
+        (lib.filterAttrs (_: t: t == "directory") (builtins.readDir cxPrivateSkills))
+    else { };
 in
 {
   home.packages = with llm-agents-pkgs; [
@@ -18,9 +24,8 @@ in
     opencode
     amp
     rtk
-    inputs.cx-cli.packages.${pkgs.system}.default
-    inputs.coralogix-private.packages.${pkgs.system}.aaa-help
-  ];
+    inputs.cx-cli.packages.${pkgs.stdenv.hostPlatform.system}.default
+  ] ++ lib.optional hasCxPrivate inputs.coralogix-private.packages.${pkgs.stdenv.hostPlatform.system}.aaa-help;
 
   home.file = {
     ".claude/CLAUDE.md" = {
@@ -98,8 +103,11 @@ in
         chrome-devtools = {
           type = "local";
           command = [
-            "npx" "-y" "chrome-devtools-mcp@latest"
-            "--executablePath" "${pkgs.google-chrome}/bin/google-chrome-stable"
+            "npx"
+            "-y"
+            "chrome-devtools-mcp@latest"
+            "--executablePath"
+            "${pkgs.google-chrome}/bin/google-chrome-stable"
           ];
         };
       };

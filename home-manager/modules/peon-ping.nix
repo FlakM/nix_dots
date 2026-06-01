@@ -2,7 +2,7 @@
 {
   programs.peon-ping = {
     enable = true;
-    package = inputs.peon-ping.packages.${pkgs.system}.default;
+    package = inputs.peon-ping.packages.${pkgs.stdenv.hostPlatform.system}.default;
     settings = {
       default_pack = "rick-and-morty";
       volume = 0.5;
@@ -31,7 +31,7 @@
   };
 
   xdg.configFile."opencode/plugins/peon-ping.ts".source =
-    "${inputs.peon-ping.packages.${pkgs.system}.default}/share/peon-ping/adapters/opencode/peon-ping.ts";
+    "${inputs.peon-ping.packages.${pkgs.stdenv.hostPlatform.system}.default}/share/peon-ping/adapters/opencode/peon-ping.ts";
 
   xdg.configFile."opencode/peon-ping/config.json".text = builtins.toJSON {
     default_pack = "rick-and-morty";

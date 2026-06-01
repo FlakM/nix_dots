@@ -11,6 +11,8 @@
 
   programs.zsh = {
     enable = true;
+    # Pin the legacy dotDir (~) so the future default change doesn't move .zshrc.
+    dotDir = config.home.homeDirectory;
     autocd = true;
 
     completionInit = "autoload -U compinit && compinit -i";

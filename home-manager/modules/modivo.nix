@@ -1,7 +1,7 @@
 { pkgs, config, lib, pkgs-master, ... }: {
 
   home.packages = with pkgs; [
-    xorg.xwininfo
+    xwininfo
 
     pkgs-master.slack
     google-cloud-sdk

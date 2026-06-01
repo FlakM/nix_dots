@@ -6,17 +6,17 @@
       url = "github:nix-community/fenix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-unstable.url = "nixpkgs/nixos-unstable";
     nixpkgs-master.url = "github:NixOS/nixpkgs/master";
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
     home-manager = {
-      url = "github:nix-community/home-manager/release-25.11";
+      url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
     darwin = {
-      url = "github:lnl7/nix-darwin/nix-darwin-25.11";
+      url = "github:lnl7/nix-darwin/nix-darwin-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -57,11 +57,6 @@
     };
 
     llm-agents.url = "github:numtide/llm-agents.nix";
-
-    walker = {
-      url = "github:abenz1267/walker";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
 
     peon-ping = {
       url = "github:PeonPing/peon-ping";
@@ -120,7 +115,6 @@
     , librus-notifications
     , jump
     , llm-agents
-    , walker
     , peon-ping
     , microvm
     , eink-bridge
@@ -131,8 +125,10 @@
       default_system = "x86_64-linux";
 
       insecurePackages = [
-        "dotnet-sdk-6.0.428"
-        "aspnetcore-runtime-6.0.36"
+        # In use: electron-39 (obsidian/slack on amd-pc+dell-xps), minio
+        # (services.minio on amd-pc). Re-audit if those apps/services are dropped.
+        "electron-39.8.10"
+        "minio-2025-10-15T17-29-55Z"
       ];
 
       karabinerOverlay = (self: super: {
@@ -248,7 +244,6 @@
               };
               home-manager.sharedModules = [
                 sops-nix.homeManagerModules.sops
-                walker.inputs.elephant.homeManagerModules.default
                 peon-ping.homeManagerModules.default
               ];
               home-manager.users.flakm = import ./home-manager/${hostName}.nix;

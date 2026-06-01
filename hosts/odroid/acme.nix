@@ -11,7 +11,7 @@
       extraDomainNames = [ "*.house.flakm.com" ];
       dnsProvider = "cloudflare";
       dnsPropagationCheck = true;
-      credentialsFile = /var/secrets/cloudflare.ini;
+      environmentFile = "/var/secrets/cloudflare.ini";
     };
   };
 

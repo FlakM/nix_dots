@@ -10,6 +10,9 @@ in
     ../../shared/gpg.nix
   ];
 
+  # Elephant backend for the walker launcher (user service).
+  services.elephant.enable = true;
+
   system.autoUpgrade = {
     enable = true;
     operation = "boot";
@@ -47,7 +50,7 @@ in
   programs.dconf.enable = true;
   programs.thunar = {
     enable = true;
-    plugins = with pkgs.xfce; [ thunar-volman ];
+    plugins = [ pkgs.thunar-volman ];
   };
   programs.xfconf.enable = true;
 
@@ -70,7 +73,7 @@ in
 
   services.blueman.enable = true;
 
-  hardware.pulseaudio.enable = false;
+  services.pulseaudio.enable = false;
 
   services.pipewire = {
     enable = true;
@@ -99,7 +102,6 @@ in
 
   services.displayManager.gdm = {
     enable = true;
-    wayland = true;
   };
 
   services.libinput.enable = true;
@@ -176,7 +178,7 @@ in
     quickemu
     glib
 
-    xfce.xfce4-pulseaudio-plugin
+    xfce4-pulseaudio-plugin
 
     #    polkit_gnome
     adwaita-icon-theme
@@ -313,7 +315,7 @@ in
 
   fonts.fontDir.enable = true;
   fonts.packages = with pkgs; [
-    (nerdfonts.override { fonts = [ "FiraCode" ]; })
+    nerd-fonts.fira-code
   ];
 
 

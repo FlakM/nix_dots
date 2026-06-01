@@ -1,7 +1,7 @@
 { config, lib, pkgs, inputs, ... }:
 let
   inherit (pkgs) stdenv;
-  einkPkgs = inputs.eink-bridge.packages.${pkgs.system};
+  einkPkgs = inputs.eink-bridge.packages.${pkgs.stdenv.hostPlatform.system};
   eink-bridge = einkPkgs.default;
   hasHarness = einkPkgs ? harness;
   harness = if hasHarness then einkPkgs.harness else null;

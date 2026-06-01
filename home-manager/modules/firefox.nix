@@ -21,6 +21,8 @@
 
   programs.firefox = {
     enable = true;
+    # 26.05 moves the default to ~/.config; keep the legacy path (existing profile).
+    configPath = ".mozilla/firefox";
     profiles.default = {
       id = 0;
       name = "Default";

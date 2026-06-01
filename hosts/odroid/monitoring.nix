@@ -52,18 +52,20 @@
       web.listen-address = "0.0.0.0:9091";
     };
 
-    rules = [''
-      groups:
-        - name: claude_code
-          interval: 1m
-          rules:
-            - record: claude_code:cost_usd:total
-              expr: sum by (project_name) (max_over_time(claude_code_cost_usage_USD_total[10m]))
-            - record: claude_code:tokens:total
-              expr: sum by (project_name) (max_over_time(claude_code_token_usage_tokens_total[10m]))
-            - record: claude_code:cost_usd:by_model
-              expr: sum by (model) (max_over_time(claude_code_cost_usage_USD_total[10m]))
-    ''];
+    rules = [
+      ''
+        groups:
+          - name: claude_code
+            interval: 1m
+            rules:
+              - record: claude_code:cost_usd:total
+                expr: sum by (project_name) (max_over_time(claude_code_cost_usage_USD_total[10m]))
+              - record: claude_code:tokens:total
+                expr: sum by (project_name) (max_over_time(claude_code_token_usage_tokens_total[10m]))
+              - record: claude_code:cost_usd:by_model
+                expr: sum by (model) (max_over_time(claude_code_cost_usage_USD_total[10m]))
+      ''
+    ];
 
     scrapeConfigs = [
       {
@@ -121,6 +123,9 @@
         root_url = "https://grafana.house.flakm.com/";
       };
       security = {
+        # 26.05 dropped the built-in default; keep the historical default key so
+        # existing DB-encrypted datasource secrets stay readable.
+        secret_key = "SW2YcwTIb9zpOOhoPsMm";
         cookie_secure = true;
         csrf_trusted_origins = "grafana.house.flakm.com";
       };
@@ -167,9 +172,9 @@
 
   # Open ports for LAN access
   networking.firewall.allowedTCPPorts = [
-    9090  # Prometheus (useful for debugging)
-    9091  # Pushgateway (Android + CLI push targets)
-    4317  # OTLP gRPC
-    4318  # OTLP HTTP
+    9090 # Prometheus (useful for debugging)
+    9091 # Pushgateway (Android + CLI push targets)
+    4317 # OTLP gRPC
+    4318 # OTLP HTTP
   ];
 }

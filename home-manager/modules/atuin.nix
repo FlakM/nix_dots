@@ -4,6 +4,9 @@
     enable = true;
     enableZshIntegration = false;
     package = pkgs-unstable.atuin;
+    # Daemon owns the sqlite writes (out of the shell hot-path), which removes
+    # the ZFS fsync latency the rpool/nixos/atuin zvol used to work around.
+    daemon.enable = true;
     # https://github.com/atuinsh/atuin/issues/1199#issuecomment-1940931241
     settings = {
       sync = {

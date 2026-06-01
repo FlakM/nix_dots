@@ -45,6 +45,8 @@
       package = pkgs.gnome-themes-extra;
       name = "Adwaita";
     };
+    # 26.05 changes the gtk4 theme default to null; keep theming gtk4 like gtk3.
+    gtk4.theme = config.gtk.theme;
     iconTheme = {
       package = pkgs.adwaita-icon-theme;
       name = "Adwaita";
