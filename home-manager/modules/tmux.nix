@@ -108,7 +108,8 @@
       set -g default-terminal "tmux-256color"
       #set -ag terminal-overrides ",xterm-256color:RGB"
 
-      set-option -a terminal-overrides ",kitty:RGB"
+      set -as terminal-features ',xterm-kitty:RGB,clipboard,focus,sync'
+      set -as terminal-features ',kitty:RGB,clipboard,focus,sync'
 
       # ── Status bar (theme-aware: kitty/switch.sh swaps the palette + reloads) ──
       set -g status on
