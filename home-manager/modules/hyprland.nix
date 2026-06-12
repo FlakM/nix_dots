@@ -108,6 +108,58 @@ let
       '';
   };
 
+  xdph-share-picker = pkgs.writeShellApplication {
+    name = "xdph-share-picker";
+    runtimeInputs = [
+      inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland
+      pkgs.coreutils
+      pkgs.gnused
+      pkgs.jq
+      pkgs.rofi
+      pkgs.slurp
+    ];
+    text = ''
+      set -euo pipefail
+
+      flags=""
+      for arg in "$@"; do
+        if [ "$arg" = "--allow-token" ]; then
+          flags="r"
+        fi
+      done
+
+      emit() {
+        printf '[SELECTION]%s/%s\n' "$flags" "$1"
+      }
+
+      choice=$(printf 'Region\nScreen\nWindow\n' | rofi -dmenu -p 'Share')
+      case "$choice" in
+        Region)
+          region=$(slurp -f '%o %x %y %w %h')
+          read -r output x y w h <<< "$region"
+          origin=$(hyprctl monitors -j | jq -r --arg output "$output" '.[] | select(.name == $output) | "\(.x) \(.y)"')
+          [ -n "$origin" ]
+          read -r ox oy <<< "$origin"
+          emit "region:$output@$((x - ox)),$((y - oy)),$w,$h"
+          ;;
+        Screen)
+          screen=$(hyprctl monitors -j | jq -r '.[] | "\(.name)\t\(.description) \(.width)x\(.height) at \(.x),\(.y)"' | rofi -dmenu -p 'Screen' | cut -f1)
+          [ -n "$screen" ]
+          emit "screen:$screen"
+          ;;
+        Window)
+          windows=$(printf '%s' "''${XDPH_WINDOW_SHARING_LIST:-}" | sed 's/\[HA>\]/\n/g; s/\[HC>\]/\t/g; s/\[HT>\]/\t/g; s/\[HE>\]/\t/g')
+          window=$(printf '%s\n' "$windows" | while IFS=$'\t' read -r id class title _; do
+            [ -n "$id" ] || continue
+            printf '%s\t%s: %s\n' "$id" "$class" "$title"
+          done | rofi -dmenu -p 'Window' | cut -f1)
+          [ -n "$window" ]
+          emit "window:$window"
+          ;;
+      esac
+    '';
+  };
+
 in
 {
 
@@ -195,6 +247,16 @@ in
 
     wf-recorder # screen recording
   ];
+
+  xdg.configFile."hypr/xdph.conf" = {
+    force = true;
+    text = ''
+      screencopy {
+        allow_token_by_default = true
+        custom_picker_binary = ${xdph-share-picker}/bin/xdph-share-picker
+      }
+    '';
+  };
 
   xdg.configFile."rofimoji.rc" = {
     text = ''
