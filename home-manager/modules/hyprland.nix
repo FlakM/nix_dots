@@ -1389,15 +1389,13 @@ in
         {
           timeout = 300; # 5 minutes - lock screen
           on-timeout = "hyprlock";
-          # Reload on unlock to reset the Hyprland 0.55 xdg_popup drift (see ALT+SHIFT+R bind).
-          on-resume = "hyprctl reload";
         }
         {
           # Hyprland 0.55 lua config: hyprctl dispatch args are Lua, so the
           # old `dpms off` form parses as `hl.dispatch(dpms off)` and fails.
           timeout = 600; # 10 minutes - turn off displays
           on-timeout = "hyprctl dispatch 'hl.dsp.dpms(\"off\")'";
-          on-resume = "hyprctl dispatch 'hl.dsp.dpms(\"on\")'; sleep 1; hyprctl reload";
+          on-resume = "hyprctl dispatch 'hl.dsp.dpms(\"on\")'";
         }
       ];
     };
