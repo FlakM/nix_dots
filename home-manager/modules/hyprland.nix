@@ -1128,9 +1128,9 @@ in
       position = "top"; # Waybar at the bottom of your screen
       height = 24; # Waybar height
       # width = 1366; // Waybar width
-      modules-left = [ "hyprland/workspaces" "custom/spotify" ];
-      modules-center = [ "hyprland/window" ];
-      modules-right = [ "custom/calendar" "custom/vpn" "pulseaudio" "network" "cpu" "memory" "battery" "tray" "clock" ];
+      modules-left = [ "hyprland/workspaces" "hyprland/window" "custom/spotify" ];
+      modules-center = [ "clock" ];
+      modules-right = [ "custom/calendar" "custom/vpn" "pulseaudio" "network" "cpu" "memory" "battery" "tray" ];
 
       "custom/calendar" = {
         format = "{}";
@@ -1151,6 +1151,7 @@ in
 
       "hyprland/window" = {
         format = "{}";
+        max-length = 90;
         rewrite = {
           "(.*) — Mozilla Firefox" = "$1";
         };
@@ -1180,7 +1181,10 @@ in
       };
 
       clock = {
-        format-alt = "{:%Y-%m-%d}";
+        format = "{:%a %Y-%m-%d  %H:%M}";
+        format-alt = "{:%Y-%m-%d  %H:%M:%S}";
+        interval = 60;
+        tooltip-format = "<tt><small>{calendar}</small></tt>";
       };
 
       cpu = {
@@ -1243,7 +1247,7 @@ in
             border: none;
             border-radius: 0;
             font-family: "FiraCode Nerd Font";
-            font-size: 13px;
+            font-size: 14px;
             min-height: 0;
         }
 
@@ -1286,6 +1290,8 @@ in
 
         #clock {
             font-weight: bold;
+            padding: 0 16px;
+            margin: 0 8px;
         }
 
         #battery {

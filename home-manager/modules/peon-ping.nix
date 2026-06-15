@@ -33,6 +33,9 @@
   xdg.configFile."opencode/plugins/peon-ping.ts".source =
     "${inputs.peon-ping.packages.${pkgs.stdenv.hostPlatform.system}.default}/share/peon-ping/adapters/opencode/peon-ping.ts";
 
+  home.file.".claude/hooks/peon-ping/peon.sh".source =
+    "${inputs.peon-ping.packages.${pkgs.stdenv.hostPlatform.system}.default}/bin/peon";
+
   xdg.configFile."opencode/peon-ping/config.json".text = builtins.toJSON {
     default_pack = "rick-and-morty";
     volume = 0.5;

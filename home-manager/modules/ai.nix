@@ -1,6 +1,7 @@
 { config, pkgs, lib, llm-agents-pkgs, inputs, ... }:
 let
   cxSkills = inputs.cx-cli.packages.${pkgs.stdenv.hostPlatform.system}.skills;
+  peonPingEnabled = lib.attrByPath [ "programs" "peon-ping" "enable" ] false config;
   cxSkillFiles = lib.mapAttrs'
     (name: _: lib.nameValuePair ".claude/skills/${name}" { force = true; source = "${cxSkills}/${name}"; })
     (lib.filterAttrs (_: t: t == "directory") (builtins.readDir cxSkills));
@@ -111,7 +112,7 @@ in
           ];
         };
       };
-      plugin = [ "opencode-gemini-auth@latest" ];
+      plugin = [ "opencode-gemini-auth@latest" ] ++ lib.optional peonPingEnabled "./plugins/peon-ping.ts";
       provider.google.options.projectId = "904216483369";
     };
   };

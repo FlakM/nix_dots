@@ -40,7 +40,6 @@ in
     ./vpn.nix
     #./clickhouse.nix
     ./microvm.nix
-    inputs.coralogix-private.nixosModules.coralogixDevProxy
   ];
 
   # Elephant backend for the walker launcher (user service).

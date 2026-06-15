@@ -250,4 +250,14 @@ in
     };
   };
 
+  # Kitty's config watcher (kitten __watch_conf__) watches the parent directory
+  # of kitty.conf's resolved path. Home Manager writes kitty.conf via writeTextFile,
+  # a flat /nix/store object whose parent is the store root, so every kitty window
+  # ends up watching all of /nix/store (~260k inotify watches each) and exhausts
+  # fs.inotify.max_user_watches. Re-emit the same generated text inside a dedicated
+  # single-file store dir so the watcher only sees one entry.
+  xdg.configFile."kitty/kitty.conf".source = lib.mkForce (
+    "${pkgs.writeTextDir "kitty.conf" config.xdg.configFile."kitty/kitty.conf".text}/kitty.conf"
+  );
+
 }
