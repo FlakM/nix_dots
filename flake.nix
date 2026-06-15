@@ -318,6 +318,7 @@
       nixosConfigurations = {
         dell-xps = mkHost "dell-xps" "x86_64-linux";
         odroid = mkHost "odroid" "x86_64-linux";
+        router = mkHost "router" "x86_64-linux";
         amd-pc = mkHost "amd-pc" "x86_64-linux";
       };
 
