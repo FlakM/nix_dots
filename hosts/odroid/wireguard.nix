@@ -18,6 +18,11 @@
 
   networking.firewall.allowedUDPPorts = [ 51820 ];
 
+  systemd.services."wireguard-wg0-peer-FfqgT6e-8BLwBBX1Gk1buHKOUWeGMsZw1HwkNRewaHY\\x3d".serviceConfig = {
+    Restart = "on-failure";
+    RestartSec = "30s";
+  };
+
   sops.secrets.wireguard_odroid_private_key = {
     sopsFile = ../../secrets/secrets.yaml;
   };

@@ -34,10 +34,13 @@
 
     ./uptime-kuma.nix
 
+    ./omada.nix
+
     ./librus.nix
 
     ./home-assistant.nix
     ./mosquitto.nix
+    ./frigate.nix
 
     ../../shared/syncthing/odroid.nix
 
