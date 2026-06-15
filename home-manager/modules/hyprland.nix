@@ -117,11 +117,44 @@ let
       pkgs.jq
       pkgs.rofi
       pkgs.slurp
+      pkgs.util-linux
     ];
     text = ''
       set -euo pipefail
 
       flags=""
+      cache_dir="''${XDG_RUNTIME_DIR:-/tmp}"
+      cache_file="$cache_dir/xdph-share-picker-selection"
+      lock_file="$cache_dir/xdph-share-picker.lock"
+      cache_ttl=20
+
+      log() {
+        printf 'xdph-share-picker: %s\n' "$*" >&2
+      }
+
+      try_reuse_cache() {
+        [ -r "$cache_file" ] || return 0
+        now=$(date +%s)
+        mtime=$(stat -c %Y "$cache_file" 2>/dev/null || printf 0)
+        age=$((now - mtime))
+        if [ "$age" -le "$cache_ttl" ]; then
+          cached=$(< "$cache_file")
+          case "$cached" in
+            \[SELECTION\]*)
+              log "reusing cached selection from ''${age}s ago"
+              printf '%s\n' "$cached"
+              exit 0
+              ;;
+          esac
+        fi
+      }
+
+      try_reuse_cache
+
+      exec 9>"$lock_file"
+      flock 9
+      try_reuse_cache
+
       for arg in "$@"; do
         if [ "$arg" = "--allow-token" ]; then
           flags="r"
@@ -129,9 +162,13 @@ let
       done
 
       emit() {
-        printf '[SELECTION]%s/%s\n' "$flags" "$1"
+        selection="[SELECTION]$flags/$1"
+        printf '%s\n' "$selection" > "$cache_file" || true
+        log "cached new selection"
+        printf '%s\n' "$selection"
       }
 
+      log "prompting for new selection"
       choice=$(printf 'Region\nScreen\nWindow\n' | rofi -dmenu -p 'Share')
       case "$choice" in
         Region)
