@@ -162,7 +162,9 @@
       # tmux sends OSC 52 to the terminal on yank, kitty picks it up
       set -g set-clipboard on
       set -g allow-passthrough on
+      set -s extended-keys on
       set -as terminal-features ',xterm-kitty:clipboard'
+      set -as terminal-features 'xterm*:extkeys'
 
       bind-key -T copy-mode-vi y send-keys -X copy-selection-and-cancel
       bind-key -T copy-mode-vi Enter send-keys -X copy-selection-and-cancel

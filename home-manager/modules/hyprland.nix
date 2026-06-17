@@ -1607,7 +1607,6 @@ in
     end)
 
     -- Window rules
-    hl.window_rule({ name = "firefox",           match = { class = "^(firefox)$" },               workspace = 2 })
     hl.window_rule({ name = "spotify-opacity",   match = { class = "^(spotify)$" },               opacity = 1.00 })
     hl.window_rule({ name = "floating-calendar", match = { class = "^(floating-calendar)$" },     float = true, size = "1400 900", center = true })
     hl.window_rule({ name = "copyq",             match = { class = "^(com.github.hluk.copyq)$" }, float = true, size = "30% 50%",  center = true })
@@ -1776,12 +1775,6 @@ in
         # Critical for screen sharing - update DBUS environment
         exec-once = dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=Hyprland
 
-
-        windowrule {
-            name = firefox
-            match:class = ^(firefox)$
-            workspace = 2
-        }
 
         exec-once=[workspace 1 silent] kitty
         exec-once=[workspace 2 silent] uwsm app -- firefox

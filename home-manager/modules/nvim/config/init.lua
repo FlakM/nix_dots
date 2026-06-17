@@ -594,11 +594,6 @@ autocmd("BufRead", {
   end,
 })
 
-autocmd("VimLeave", {
-  command = "silent! wshada!",
-})
-
-
 -- Plugins --------------------------------------------------------------------
 -- nvim-treesitter (main branch) dropped the classic `.configs` API. Grammars
 -- come from nix (withAllGrammars), so we just start native treesitter
