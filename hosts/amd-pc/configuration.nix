@@ -73,21 +73,6 @@ in
 
   nix.package = pkgs.nixVersions.latest;
 
-  system.autoUpgrade = {
-    enable = true;
-    operation = "boot";
-    flake = "github:FlakM/nix_dots#amd-pc";
-    flags = [
-      "-L"
-      "--update-input"
-      "nixpkgs"
-      "--update-input"
-      "nixpkgs-unstable"
-    ];
-    dates = "02:00";
-    randomizedDelaySec = "45min";
-  };
-
   # Import the boot pool so /boot is mounted from bpool (GRUB-compatible).
   boot.zfs.extraPools = [ "bpool" ];
 
@@ -299,7 +284,16 @@ in
   # ReGreet only discovers sessions via XDG_DATA_DIRS, and NixOS doesn't expose
   # /run/current-system/sw/share/wayland-sessions, so point the greeter at the
   # display-manager session bundle (which holds the Hyprland (UWSM) entry).
-  programs.regreet.enable = true;
+  programs.regreet = {
+    enable = true;
+    theme.name = "Adwaita-dark";
+    extraCss = ''
+      window,
+      window > box {
+        background-color: #000000;
+      }
+    '';
+  };
   services.greetd.settings.default_session.command = lib.mkForce (
     "${pkgs.dbus}/bin/dbus-run-session ${lib.getExe pkgs.cage} -s -d -- "
     + "${pkgs.coreutils}/bin/env "
