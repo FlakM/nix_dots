@@ -1,0 +1,32 @@
+diff --git a/src/auth.rs b/src/auth.rs
+index 955ba99..9348d77 100644
+--- a/src/auth.rs
++++ b/src/auth.rs
+@@ -22,8 +22,6 @@ struct ControllerInfo {
+ struct TokenRequest<'a> {
+     #[serde(rename = "omadacId")]
+     omadac_id: &'a str,
+-    client_id: &'a str,
+-    client_secret: &'a str,
+ }
+ 
+ #[derive(Deserialize)]
+@@ -73,14 +71,16 @@ pub async fn authenticate(client: &reqwest::Client, config: &Config) -> Result<S
+     let url = format!("{}/openapi/authorize/token", config.base_url);
+     let body = TokenRequest {
+         omadac_id: &omadac_id,
+-        client_id: &config.client_id,
+-        client_secret: &config.client_secret,
+     };
+ 
+     let resp: OmadaResponse<AccessToken> = client
+         .post(&url)
+-        .query(&[("grant_type", "client_credentials")])
++        .query(&[
++            ("grant_type", "client_credentials"),
++            ("client_id", &config.client_id),
++            ("client_secret", &config.client_secret),
++        ])
+         .json(&body)
+         .send()
+         .await

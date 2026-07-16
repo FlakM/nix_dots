@@ -53,6 +53,7 @@
     ./modules/peon-ping.nix
     ./modules/pw-play-wrapper.nix
     ./modules/eink-bridge.nix
+    ./modules/omada.nix
   ];
 
   xdg.enable = true;
