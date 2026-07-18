@@ -3,6 +3,12 @@
 This runbook moves the odroid to the router profile and brings Omada switches
 and access points online at site `Mieszka`.
 
+`odroid-router` is the complete `odroid` configuration plus `router.nix`. It
+retains all application services, storage, containers, backups, Home Assistant,
+AdGuard, Omada, media services, Nextcloud, Paperless, Immich, Frigate,
+Vaultwarden, Samba, Syncthing, and monitoring. Only networking changes: PPPoE,
+LAN addressing, DHCP, NAT, DNS ownership, and WAN firewall policy.
+
 The initial network is intentionally flat: untagged `192.168.0.0/24` only. Do
 not enable guest, IoT, or other VLANs in Omada until matching router interfaces,
 DHCP scopes, routing, and firewall policy exist in `router.nix`.
@@ -43,20 +49,28 @@ ssh flakm@odroid 'cat /sys/class/net/enp2s0/address'
 Expected wiring:
 
 - `enp1s0`, MAC `00:1e:06:45:2e:dc`: LAN switch
-- `enp2s0`: ISP modem or ONT
+- `enp2s0`, MAC `00:1e:06:45:2e:dd`: bridged ISP modem or ONT
 
-Before switching profiles, ensure no other device on the LAN is serving DHCP.
+Confirm that the ISP handoff is bridged and whether PPPoE requires a tagged WAN
+VLAN. The current configuration sends untagged PPPoE with MTU/MRU `1492`.
 
-## 2. Deploy the Router Profile
+## 2. Prepare the Router Profile for the Move
 
-Keep a local console available in case the network transition interrupts SSH.
-From `amd-pc`:
+Push the router commit, then configure the router profile for the next boot
+without activating it at the old house:
 
 ```sh
-nixos-rebuild switch --target-host flakm@odroid --use-remote-sudo --flake .#odroid-router
+git push
+nixos-rebuild boot --target-host flakm@192.168.0.102 --use-remote-sudo --flake github:FlakM/nix_dots#odroid-router
+ssh flakm@192.168.0.102 'sudo poweroff'
 ```
 
-In a second terminal, monitor the odroid LAN address:
+Do not reboot again at the old house. At the new house, boot the ONT first, wait
+for synchronization, connect the ONT to `enp2s0`, connect the switch to
+`enp1s0`, and then boot the odroid. Keep a local console and a laptop with
+Ethernet available.
+
+Monitor the odroid LAN address:
 
 ```sh
 while true; do date; ping -c 1 192.168.0.102; sleep 2; done
@@ -68,7 +82,9 @@ Inspect the resulting network from the odroid console or over SSH:
 sudo networkctl status enp1s0
 sudo networkctl status enp2s0
 ip -4 address show dev enp1s0
-ip -4 address show dev enp2s0
+cat /sys/class/net/enp2s0/carrier
+systemctl status pppd-wan --no-pager
+ip -br address show ppp0
 ip -4 route
 ip route get 1.1.1.1
 ```
@@ -76,15 +92,22 @@ ip route get 1.1.1.1
 Expected results:
 
 - `enp1s0` has both `192.168.0.1/24` and `192.168.0.102/24`.
-- `enp2s0` has an IPv4 DHCP lease from the ISP-facing equipment.
-- The default route uses `enp2s0`.
+- `enp2s0` carrier is `1`; it does not receive an IP address.
+- `ppp0` has the ISP-assigned IPv4 address.
+- The default route uses `ppp0`.
+
+Interpret PPPoE failures before changing credentials:
+
+- `Timeout waiting for PADO`: cabling, bridge mode, or required WAN VLAN.
+- Authentication failure: username format or password.
+- Carrier `0`: physical link or ONT problem.
 
 Check required services:
 
 ```sh
-sudo systemctl is-active systemd-networkd dnsmasq adguardhome nginx podman-omada-controller
-sudo systemctl --no-pager --full status dnsmasq adguardhome podman-omada-controller
-sudo journalctl -b -u systemd-networkd -u dnsmasq -u adguardhome -u podman-omada-controller --no-pager
+sudo systemctl is-active systemd-networkd pppd-wan dnsmasq adguardhome nginx podman-omada-controller
+sudo systemctl --no-pager --full status pppd-wan dnsmasq adguardhome podman-omada-controller
+sudo journalctl -b -u systemd-networkd -u pppd-wan -u dnsmasq -u adguardhome -u podman-omada-controller --no-pager
 ```
 
 Check forwarding, NAT, and listeners:
