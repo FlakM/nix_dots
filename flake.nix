@@ -241,7 +241,11 @@
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
               home-manager.extraSpecialArgs = {
-                inherit inputs;
+                inputs =
+                  if hostName == "odroid" then
+                    builtins.removeAttrs inputs [ "coralogix-private" ]
+                  else
+                    inputs;
                 pkgs-unstable = pkgs-unstable system;
                 pkgs-master = pkgs-master system;
                 llm-agents-pkgs = llm-agents.packages.${system};

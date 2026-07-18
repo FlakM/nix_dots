@@ -95,6 +95,11 @@
 
   environment.systemPackages = with pkgs; [
     home-manager
+    sops
+    (writeShellScriptBin "sops-odroid" ''
+      export SOPS_AGE_KEY_CMD="sudo -n ${lib.getExe ssh-to-age} -private-key -i /etc/ssh/ssh_host_ed25519_key"
+      exec ${lib.getExe sops} "$@"
+    '')
     tailscale
 
     wgnord
@@ -106,17 +111,14 @@
     intel-gpu-tools
   ];
 
-  # Let's open the UDP port with which the network is tunneled through
-  networking.firewall = {
-    allowedUDPPorts = [ 41641 ]; # tailscale
-  };
-
-
-
   # enable the tailscale daemon; this will do a variety of tasks:
   # 1. create the TUN network device
   # 2. setup some IP routes to route through the TUN
-  services.tailscale.enable = true;
+  services.tailscale = {
+    enable = true;
+    openFirewall = true;
+    extraSetFlags = [ "--ssh=true" ];
+  };
 
 
   boot.zfs.extraPools = [ "tank" ];

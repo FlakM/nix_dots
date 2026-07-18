@@ -6,9 +6,14 @@ keys:
   - &admin_flakm DDB89AF3335111A17243467C7288322161C6A632
   - &server_amd_pc age1ljgtnfmy006gf6fm4zpp4pn6v4g8tkp0guxm0pm0k2zyw369n9nsf5m0g8
   - &user_amd_pc age1mhm63u49vwnkw9whperlxj6swme4vvh9w9vcu8zng8wudjplya3s4m0jq5
+  - &server_odroid age12fl78k70ps7ewtrzpywwfstzngqucqwqp4s4unq7w2narrnvcspqvk23wv
   - &odroid c0ac04c3e1ea066ce8a706be994f8a1556e3127d
   - &work age1tjl5hnjj7kfrlwdzp4d64f85vmtrfgqz3f654c46nv323d6fjanqk3hrwl
 creation_rules:
+  - path_regex: secrets/frigate\.yaml$
+    key_groups:
+    - age:
+      - *server_odroid
   - path_regex: secrets/[^/]+\.(yaml|json|env|ini)$
     key_groups:
     - pgp:

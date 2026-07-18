@@ -7,7 +7,9 @@ let
     (lib.filterAttrs (_: t: t == "directory") (builtins.readDir cxSkills));
 
   # coralogix-private only ships linux packages; skip on darwin (work/air).
-  hasCxPrivate = inputs.coralogix-private.packages ? ${pkgs.stdenv.hostPlatform.system};
+  hasCxPrivate =
+    inputs ? coralogix-private
+    && inputs.coralogix-private.packages ? ${pkgs.stdenv.hostPlatform.system};
   cxPrivateSkills =
     if hasCxPrivate then inputs.coralogix-private.packages.${pkgs.stdenv.hostPlatform.system}.skills else null;
   cxPrivateSkillFiles =

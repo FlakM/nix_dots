@@ -491,6 +491,8 @@ in
   services.tailscale = {
     enable = true;
     package = pkgs-unstable.tailscale;
+    openFirewall = true;
+    extraSetFlags = [ "--ssh=true" ];
   };
 
   boot.kernelModules = [ "i2c-dev" ];
@@ -710,18 +712,6 @@ in
     };
     kdeconnect.enable = true;
   };
-
-
-
-
-  # Let's open the UDP port with which the network is tunneled through
-  networking.firewall = {
-    allowedUDPPorts = [ 41641 ]; # tailscale
-  };
-
-
-
-
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
   # on your system were taken. It‘s perfectly fine and recommended to leave

@@ -1,9 +1,21 @@
-{ lib, ... }:
+{ config
+, lib
+, pkgs
+, ...
+}:
 let
   frigateMountOptions = [
     "nofail"
     "X-mount.mkdir=0750"
   ];
+  frigateStart = pkgs.writeShellScript "frigate-start" ''
+    export FRIGATE_REOLINK_PASSWORD="$(${config.services.frigate.package.python.interpreter} -c '
+    import sys
+    from urllib.parse import quote
+    print(quote(sys.stdin.read().rstrip("\n"), safe=""), end="")
+    ' < ${config.sops.secrets.frigate_reolink_password.path})"
+    exec ${config.services.frigate.package.python.interpreter} -m frigate
+  '';
 in
 {
   # One-time setup on odroid:
@@ -26,6 +38,14 @@ in
     device = "tank/data/frigate/exports";
     fsType = "zfs";
     options = frigateMountOptions;
+  };
+
+  sops.secrets.frigate_reolink_password = {
+    sopsFile = ../../secrets/frigate.yaml;
+    owner = "frigate";
+    group = "frigate";
+    mode = "0400";
+    restartUnits = [ "frigate.service" ];
   };
 
   services.frigate = {
@@ -70,7 +90,20 @@ in
         retain.default = 90;
       };
 
-      cameras = { };
+      cameras.reolink = {
+        ffmpeg.inputs = [
+          {
+            path = "rtsp://admin:{FRIGATE_REOLINK_PASSWORD}@192.168.0.215:554/Preview_01_main";
+            input_args = "preset-rtsp-generic";
+            roles = [ "record" ];
+          }
+          {
+            path = "rtsp://admin:{FRIGATE_REOLINK_PASSWORD}@192.168.0.215:554/Preview_01_sub";
+            input_args = "preset-rtsp-generic";
+            roles = [ "detect" ];
+          }
+        ];
+      };
     };
   };
 
@@ -85,6 +118,12 @@ in
       "/var/lib/frigate/clips"
       "/var/lib/frigate/exports"
     ];
-    serviceConfig.SupplementaryGroups = lib.mkAfter [ "video" ];
+    serviceConfig = {
+      ExecStart = lib.mkForce frigateStart;
+      ExecStartPre = lib.mkBefore [
+        "+${lib.getExe' pkgs.coreutils "install"} -d -m 0750 -o frigate -g frigate /var/lib/frigate/recordings /var/lib/frigate/clips /var/lib/frigate/exports"
+      ];
+      SupplementaryGroups = lib.mkAfter [ "video" ];
+    };
   };
 }
