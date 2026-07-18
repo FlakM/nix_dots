@@ -4,6 +4,8 @@
     timewarrior
     pkgs.obsidian
     gcalcli
+    gws
+    google-cloud-sdk
   ];
 
   programs.dircolors = {

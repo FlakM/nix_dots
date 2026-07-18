@@ -74,6 +74,7 @@ in
     google-chrome-wayland
     #element-desktop
     discord
+    pkgs-master.signal-cli
     signal-desktop
     slack-wayland
     zulip-term
