@@ -126,9 +126,11 @@
 
       insecurePackages = [
         # In use: electron-39 (obsidian/slack on amd-pc+dell-xps), minio
-        # (services.minio on amd-pc). Re-audit if those apps/services are dropped.
+        # (services.minio on amd-pc), pnpm bootstrap for frontend tooling.
+        # Re-audit if those apps/services are dropped.
         "electron-39.8.10"
         "minio-2025-10-15T17-29-55Z"
+        "pnpm-10.29.2"
       ];
 
       karabinerOverlay = (self: super: {
@@ -229,6 +231,9 @@
 
             # librus-notifications module for odroid
             (if hostName == "odroid" then librus-notifications.nixosModules.default else { })
+
+            # Private Coralogix host services
+            (if hostName == "amd-pc" then inputs.coralogix-private.nixosModules.hermesAgent else { })
 
             # home-manager
             home-manager.nixosModules.home-manager

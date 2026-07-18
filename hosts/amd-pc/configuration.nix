@@ -4,6 +4,7 @@
 
 let
   fenix = inputs.fenix.packages.${pkgs.stdenv.hostPlatform.system}.stable;
+  hasHermesSlackSecret = lib.hasInfix "hermes_slack_bot_token:" (builtins.readFile ../../secrets/secrets.yaml);
 
   # Workaround for upstream Hyprland regression (2026-05-06, rev 78b8ce22):
   # example/hyprland.conf was removed but CMakeLists.txt still installs it.
@@ -48,6 +49,91 @@ in
   # Voice dictation for Hyprland (user service). Local whisper-cpp on CPU;
   # keybinds + model live in home-manager/amd-pc.nix.
   services.hyprwhspr-rs.enable = true;
+
+  services.hermes-agent = {
+    enable = true;
+    package = inputs.coralogix-private.packages.${pkgs.stdenv.hostPlatform.system}.hermes-agent;
+    user = "flakm";
+    group = "users";
+    createUser = false;
+    stateDir = "/var/lib/hermes-agent";
+    environment = {
+      CODEX_HOME = "/home/flakm/.codex";
+      CX_READ_ONLY = "1";
+      DBUS_SESSION_BUS_ADDRESS = "unix:path=/run/user/1000/bus";
+      HOME = "/home/flakm";
+      XDG_RUNTIME_DIR = "/run/user/1000";
+    } // lib.optionalAttrs hasHermesSlackSecret {
+      SLACK_BOT_TOKEN_FILE = config.sops.secrets.hermes_slack_bot_token.path;
+    };
+    path = [
+      inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.codex
+      inputs.cx-cli.packages.${pkgs.stdenv.hostPlatform.system}.default
+      pkgs.libnotify
+      pkgs-master.signal-cli
+    ];
+    settings = {
+      agent = {
+        name = "hermes";
+        provider = "codex";
+        model = "gpt-5.5";
+        decisionPolicy = builtins.readFile ./hermes-interest.md;
+        ignoredAuthorUserIds = [
+          "self"
+          "U082RB1R9U4" # flakm
+        ];
+        ignoredAuthorUserIdsByChannel = {
+          "C0BBE5L48AU" = [ ]; # flakm-test
+        };
+        importantMentions = [
+          "<@U082RB1R9U4>"
+          "rnd-vertex-aaa"
+        ];
+        interestKeywords = [ ];
+        memoryDir = "/home/flakm/.local/share/hermes-agent/memory";
+        memoryMaxChars = 6000;
+        workingDirectory = "/home/flakm/programming/coralogix/aaa-daily-reporter";
+        contextPaths = [
+          "/home/flakm/programming/coralogix/aaa-daily-reporter"
+          "/home/flakm/programming/coralogix/cx-cli"
+          "${inputs.cx-cli.packages.${pkgs.stdenv.hostPlatform.system}.skills}"
+        ];
+        contextInstructions = ''
+          Use aaa-daily-reporter as Maciej's AAA operational map: service inventory, known-noise context, custom checks, login-events privacy rules, auditor lag checks, blocked-team checks, and daily health-report semantics.
+
+          Use cx-cli as the read-only observability tool. The `cx` binary is on PATH. Prefer `cx schema` for command discovery and the skills under cx-cli/skills for query workflows. Read-only commands such as `cx logs`, `cx spans`, `cx metrics`, `cx search-fields`, `cx alerts list/get/events`, `cx incidents list/get`, and `cx iam ... list/get/search` are allowed when a Slack thread looks investigation-worthy.
+
+          Never run cx write/risky operations. Never pass `--yes`. Keep any live telemetry query narrow: recent time windows, low limits, and `-o agents` or `-o json`. Do not query telemetry for routine PR links, greetings, or already-clear Slack threads; use the repos/skills mostly as background unless the thread mentions incidents, SSO/login/authz/permissions failures, customer impact, production/staging errors, audit-log delivery, blocked teams, Kafka lag, or requests for investigation.
+
+          When using AAA reporter checks, follow their privacy rules. In particular, login-events checks must not inspect actor/client fields and should aggregate by safe dimensions only.
+        '';
+      };
+      slack = {
+        watchedChannels = [
+          "C03K13XKV6G" # internal
+          "C03KNEM5DCG" # interface
+          "C0BBE5L48AU" # flakm-test
+        ];
+        pollIntervalSeconds = 30;
+        maxDecisionsPerChannelPerPoll = 5;
+        requireThreadParticipation = false;
+        backfillOnStart = false;
+        threadLookback = "2d";
+      };
+      escalation = {
+        urgentChannels = [ ];
+        desktopNotifications = false;
+        signal = {
+          enable = true;
+          account = "+48786816597";
+          configDir = "/home/flakm/.local/share/signal-cli-hermes";
+          noteToSelf = true;
+          recipients = [ ];
+        };
+        includeCollectedContext = false;
+      };
+    };
+  };
 
   # Root dataset still needs a fileSystems entry even when we rely on ZFS
   # mountpoint properties for everything else.
@@ -190,6 +276,13 @@ in
       owner = "flakm";
       group = "users";
       restartUnits = [ "create-samba-credentials.service" ];
+    };
+  } // lib.optionalAttrs hasHermesSlackSecret {
+    hermes_slack_bot_token = {
+      owner = "flakm";
+      group = "users";
+      mode = "0400";
+      restartUnits = [ "hermes-agent.service" ];
     };
   };
 
