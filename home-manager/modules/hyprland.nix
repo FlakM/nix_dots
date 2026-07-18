@@ -1,6 +1,7 @@
 { config, pkgs, inputs, pkgs-unstable, lib, osConfig, ... }:
 let
   path = "${config.home.homeDirectory}/.config/current-color_scheme";
+  hyprlock-command = "pidof hyprlock || hyprlock";
   apply-theme-script = pkgs.writeScript "apply-theme" ''
     set -e
     curr=$(cat ${path})
@@ -197,6 +198,141 @@ let
     '';
   };
 
+  screen-light = pkgs.writeShellApplication {
+    name = "screen-light";
+    runtimeInputs = [
+      pkgs.brightnessctl
+      pkgs.coreutils
+      pkgs.ddcutil
+      pkgs.gawk
+      pkgs.libnotify
+    ];
+    text = ''
+      set -euo pipefail
+
+      cmd="''${1:-}"
+      step="''${SCREEN_LIGHT_STEP:-5}"
+      min="''${SCREEN_LIGHT_MIN:-5}"
+
+      clamp_percent() {
+        local value="$1"
+        if [ "$value" -lt "$min" ]; then
+          value="$min"
+        elif [ "$value" -gt 100 ]; then
+          value=100
+        fi
+        printf '%s\n' "$value"
+      }
+
+      notify_level() {
+        notify-send \
+          -h string:x-canonical-private-synchronous:screen-light \
+          -h int:value:"$1" \
+          "Screen brightness" "$1%" >/dev/null 2>&1 || true
+      }
+
+      ddc_level() {
+        ddcutil --terse getvcp 10 2>/dev/null | awk '/^VCP 10 / { print $4, $5; exit }'
+      }
+
+      if read -r current max < <(ddc_level); then
+        current_pct=$((current * 100 / max))
+        case "$cmd" in
+          up) target_pct=$((current_pct + step)) ;;
+          down) target_pct=$((current_pct - step)) ;;
+          set) target_pct="''${2:?usage: screen-light set PERCENT}" ;;
+          get) notify_level "$current_pct"; exit 0 ;;
+          *) printf 'usage: screen-light up|down|get|set PERCENT\n' >&2; exit 2 ;;
+        esac
+
+        target_pct=$(clamp_percent "$target_pct")
+        ddcutil setvcp 10 "$((target_pct * max / 100))" >/dev/null
+        notify_level "$target_pct"
+        exit 0
+      fi
+
+      case "$cmd" in
+        up) brightnessctl --class=backlight --quiet set "$step%+" ;;
+        down) brightnessctl --class=backlight --quiet set "$step%-" ;;
+        set) brightnessctl --class=backlight --quiet set "''${2:?usage: screen-light set PERCENT}%" ;;
+        get) ;;
+        *) printf 'usage: screen-light up|down|get|set PERCENT\n' >&2; exit 2 ;;
+      esac
+
+      level=$(brightnessctl --class=backlight --machine-readable info | awk -F, '{ gsub(/%/, "", $4); print $4 }')
+      notify_level "$level"
+    '';
+  };
+
+  # Recover from a deadlocked/dead hyprlock from another tty or ssh.
+  # hyprlock can wedge on a futex while its session is VT-inactive, showing a
+  # black screen with no prompt and ignoring SIGUSR1/loginctl unlock-session.
+  hypr-emergency-unlock = pkgs.writeShellApplication {
+    name = "hypr-emergency-unlock";
+    runtimeInputs = [
+      inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland
+      pkgs.coreutils
+      pkgs.jq
+      pkgs.procps
+    ];
+    text = ''
+      set -euo pipefail
+
+      log() { printf 'hypr-emergency-unlock: %s\n' "$*" >&2; }
+
+      export XDG_RUNTIME_DIR="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+
+      if [ -z "''${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
+        sig=$(hyprctl instances -j | jq -r 'sort_by(.time) | last | .instance // empty')
+        [ -n "$sig" ] || { log "no running Hyprland instance found"; exit 1; }
+        export HYPRLAND_INSTANCE_SIGNATURE="$sig"
+      fi
+
+      # hypridle relocks as soon as we unlock (the Hyprland session looks idle
+      # while you sit on another tty), so take it out of the loop first
+      if systemctl --user is-active --quiet hypridle; then
+        log "stopping hypridle to prevent instant relock"
+        systemctl --user stop hypridle
+        log "restart it once you are back in: systemctl --user start hypridle"
+      fi
+
+      if pgrep -x hyprlock >/dev/null; then
+        log "asking hyprlock to unlock (SIGUSR1)"
+        pkill -USR1 -x hyprlock || true
+        for _ in 1 2 3 4 5 6; do
+          pgrep -x hyprlock >/dev/null || break
+          sleep 0.5
+        done
+        if pgrep -x hyprlock >/dev/null; then
+          log "hyprlock unresponsive, killing it"
+          pkill -KILL -x hyprlock || true
+          sleep 1
+        fi
+      fi
+
+      # lua builds (>=0.55) clear the dead-locker state directly; legacy
+      # builds need allow_session_lock_restore plus a fresh locker
+      if out=$(hyprctl repl 'hl.clear_crashed_lockscreen()' 2>&1); then
+        log "cleared crashed lockscreen state"
+      else
+        case "$out" in
+          *"session is not locked"*) log "session already unlocked" ;;
+          *)
+            log "lua API unavailable, trying legacy path"
+            hyprctl keyword misc:allow_session_lock_restore 1 || true
+            hyprctl dispatch exec hyprlock || true
+            sleep 1
+            pkill -USR1 -x hyprlock || true
+            ;;
+        esac
+      fi
+
+      hyprctl repl 'hl.dsp.dpms("on")' >/dev/null 2>&1 \
+        || hyprctl dispatch dpms on >/dev/null 2>&1 || true
+      log "done, switch to the Hyprland VT"
+    '';
+  };
+
 in
 {
 
@@ -280,6 +416,8 @@ in
     pkgs-unstable.grimblast
     walker
     brightnessctl # brightness control
+    screen-light
+    hypr-emergency-unlock
     rofimoji
 
     wf-recorder # screen recording
@@ -1483,17 +1621,21 @@ in
 
   services.hypridle = {
     enable = true;
+    systemdTarget = "wayland-session@Hyprland.target";
     settings = {
       general = {
-        lock_cmd = "pidof hyprlock || hyprlock";
-        before_sleep_cmd = "loginctl lock-session";
+        lock_cmd = hyprlock-command;
+        before_sleep_cmd = hyprlock-command;
         after_sleep_cmd = "hyprctl dispatch 'hl.dsp.dpms(\"on\")'";
         ignore_dbus_inhibit = false;
       };
       listener = [
         {
           timeout = 300; # 5 minutes - lock screen
-          on-timeout = "hyprlock";
+          # Route through lock_cmd's `pidof hyprlock ||` guard so the idle
+          # timeout can't spawn a second hyprlock atop a sleep-triggered one
+          # (two instances fight over the keyboard -> stray-release input desync).
+          on-timeout = hyprlock-command;
         }
         {
           # Hyprland 0.55 lua config: hyprctl dispatch args are Lua, so the
@@ -1558,6 +1700,8 @@ in
         },
         decoration = {
             rounding = 10,
+            active_opacity = 1.0,
+            inactive_opacity = 0.95,
             blur = { enabled = true, size = 8, passes = 1 },
         },
         -- Disable wp_color_manager_v1 / CM pipeline. Hyprland 0.55's CM
@@ -1661,7 +1805,7 @@ in
     hl.bind(mod .. " + Print",      hl.dsp.exec_cmd([=[grimblast --scale 2 --wait 2 save area ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png]=]))
 
     -- Lock / notifications
-    hl.bind(mod .. " + SHIFT + L", hl.dsp.exec_cmd("hyprlock"))
+    hl.bind(mod .. " + SHIFT + L", hl.dsp.exec_cmd("${hyprlock-command}"))
     hl.bind(mod .. " + N",       hl.dsp.exec_cmd("swaync-client -t -sw"))
 
     -- Audio (binde -> repeating; locked = usable on lockscreen)
@@ -1674,9 +1818,11 @@ in
     hl.bind("XF86AudioNext", hl.dsp.exec_cmd("playerctl next"),       { locked = true })
     hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"),   { locked = true })
 
-    -- Brightness (DDC, external monitor)
-    hl.bind("SHIFT + F12", hl.dsp.exec_cmd("ddcutil setvcp 10 + 10"), { repeating = true })
-    hl.bind("SHIFT + F11", hl.dsp.exec_cmd("ddcutil setvcp 10 - 10"), { repeating = true })
+    -- Brightness: DDC external monitor, brightnessctl fallback for laptops
+    hl.bind("XF86MonBrightnessUp",   hl.dsp.exec_cmd("screen-light up"),   { locked = true, repeating = true })
+    hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("screen-light down"), { locked = true, repeating = true })
+    hl.bind("SHIFT + F12",           hl.dsp.exec_cmd("screen-light up"),   { locked = true, repeating = true })
+    hl.bind("SHIFT + F11",           hl.dsp.exec_cmd("screen-light down"), { locked = true, repeating = true })
   '';
 
   wayland.windowManager.hyprland.extraConfig = ''
@@ -1749,6 +1895,8 @@ in
     
         decoration {
             rounding = 10
+            active_opacity = 1.0
+            inactive_opacity = 0.95
             blur {
                 enabled = true
                 size = 8
@@ -1881,7 +2029,7 @@ in
         # save screenshot to Pictures with timestamp
         bind=$mainMod,Print,exec,grimblast --scale 2 --wait 2 save area ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png
 
-        bind=$mainMod SHIFT, L, exec, hyprlock
+        bind=$mainMod SHIFT, L, exec, ${hyprlock-command}
         bind = $mainMod, N, exec, swaync-client -t -sw
 
 
@@ -1896,8 +2044,10 @@ in
         bind=, XF86AudioPrev, exec, playerctl previous
         
         # brightness controls
-        binde=SHIFT, F12, exec, ddcutil setvcp 10 + 10
-        binde=SHIFT, F11, exec, ddcutil setvcp 10 - 10
+        binde=, XF86MonBrightnessUp, exec, screen-light up
+        binde=, XF86MonBrightnessDown, exec, screen-light down
+        binde=SHIFT, F12, exec, screen-light up
+        binde=SHIFT, F11, exec, screen-light down
 
   '';
 

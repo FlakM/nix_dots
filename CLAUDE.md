@@ -91,6 +91,12 @@ The setup uses a consistent set of applications across all hosts:
 - `home-manager/modules/aerospace/` - macOS window manager config
 - `home-manager/modules/hyprland.nix` - Linux window manager config
 
+### Hyprlock/Hypridle Debugging:
+- On `amd-pc`, Hyprland runs through UWSM/greetd. The active compositor target is `wayland-session@Hyprland.target`, not `hyprland-session.target`.
+- Avoid `loginctl lock-session` in `hypridle` lock paths here: logind may select a stale greetd Wayland session on `tty1`, causing locks to appear on the wrong VT. Prefer a direct guarded lock command like `pidof hyprlock || hyprlock`.
+- When debugging wrong-TTY locks, compare `loginctl list-sessions`, `loginctl show-user flakm -p Display -p Sessions`, `systemctl --user status hypridle.service`, and `systemctl --user list-units 'wayland-session*' 'graphical-session*'`.
+- If hyprlock deadlocks (black screen, no prompt, ignores SIGUSR1), run `hypr-emergency-unlock` from another tty or ssh. It stops hypridle, kills the wedged hyprlock, and clears the crashed-lockscreen state via `hyprctl repl 'hl.clear_crashed_lockscreen()'` (defined in `home-manager/modules/hyprland.nix`).
+
 ## Language-Specific Configurations:
 
 The neovim configuration includes specialized setups for:
