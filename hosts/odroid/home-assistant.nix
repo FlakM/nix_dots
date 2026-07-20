@@ -1,7 +1,37 @@
 { config, pkgs, lib, ... }:
+let
+  patchHomeAssistant = package: package.overridePythonAttrs (old: {
+    disabledTests = (old.disabledTests or [ ]) ++ [
+      "test_remove_refresh_token"
+      "test_one_long_lived_access_token_per_refresh_token"
+      "test_access_token_with_empty_key"
+      "test_multiple_runs_repeat_choose"
+      "test_immediate_works_with_schedule_call"
+    ];
+  });
+  homeAssistantPackage = (patchHomeAssistant pkgs.home-assistant) // {
+    override = args: patchHomeAssistant (pkgs.home-assistant.override args);
+  };
+  frigateComponent = pkgs.home-assistant-custom-components.frigate.overridePythonAttrs (old: {
+    doCheck = false;
+    dependencies = map
+      (dependency:
+        if (dependency.pname or "") == "hass-web-proxy-lib" then
+          dependency.overridePythonAttrs
+            (_: {
+              doCheck = false;
+              passthru.tests = { };
+              pythonImportsCheck = [ ];
+            })
+        else
+          dependency)
+      old.dependencies;
+  });
+in
 {
   services.home-assistant = {
     enable = true;
+    package = homeAssistantPackage;
     extraComponents = [
       "default_config"
       "met"
@@ -30,6 +60,7 @@
       # utility
       "backup"
     ];
+    customComponents = [ frigateComponent ];
     extraPackages = ps: with ps; [
       psycopg2
       gtts

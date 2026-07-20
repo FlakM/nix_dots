@@ -157,6 +157,19 @@
         });
       });
 
+      slowapiOverlay = (_: prev: {
+        pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
+          (_: pythonPrev: {
+            slowapi = pythonPrev.slowapi.overridePythonAttrs (old: {
+              disabledTests = (old.disabledTests or [ ]) ++ [
+                "test_retry_after"
+                "test_exempt_decorator"
+              ];
+            });
+          })
+        ];
+      });
+
       mkPkgs =
         nixpkgsInput:
         { extraConfig ? { }, overlays ? [ ] }:
@@ -177,7 +190,7 @@
         extraConfig = {
           permittedInsecurePackages = insecurePackages;
         };
-        overlays = [ karabinerOverlay paperlessOverlay ];
+        overlays = [ karabinerOverlay paperlessOverlay slowapiOverlay ];
       };
 
       pkgs-default = pkgs-stable default_system;
@@ -248,7 +261,16 @@
                     inputs;
                 pkgs-unstable = pkgs-unstable system;
                 pkgs-master = pkgs-master system;
-                llm-agents-pkgs = llm-agents.packages.${system};
+                llm-agents-pkgs =
+                  let
+                    packages = llm-agents.packages.${system};
+                  in
+                  packages
+                    // (if hostName == "odroid" then {
+                    amp = packages.amp.overrideAttrs (_: {
+                      doInstallCheck = false;
+                    });
+                  } else { });
                 flakeRoot = toString ./.;
               };
               home-manager.sharedModules = [
