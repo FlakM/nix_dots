@@ -2,12 +2,10 @@
 let
   patchHomeAssistant = package: package.overridePythonAttrs (old: {
     disabledTests = (old.disabledTests or [ ]) ++ [
-      "test_remove_refresh_token"
-      "test_one_long_lived_access_token_per_refresh_token"
-      "test_access_token_with_empty_key"
       "test_multiple_runs_repeat_choose"
       "test_immediate_works_with_schedule_call"
     ];
+    patches = (old.patches or [ ]) ++ [ ./home-assistant-pyjwt-2.13.patch ];
   });
   homeAssistantPackage = (patchHomeAssistant pkgs.home-assistant) // {
     override = args: patchHomeAssistant (pkgs.home-assistant.override args);
