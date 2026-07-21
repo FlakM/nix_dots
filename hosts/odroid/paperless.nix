@@ -3,6 +3,7 @@
     (self: super: {
       paperless-ngx = super.paperless-ngx.overrideAttrs (old: {
         doCheck = false;
+        doInstallCheck = false;
       });
     })
   ];

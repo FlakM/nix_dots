@@ -8,7 +8,8 @@ let
     "nofail"
     "X-mount.mkdir=0750"
   ];
-  reolinkCamera = address: passwordVariable: {
+  reolinkCamera = address: passwordVariable: detectResolution: {
+    detect = detectResolution;
     ffmpeg.inputs = [
       {
         path = "rtsp://admin:{${passwordVariable}}@${address}:554/Preview_01_main";
@@ -31,11 +32,23 @@ let
     rtsp.listen = "127.0.0.1:8554";
     webrtc.listen = "127.0.0.1:8555";
     streams = {
-      reolink = go2rtcStream "192.168.0.215" "FRIGATE_REOLINK_PASSWORD" "main";
+      front_right = go2rtcStream "192.168.0.215" "FRIGATE_REOLINK_PASSWORD" "main";
       front_left = go2rtcStream "192.168.0.221" "FRIGATE_REOLINK_PASSWORD_FRONT_LEFT" "main";
       back = go2rtcStream "192.168.0.131" "FRIGATE_REOLINK_PASSWORD_BACK" "main";
     };
   };
+  openvinoModel = pkgs.runCommand "frigate-openvino-model" { } ''
+    mkdir -p $out
+    ln -s ${pkgs.fetchurl {
+      url = "https://blobconverter.nyc3.cdn.digitaloceanspaces.com/intel/2022_1/ssdlite_mobilenet_v2/ssdlite_mobilenet_v2.xml";
+      hash = "sha256-sYOc199OeOId6oTftLqq2w6/MPmVM7uOeSiiErbD+yE=";
+    }} $out/ssdlite_mobilenet_v2.xml
+    ln -s ${pkgs.fetchurl {
+      url = "https://blobconverter.nyc3.cdn.digitaloceanspaces.com/intel/2022_1/ssdlite_mobilenet_v2/ssdlite_mobilenet_v2.bin";
+      hash = "sha256-CxnX7w9vjbixow2gCWdHOzw15eBdWBCrgwcVj0N5ddI=";
+    }} $out/ssdlite_mobilenet_v2.bin
+    ln -s ${config.services.frigate.package}/share/frigate/coco_91cl_bkgr.txt $out/coco_91cl_bkgr.txt
+  '';
   frigateStart = pkgs.writeShellScript "frigate-start" ''
     export FRIGATE_REOLINK_PASSWORD="$(<${config.sops.secrets.frigate_reolink_password.path})"
     export FRIGATE_REOLINK_PASSWORD_BACK="$(<${config.sops.secrets.frigate_reolink_password_back.path})"
@@ -43,7 +56,7 @@ let
     exec ${config.services.frigate.package.python.interpreter} -m frigate
   '';
   frigateClearShm = pkgs.writeShellScript "frigate-clear-shm" ''
-    ${lib.getExe' pkgs.coreutils "rm"} -f /dev/shm/{back,front_left,reolink}_frame*
+    ${lib.getExe' pkgs.coreutils "rm"} -f /dev/shm/{back,front_left,front_right,reolink}_frame*
   '';
   go2rtcStart = pkgs.writeShellScript "go2rtc-start" ''
     urlencode() {
@@ -119,14 +132,30 @@ in
         topic_prefix = "frigate";
       };
 
-      detectors.cpu = {
-        type = "cpu";
+      detectors.openvino = {
+        type = "openvino";
+        device = "GPU";
+      };
+
+      model = {
+        width = 300;
+        height = 300;
+        input_tensor = "nhwc";
+        input_pixel_format = "bgr";
+        path = "${openvinoModel}/ssdlite_mobilenet_v2.xml";
+        labelmap_path = "${openvinoModel}/coco_91cl_bkgr.txt";
       };
 
       ffmpeg.hwaccel_args = "preset-vaapi";
 
+      detect = {
+        enabled = true;
+        fps = 5;
+      };
+      objects.track = [ "person" ];
+
       go2rtc.streams = {
-        reolink = reolinkMainStream "192.168.0.215" "FRIGATE_REOLINK_PASSWORD";
+        front_right = reolinkMainStream "192.168.0.215" "FRIGATE_REOLINK_PASSWORD";
         front_left = reolinkMainStream "192.168.0.221" "FRIGATE_REOLINK_PASSWORD_FRONT_LEFT";
         back = reolinkMainStream "192.168.0.131" "FRIGATE_REOLINK_PASSWORD_BACK";
       };
@@ -156,9 +185,45 @@ in
       };
 
       cameras = {
-        reolink = reolinkCamera "192.168.0.215" "FRIGATE_REOLINK_PASSWORD";
-        front_left = reolinkCamera "192.168.0.221" "FRIGATE_REOLINK_PASSWORD_FRONT_LEFT";
-        back = reolinkCamera "192.168.0.131" "FRIGATE_REOLINK_PASSWORD_BACK";
+        front_right = (reolinkCamera "192.168.0.215" "FRIGATE_REOLINK_PASSWORD" {
+          width = 640;
+          height = 360;
+        }) // {
+          motion.mask = "0.001,0.009,0.001,0.221,0.273,0.201,0.3,0.162,0.433,0.164,0.445,0.216,0.853,0.265,0.899,0.09,0.911,0.004";
+          zones.podjazd_prawy = {
+            friendly_name = "Podjazd prawy";
+            coordinates = "0.01,0.237,0.854,0.313,0.853,0.982,0.004,0.995";
+            loitering_time = 0;
+          };
+          review = {
+            alerts.required_zones = [ "podjazd_prawy" ];
+            detections.required_zones = [ "podjazd_prawy" ];
+          };
+        };
+        front_left = (reolinkCamera "192.168.0.221" "FRIGATE_REOLINK_PASSWORD_FRONT_LEFT" {
+          width = 640;
+          height = 360;
+        }) // {
+          motion.mask = "0.002,0.008,0.007,0.397,0.353,0.264,0.577,0.19,0.793,0.169,0.897,0.152,0.991,0.119,0.985,0.01";
+          zones.podjazd = {
+            coordinates = "0.156,0.358,0.005,0.427,0.001,0.993,0.996,0.995,0.999,0.176,0.887,0.208,0.843,0.196";
+            loitering_time = 0;
+          };
+          review = {
+            alerts.required_zones = [ "podjazd" ];
+            detections.required_zones = [ "podjazd" ];
+          };
+        };
+        back = (reolinkCamera "192.168.0.131" "FRIGATE_REOLINK_PASSWORD_BACK" {
+          width = 1920;
+          height = 576;
+          fps = 3;
+        }) // {
+          motion.mask = [
+            "0,0.365,0,0.009,0.269,0.004"
+            "0.659,0.004,0.99,0.5,0.998,0.469,0.997,0.004"
+          ];
+        };
       };
     };
   };

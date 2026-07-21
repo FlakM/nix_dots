@@ -7,14 +7,15 @@
 
   hardware.graphics = {
     enable = true;
-    extraPackages = with pkgs; [
+    extraPackages = lib.mkForce (with pkgs; [
       intel-media-driver
       intel-vaapi-driver
       libva-vdpau-driver
       libvdpau-va-gl
-      intel-compute-runtime
+      intel-compute-runtime-legacy1
+      vpl-gpu-rt
       # QSV not supported on Jasper Lake - use VAAPI in Jellyfin settings
-    ];
+    ]);
   };
 
   hardware.firmware = with pkgs; [ linux-firmware ];

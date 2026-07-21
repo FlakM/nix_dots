@@ -5,7 +5,14 @@ let
       "test_multiple_runs_repeat_choose"
       "test_immediate_works_with_schedule_call"
     ];
-    patches = (old.patches or [ ]) ++ [ ./home-assistant-pyjwt-2.13.patch ];
+    # nixpkgs' pyjwt-2.13-compat.patch introduces invalid py3 syntax
+    # (`except A, B:` without parens); fix it so HA can import auth.
+    postPatch = (old.postPatch or "") + ''
+      substituteInPlace homeassistant/auth/__init__.py \
+        --replace-fail \
+          "except jwt.InvalidTokenError, jwt.InvalidKeyError:" \
+          "except (jwt.InvalidTokenError, jwt.InvalidKeyError):"
+    '';
   });
   homeAssistantPackage = (patchHomeAssistant pkgs.home-assistant) // {
     override = args: patchHomeAssistant (pkgs.home-assistant.override args);
@@ -27,6 +34,17 @@ let
   });
 in
 {
+  sops.secrets = {
+    omada_ha_username = {
+      sopsFile = ../../secrets/secrets.yaml;
+      owner = "hass";
+    };
+    omada_ha_password = {
+      sopsFile = ../../secrets/secrets.yaml;
+      owner = "hass";
+    };
+  };
+
   services.home-assistant = {
     enable = true;
     package = homeAssistantPackage;
@@ -44,6 +62,7 @@ in
       "adguard"
       "uptime_kuma"
       "netdata"
+      "tplink_omada"
       # media integrations
       "jellyfin"
       # device integrations
@@ -55,6 +74,7 @@ in
       "bluetooth"
       "esphome"
       "mqtt"
+      "automation"
       # utility
       "backup"
     ];
@@ -70,9 +90,57 @@ in
         temperature_unit = "C";
         time_zone = "Europe/Warsaw";
         country = "PL";
-        internal_url = "http://127.0.0.1:8123";
+        internal_url = "https://homeassistant.house.flakm.com";
         external_url = "https://homeassistant.house.flakm.com";
       };
+      mobile_app = { };
+      automation = [
+        {
+          id = "frigate_person_alert";
+          alias = "Frigate person alert";
+          mode = "parallel";
+          max = 10;
+          triggers = [
+            {
+              trigger = "state";
+              entity_id = [
+                "binary_sensor.podjazd_person_occupancy"
+                "binary_sensor.back_person_occupancy"
+                "binary_sensor.podjazd_prawy_person_occupancy"
+              ];
+              from = "off";
+              to = "on";
+            }
+          ];
+          variables.camera_id = ''
+            {% set cameras = {
+              "binary_sensor.podjazd_person_occupancy": "front_left",
+              "binary_sensor.back_person_occupancy": "back",
+              "binary_sensor.podjazd_prawy_person_occupancy": "front_right"
+            } %}
+            {{ cameras[trigger.entity_id] }}
+          '';
+          actions = [
+            {
+              action = "notify.mobile_app_pixel_7";
+              data = {
+                title = "Person detected";
+                message = "{{ camera_id | replace('_', ' ') | title }} camera detected a person.";
+                data = {
+                  image = "/api/camera_proxy/camera.{{ camera_id }}";
+                  clickAction = "https://frigate.house.flakm.com/review";
+                  tag = "frigate-person-{{ camera_id }}";
+                  group = "camera-alerts";
+                  channel = "Camera alerts";
+                  notification_icon = "mdi:cctv";
+                  ttl = 0;
+                  priority = "high";
+                };
+              };
+            }
+          ];
+        }
+      ];
       http = {
         server_port = 8123;
         use_x_forwarded_for = true;
