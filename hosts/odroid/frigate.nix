@@ -42,6 +42,9 @@ let
     export FRIGATE_REOLINK_PASSWORD_FRONT_LEFT="$(<${config.sops.secrets.frigate_reolink_password_front_left.path})"
     exec ${config.services.frigate.package.python.interpreter} -m frigate
   '';
+  frigateClearShm = pkgs.writeShellScript "frigate-clear-shm" ''
+    ${lib.getExe' pkgs.coreutils "rm"} -f /dev/shm/{back,front_left,reolink}_frame*
+  '';
   go2rtcStart = pkgs.writeShellScript "go2rtc-start" ''
     urlencode() {
       ${config.services.frigate.package.python.interpreter} -c '
@@ -184,6 +187,7 @@ in
     serviceConfig = {
       ExecStart = lib.mkForce frigateStart;
       ExecStartPre = lib.mkBefore [
+        "+${frigateClearShm}"
         "+${lib.getExe' pkgs.coreutils "install"} -d -m 0750 -o frigate -g frigate /var/lib/frigate/recordings /var/lib/frigate/clips /var/lib/frigate/exports"
       ];
       SupplementaryGroups = lib.mkAfter [ "video" ];
