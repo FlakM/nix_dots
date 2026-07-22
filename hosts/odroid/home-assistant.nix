@@ -7,6 +7,7 @@ let
       "test_remove_refresh_token"
       "test_one_long_lived_access_token_per_refresh_token"
       "test_access_token_with_empty_key"
+      "test_webhook_create_cloudhook_aborts_not_connected"
     ];
   });
   homeAssistantPackage = (patchHomeAssistant pkgs.home-assistant) // {
