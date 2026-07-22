@@ -5,14 +5,6 @@ let
       "test_multiple_runs_repeat_choose"
       "test_immediate_works_with_schedule_call"
     ];
-    # nixpkgs' pyjwt-2.13-compat.patch introduces invalid py3 syntax
-    # (`except A, B:` without parens); fix it so HA can import auth.
-    postPatch = (old.postPatch or "") + ''
-      substituteInPlace homeassistant/auth/__init__.py \
-        --replace-fail \
-          "except jwt.InvalidTokenError, jwt.InvalidKeyError:" \
-          "except (jwt.InvalidTokenError, jwt.InvalidKeyError):"
-    '';
   });
   homeAssistantPackage = (patchHomeAssistant pkgs.home-assistant) // {
     override = args: patchHomeAssistant (pkgs.home-assistant.override args);
