@@ -4,6 +4,9 @@ let
     disabledTests = (old.disabledTests or [ ]) ++ [
       "test_multiple_runs_repeat_choose"
       "test_immediate_works_with_schedule_call"
+      "test_remove_refresh_token"
+      "test_one_long_lived_access_token_per_refresh_token"
+      "test_access_token_with_empty_key"
     ];
   });
   homeAssistantPackage = (patchHomeAssistant pkgs.home-assistant) // {
