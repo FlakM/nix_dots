@@ -6,6 +6,7 @@
 
   imports = [
     ./nextcloud.nix
+    ./vikunja.nix
     ./postgres.nix
     ./jellyfin.nix
     ./deluged.nix

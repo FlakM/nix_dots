@@ -101,7 +101,7 @@ in
               trigger = "state";
               entity_id = [
                 "binary_sensor.podjazd_person_occupancy"
-                "binary_sensor.back_person_occupancy"
+                "binary_sensor.ogrod_person_occupancy"
                 "binary_sensor.podjazd_prawy_person_occupancy"
               ];
               from = "off";
@@ -111,7 +111,7 @@ in
           variables.camera_id = ''
             {% set cameras = {
               "binary_sensor.podjazd_person_occupancy": "front_left",
-              "binary_sensor.back_person_occupancy": "back",
+              "binary_sensor.ogrod_person_occupancy": "back",
               "binary_sensor.podjazd_prawy_person_occupancy": "front_right"
             } %}
             {{ cameras[trigger.entity_id] }}
@@ -123,7 +123,7 @@ in
                 title = "Person detected";
                 message = "{{ camera_id | replace('_', ' ') | title }} camera detected a person.";
                 data = {
-                  image = "/api/camera_proxy/camera.{{ camera_id }}";
+                  image = "/api/image_proxy/image.{{ camera_id }}_person";
                   clickAction = "https://frigate.house.flakm.com/review";
                   tag = "frigate-person-{{ camera_id }}";
                   group = "camera-alerts";

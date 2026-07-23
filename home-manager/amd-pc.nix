@@ -45,6 +45,7 @@
     ./modules/aws.nix
 
     ./modules/ai.nix
+    ./modules/vikunja.nix
 
     ./modules/k8s.nix
     ./modules/front.nix

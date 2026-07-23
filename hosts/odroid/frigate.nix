@@ -115,6 +115,8 @@ in
       };
     };
 
+  users.users.flakm.extraGroups = lib.mkAfter [ "frigate" ];
+
   services.frigate = {
     enable = true;
     hostname = "frigate.house.flakm.com";
@@ -150,9 +152,16 @@ in
 
       detect = {
         enabled = true;
-        fps = 5;
+        fps = 2;
       };
-      objects.track = [ "person" ];
+      birdseye.enabled = false;
+      objects = {
+        track = [ "person" ];
+        filters.person = {
+          min_score = 0.6;
+          threshold = 0.8;
+        };
+      };
 
       go2rtc.streams = {
         front_right = reolinkMainStream "192.168.0.215" "FRIGATE_REOLINK_PASSWORD";
@@ -215,14 +224,28 @@ in
           };
         };
         back = (reolinkCamera "192.168.0.131" "FRIGATE_REOLINK_PASSWORD_BACK" {
-          width = 1920;
-          height = 576;
-          fps = 3;
+          width = 1280;
+          height = 384;
         }) // {
+          objects.filters.person = {
+            min_area = 0.005;
+            min_score = 0.65;
+            threshold = 0.85;
+          };
           motion.mask = [
             "0,0.365,0,0.009,0.269,0.004"
             "0.659,0.004,0.99,0.5,0.998,0.469,0.997,0.004"
           ];
+          zones.ogrod = {
+            friendly_name = "Ogród";
+            coordinates = "0,0.365,0.269,0.004,0.659,0.004,0.99,0.5,1,1,0,1";
+            objects = [ "person" ];
+            loitering_time = 0;
+          };
+          review = {
+            alerts.required_zones = [ "ogrod" ];
+            detections.required_zones = [ "ogrod" ];
+          };
         };
       };
     };
