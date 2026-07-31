@@ -26,7 +26,6 @@ in
     ccusage
     opencode
     amp
-    rtk
     inputs.cx-cli.packages.${pkgs.stdenv.hostPlatform.system}.default
   ] ++ lib.optional hasCxPrivate inputs.coralogix-private.packages.${pkgs.stdenv.hostPlatform.system}.aaa-help;
 
@@ -46,11 +45,6 @@ in
     ".claude/statusline.sh" = {
       force = true;
       source = ./claude/statusline.sh;
-      executable = true;
-    };
-    ".claude/hooks/rtk-rewrite.sh" = {
-      force = true;
-      source = ./claude/hooks/rtk-rewrite.sh;
       executable = true;
     };
   } // builtins.listToAttrs (map

@@ -3,6 +3,15 @@
 - avoid excessive comments - be a minimalist
 - avoid excessive whitespace - especcially at the end of lines
 
+# communication
+
+PR descriptions, comments, code, and output should be:
+
+- minimal
+- concise
+- clear and easy to understand
+- structured with bullet points or numbered lists when necessary
+
 # rust
 
 - use `cargo fmt` for formatting
