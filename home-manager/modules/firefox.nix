@@ -27,6 +27,7 @@
       id = 0;
       name = "Default";
       isDefault = true;
+      settings."gfx.wayland.hdr" = false;
     };
   };
 
