@@ -357,7 +357,6 @@ in
     HYPRLAND_NO_RT = "1";
     MOZ_DBUS_REMOTE = 1; # Firefox wayland
     MOZ_USE_XINPUT2 = 1; # Firefox smooth scrolling
-    MOZ_WAYLAND_USE_VAAPI = 1; # Firefox hardware acceleration
     GDK_BACKEND = "wayland";
 
     NIXOS_OZONE_WL = "1"; # hint electron apps to use wayland
