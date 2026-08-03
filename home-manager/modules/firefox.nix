@@ -29,10 +29,6 @@
       isDefault = true;
 
       settings = {
-        # Firefox 153 no longer renders browser chrome text with the Cairo
-        # backends selected by this profile's legacy preferences.
-        "gfx.canvas.azure.backends" = "skia";
-        "gfx.content.azure.backends" = "skia";
         # Hardware video acceleration (AMD VA-API)
         "media.ffmpeg.vaapi.enabled" = true;
         # AV1 hardware decode on Raphael (VCN3) + Mesa produces green frames on
