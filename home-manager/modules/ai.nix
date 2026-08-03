@@ -1,5 +1,43 @@
 { config, pkgs, lib, llm-agents-pkgs, inputs, ... }:
 let
+  catchupVersion = "0.5.1";
+  catchupPlatform = {
+    x86_64-linux = {
+      asset = "linux_amd64";
+      hash = "sha256-MpswY3zVDwGGodYXJgkpjrC2uvljdwn03VYgOLI5JO8=";
+    };
+    aarch64-linux = {
+      asset = "linux_arm64";
+      hash = "sha256-W42jhxWnC7OMvdV0JZt7C48fAMNy/kspE9ELbE5QAeE=";
+    };
+    x86_64-darwin = {
+      asset = "darwin_amd64";
+      hash = "sha256-i3e93nrxjwqaF3F79TSogjCPSE3vmQhwYH/i4txItFE=";
+    };
+    aarch64-darwin = {
+      asset = "darwin_arm64";
+      hash = "sha256-76MJ/Wwh56FOZq3oY9eFOgAuGRmVsdBo3MiCk8dcGCc=";
+    };
+  }.${pkgs.stdenv.hostPlatform.system};
+  catchup = pkgs.stdenvNoCC.mkDerivation {
+    pname = "catchup";
+    version = catchupVersion;
+    src = pkgs.fetchurl {
+      url = "https://github.com/wilbeibi/catchup/releases/download/v${catchupVersion}/catchup_${catchupPlatform.asset}.tar.gz";
+      hash = catchupPlatform.hash;
+    };
+    sourceRoot = ".";
+    installPhase = ''
+      install -Dm755 catchup "$out/bin/catchup"
+    '';
+  };
+  catchupSkillSource = pkgs.fetchurl {
+    url = "https://raw.githubusercontent.com/wilbeibi/catchup/v${catchupVersion}/SKILL.md";
+    hash = "sha256-Cpkz4qZDNoaBNbNMmmEKFsEXziy1gMehWrIbmC5hlxY=";
+  };
+  catchupSkill = pkgs.runCommand "catchup-skill-${catchupVersion}" { } ''
+    sed '4i version: ${catchupVersion}' ${catchupSkillSource} > "$out"
+  '';
   cxSkills = inputs.cx-cli.packages.${pkgs.stdenv.hostPlatform.system}.skills;
   peonPingEnabled = lib.attrByPath [ "programs" "peon-ping" "enable" ] false config;
   cxSkillFiles = lib.mapAttrs'
@@ -26,6 +64,7 @@ in
     ccusage
     opencode
     amp
+    catchup
     inputs.cx-cli.packages.${pkgs.stdenv.hostPlatform.system}.default
   ] ++ lib.optional hasCxPrivate inputs.coralogix-private.packages.${pkgs.stdenv.hostPlatform.system}.aaa-help;
 
@@ -46,6 +85,10 @@ in
       force = true;
       source = ./claude/statusline.sh;
       executable = true;
+    };
+    ".claude/skills/catchup/SKILL.md" = {
+      force = true;
+      source = catchupSkill;
     };
   } // builtins.listToAttrs (map
     (name: {
@@ -108,7 +151,10 @@ in
           ];
         };
       };
-      plugin = [ "opencode-gemini-auth@latest" ] ++ lib.optional peonPingEnabled "./plugins/peon-ping.ts";
+      plugin = [
+        "opencode-gemini-auth@latest"
+        "opencode-handoff@0.5.0"
+      ] ++ lib.optional peonPingEnabled "./plugins/peon-ping.ts";
       provider.google.options.projectId = "904216483369";
     };
   };
