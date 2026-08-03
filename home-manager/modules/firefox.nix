@@ -27,27 +27,6 @@
       id = 0;
       name = "Default";
       isDefault = true;
-
-      settings = {
-        # Hardware video acceleration (AMD VA-API)
-        "media.ffmpeg.vaapi.enabled" = true;
-        # AV1 hardware decode on Raphael (VCN3) + Mesa produces green frames on
-        # YouTube; force VP9 fallback until upstream fixes it.
-        "media.av1.enabled" = false;
-        "media.rdd-ffmpeg.enabled" = true;
-        "media.rdd-vpx.enabled" = true;
-        "media.navigator.mediadatadecoder_vpx_enabled" = true;
-        # Hyprland 0.55 xdg-popup interactions break context menus.
-        # move-to-rect=false fixed the empty-popup variant; fractional-scale
-        # disable handles the no-popup-at-all variant where right-click
-        # produces nothing on the screen.
-        "widget.wayland.use-move-to-rect" = false;
-        "widget.wayland.fractional-scale.enabled" = false;
-      };
-
-      userChrome = ''
-        @import url("tabs_on_bottom.css");
-      '';
     };
   };
 
