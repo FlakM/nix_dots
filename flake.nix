@@ -25,7 +25,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    hyprland.url = "git+https://github.com/hyprwm/Hyprland?submodules=1";
+    # Firefox DMABUF damage fix: https://github.com/hyprwm/Hyprland/pull/15718
+    hyprland.url = "git+https://github.com/hyprwm/Hyprland?rev=3125efd8d74a5adf66b5320aa08801f3ecf3db1c&submodules=1";
     nix-homebrew.url = "github:zhaofengli-wip/nix-homebrew";
     # Optional: Declarative tap management
     homebrew-core = {
