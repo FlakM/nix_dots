@@ -113,6 +113,11 @@
         IdentitiesOnly yes
         IdentityFile ~/.ssh/id_rsa_yubikey.pub
         IdentityAgent ~/.gnupg/S.gpg-agent.ssh
+
+    Host *
+        ServerAliveInterval 30
+        ServerAliveCountMax 6
+        TCPKeepAlive yes
   '';
 
 

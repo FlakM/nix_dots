@@ -53,6 +53,9 @@
     settings = {
       PasswordAuthentication = false;
       KbdInteractiveAuthentication = false;
+      # probe idle clients so NAT/firewall state stays alive and dead sessions get reaped
+      ClientAliveInterval = 30;
+      ClientAliveCountMax = 6;
     };
   };
 
