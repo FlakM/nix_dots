@@ -27,7 +27,10 @@
       id = 0;
       name = "Default";
       isDefault = true;
-      settings."gfx.wayland.hdr" = false;
+      settings = {
+        "gfx.wayland.hdr" = false;
+        "widget.dmabuf.enabled" = false;
+      };
     };
   };
 
