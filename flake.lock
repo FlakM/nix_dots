@@ -92,8 +92,8 @@
         "protofetch-nix": "protofetch-nix"
       },
       "locked": {
-        "lastModified": 1784119013,
-        "narHash": "sha256-ESDAA456smgmi6zPTRHKegKNfMizJug6dmZoEN+lapA=",
+        "lastModified": 1785837703,
+        "narHash": "sha256-QiSEU5Q6YJnCPEsrsKhaEwLC2ACQ6nFkpducdnAs1GA=",
         "path": "/home/flakm/programming/flakm/nix-coralogix-private",
         "type": "path"
       },

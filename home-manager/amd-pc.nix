@@ -110,21 +110,21 @@
   };
 
   # ~/.gnupg/gpg-agent.conf
-  # pinentry-auto: prefer GUI when a graphical session is available (Hyprland,
-  # X11, and Claude Code's spawned shells which inherit WAYLAND_DISPLAY/DISPLAY).
-  # The previous "fallback to GUI when no TTY" heuristic broke for Claude Code
-  # because its shells have a TTY but no interactive terminal driver, so curses
-  # pinentry hung waiting for input.
+  # pinentry-auto: PINENTRY_USER_DATA is the only signal gpg-agent forwards per
+  # request. DISPLAY/WAYLAND_DISPLAY leak in from the gpg-agent systemd user
+  # service env (so they are always set, regardless of the calling shell), and
+  # stdin is always an Assuan pipe, never a tty -- so neither can distinguish an
+  # interactive terminal from a GUI session. Interactive zsh sets
+  # PINENTRY_USER_DATA=curses (see .zshrc_local); everything else -- GUI apps and
+  # Claude Code's non-interactive shells, which have no usable terminal driver --
+  # falls through to the GNOME prompter.
   xdg.configFile."/.gnupg/gpg-agent.conf".text =
     let
       pinentry-auto = pkgs.writeShellScript "pinentry-auto" ''
-        if [ -n "$WAYLAND_DISPLAY" ] || [ -n "$DISPLAY" ]; then
-          exec ${pkgs.pinentry-gnome3}/bin/pinentry-gnome3 "$@"
-        elif [ -t 0 ]; then
-          exec ${pkgs.pinentry-curses}/bin/pinentry-curses "$@"
-        else
-          exec ${pkgs.pinentry-gnome3}/bin/pinentry-gnome3 "$@"
-        fi
+        case "$PINENTRY_USER_DATA" in
+          *curses*) exec ${pkgs.pinentry-curses}/bin/pinentry-curses "$@" ;;
+        esac
+        exec ${pkgs.pinentry-gnome3}/bin/pinentry-gnome3 "$@"
       '';
     in
     ''
@@ -139,6 +139,16 @@
   home.file.".zshrc_local".text = ''
     # Ensure SSH uses gpg-agent socket (YubiKey)
     export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
+
+    # Route the YubiKey PIN prompt to this terminal. ssh requests (git fetch over
+    # the YubiKey) carry no client env, so gpg-agent uses its startup context --
+    # updatestartuptty copies this session's tty and PINENTRY_USER_DATA into it.
+    # Guarded on a real tty so non-interactive shells keep the GUI prompter.
+    if [[ -o interactive ]] && [[ -t 0 ]]; then
+      export GPG_TTY="$TTY"
+      export PINENTRY_USER_DATA=curses
+      gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
+    fi
   '';
 
 
@@ -146,7 +156,60 @@
     pritunl-client
     qmk
     qmk_hid
+    wayvnc
   ];
+
+  systemd.user.services.wayvnc-remote = {
+    Unit = {
+      Description = "WayVNC remote desktop";
+      PartOf = [ "wayland-session@Hyprland.target" ];
+      After = [ "wayland-session@Hyprland.target" ];
+      ConditionPathExists = "/run/secrets/wayvnc_password";
+    };
+    Service = {
+      Type = "simple";
+      ExecStart = pkgs.writeShellScript "wayvnc-remote" ''
+        output="$(${config.wayland.windowManager.hyprland.package}/bin/hyprctl -j monitors all \
+          | ${pkgs.jq}/bin/jq -r '[.[] | .name | select(startswith("HEADLESS-"))][0] // empty')"
+        if [ -z "$output" ]; then
+          ${config.wayland.windowManager.hyprland.package}/bin/hyprctl output create headless
+          output="$(${config.wayland.windowManager.hyprland.package}/bin/hyprctl -j monitors all \
+            | ${pkgs.jq}/bin/jq -r '[.[] | .name | select(startswith("HEADLESS-"))][0] // empty')"
+        fi
+
+        ${config.wayland.windowManager.hyprland.package}/bin/hyprctl eval \
+          "remote_workspace_rule = hl.workspace_rule({ workspace = \"11\", monitor = \"$output\", default = true, persistent = true, layout = \"dwindle\" })"
+        ${config.wayland.windowManager.hyprland.package}/bin/hyprctl dispatch \
+          'hl.dsp.focus({ workspace = 11 })'
+
+        password="$(< /run/secrets/wayvnc_password)"
+        umask 077
+        ${pkgs.coreutils}/bin/printf '%s\n' "$output" > "$XDG_RUNTIME_DIR/wayvnc-remote.output"
+        ${pkgs.coreutils}/bin/printf '%s\n' \
+          'enable_auth=true' \
+          "password=$password" \
+          'relax_encryption=true' \
+          'allow_broken_crypto=true' \
+          > "$XDG_RUNTIME_DIR/wayvnc-remote.conf"
+
+        exec ${pkgs.wayvnc}/bin/wayvnc \
+          -C "$XDG_RUNTIME_DIR/wayvnc-remote.conf" \
+          -f 30 -k pl -o "$output" 127.0.0.1:5900
+      '';
+      ExecStopPost = pkgs.writeShellScript "wayvnc-remote-cleanup" ''
+        ${config.wayland.windowManager.hyprland.package}/bin/hyprctl eval \
+          'if remote_workspace_rule then remote_workspace_rule:set_enabled(false); remote_workspace_rule = nil end' \
+          || true
+        if [ -s "$XDG_RUNTIME_DIR/wayvnc-remote.output" ]; then
+          output="$(< "$XDG_RUNTIME_DIR/wayvnc-remote.output")"
+          ${config.wayland.windowManager.hyprland.package}/bin/hyprctl output remove "$output" || true
+        fi
+        ${pkgs.coreutils}/bin/rm -f \
+          "$XDG_RUNTIME_DIR/wayvnc-remote.conf" \
+          "$XDG_RUNTIME_DIR/wayvnc-remote.output"
+      '';
+    };
+  };
 
   # hyprwhspr-rs voice dictation (service enabled in hosts/amd-pc/configuration.nix).
   # Trigger is the app's built-in global shortcut SUPER+ALT+R (needs the "input"

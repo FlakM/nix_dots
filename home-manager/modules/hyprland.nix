@@ -1766,6 +1766,8 @@ in
     -- Hyprland 0.55 drifts into a state where xdg_popups (e.g. Firefox context
     -- menus) stop mapping; a config reload resets it without restarting clients.
     hl.bind(mod .. " + SHIFT + R",        hl.dsp.exec_cmd("hyprctl reload"))
+    hl.bind("ALT + TAB",                  hl.dsp.window.cycle_next())
+    hl.bind("ALT + SHIFT + TAB",          hl.dsp.window.cycle_next({ prev = true }))
 
     -- Workspaces 1-10 (key "0" maps to workspace 10)
     for i = 1, 10 do

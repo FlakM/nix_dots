@@ -101,8 +101,6 @@
       export SOPS_AGE_KEY_CMD="sudo -n ${lib.getExe ssh-to-age} -private-key -i /etc/ssh/ssh_host_ed25519_key"
       exec ${lib.getExe sops} "$@"
     '')
-    tailscale
-
     wgnord
     wireguard-tools
     transmission_4
@@ -117,6 +115,7 @@
   # 2. setup some IP routes to route through the TUN
   services.tailscale = {
     enable = true;
+    package = pkgs-unstable.tailscale;
     openFirewall = true;
     extraSetFlags = [ "--ssh=true" ];
   };

@@ -1,5 +1,41 @@
 { config, lib, pkgs, ... }:
 
+let
+  amd-vnc = pkgs.writeShellApplication {
+    name = "amd-vnc";
+    runtimeInputs = [ pkgs.openssh ];
+    text = ''
+      control="$HOME/.ssh/amd-vnc-control"
+
+      if ! ssh -S "$control" -O check amd-pc >/dev/null 2>&1; then
+        rm -f "$control"
+        ssh -M -S "$control" -fN \
+          -o ExitOnForwardFailure=yes \
+          -L 5900:127.0.0.1:5900 \
+          amd-pc
+      fi
+
+      ssh -S "$control" amd-pc \
+        'systemctl --user start wayvnc-remote.service && cat /run/secrets/wayvnc_password' \
+        | /usr/bin/pbcopy
+      /usr/bin/open 'vnc://localhost:5900'
+      printf '%s\n' 'WayVNC password copied to the clipboard'
+    '';
+  };
+  amd-vnc-stop = pkgs.writeShellApplication {
+    name = "amd-vnc-stop";
+    runtimeInputs = [ pkgs.openssh ];
+    text = ''
+      control="$HOME/.ssh/amd-vnc-control"
+
+      if ssh -S "$control" -O check amd-pc >/dev/null 2>&1; then
+        ssh -S "$control" amd-pc 'systemctl --user stop wayvnc-remote.service'
+        ssh -S "$control" -O exit amd-pc
+      fi
+      rm -f "$control"
+    '';
+  };
+in
 {
   imports = [
     ./modules/home-manager.nix
@@ -54,6 +90,10 @@
     username = "flakm";
     homeDirectory = "/Users/flakm";
     stateVersion = "24.05";
+    packages = [
+      amd-vnc
+      amd-vnc-stop
+    ];
   };
 
 

@@ -5,6 +5,9 @@
 let
   fenix = inputs.fenix.packages.${pkgs.stdenv.hostPlatform.system}.stable;
   hasHermesSlackSecret = lib.hasInfix "hermes_slack_bot_token:" (builtins.readFile ../../secrets/secrets.yaml);
+  hasHermesTelegramSecrets =
+    lib.hasInfix "hermes_telegram_bot_token:" (builtins.readFile ../../secrets/secrets.yaml)
+    && lib.hasInfix "hermes_telegram_chat_id:" (builtins.readFile ../../secrets/secrets.yaml);
 
   # Workaround for upstream Hyprland regression (2026-05-06, rev 78b8ce22):
   # example/hyprland.conf was removed but CMakeLists.txt still installs it.
@@ -65,6 +68,9 @@ in
       XDG_RUNTIME_DIR = "/run/user/1000";
     } // lib.optionalAttrs hasHermesSlackSecret {
       SLACK_BOT_TOKEN_FILE = config.sops.secrets.hermes_slack_bot_token.path;
+    } // lib.optionalAttrs hasHermesTelegramSecrets {
+      TELEGRAM_BOT_TOKEN_FILE = config.sops.secrets.hermes_telegram_bot_token.path;
+      TELEGRAM_CHAT_ID_FILE = config.sops.secrets.hermes_telegram_chat_id.path;
     };
     path = [
       inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.codex
@@ -124,11 +130,15 @@ in
         urgentChannels = [ ];
         desktopNotifications = false;
         signal = {
-          enable = true;
+          enable = !hasHermesTelegramSecrets;
           account = "+48786816597";
           configDir = "/home/flakm/.local/share/signal-cli-hermes";
           noteToSelf = true;
           recipients = [ ];
+        };
+        telegram = {
+          enable = hasHermesTelegramSecrets;
+          chatId = null;
         };
         includeCollectedContext = false;
       };
@@ -277,8 +287,26 @@ in
       group = "users";
       restartUnits = [ "create-samba-credentials.service" ];
     };
+    wayvnc_password = {
+      mode = "0400";
+      owner = "flakm";
+      group = "users";
+    };
   } // lib.optionalAttrs hasHermesSlackSecret {
     hermes_slack_bot_token = {
+      owner = "flakm";
+      group = "users";
+      mode = "0400";
+      restartUnits = [ "hermes-agent.service" ];
+    };
+  } // lib.optionalAttrs hasHermesTelegramSecrets {
+    hermes_telegram_bot_token = {
+      owner = "flakm";
+      group = "users";
+      mode = "0400";
+      restartUnits = [ "hermes-agent.service" ];
+    };
+    hermes_telegram_chat_id = {
       owner = "flakm";
       group = "users";
       mode = "0400";

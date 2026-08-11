@@ -80,6 +80,11 @@
             enabled = true;
           }
           {
+            domain = "work";
+            answer = "192.168.0.83";
+            enabled = true;
+          }
+          {
             domain = "jellyfin.house.flakm.com";
             answer = "192.168.0.102";
             enabled = true;

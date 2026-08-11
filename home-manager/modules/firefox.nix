@@ -28,8 +28,8 @@
       name = "Default";
       isDefault = true;
       settings = {
+        # Broken Wayland HDR path produced green video artifacts.
         "gfx.wayland.hdr" = false;
-        "widget.dmabuf.enabled" = false;
       };
     };
   };
