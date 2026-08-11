@@ -1740,7 +1740,6 @@ in
         hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=Hyprland")
 
         hl.exec_cmd("[workspace 1 silent] kitty")
-        hl.exec_cmd("[workspace 2 silent] uwsm app -- firefox")
         hl.exec_cmd("[workspace 3 silent] obsidian")
         hl.exec_cmd([=[[workspace 3 silent] kitty --title "obsidian" --directory /home/flakm/obsidian/work -- bash -c "tmux new-session -d -s obsidian 'nvim' && tmux attach-session -t obsidian"]=])
         hl.exec_cmd("[workspace 4 silent] spotify")
@@ -1924,8 +1923,6 @@ in
 
 
         exec-once=[workspace 1 silent] kitty
-        exec-once=[workspace 2 silent] uwsm app -- firefox
-
         windowrule {
             name = spotify-opacity
             match:class = ^(spotify)$
