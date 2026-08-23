@@ -56,7 +56,10 @@ let
     exec ${config.services.frigate.package.python.interpreter} -m frigate
   '';
   frigateClearShm = pkgs.writeShellScript "frigate-clear-shm" ''
-    ${lib.getExe' pkgs.coreutils "rm"} -f /dev/shm/{back,front_left,front_right,reolink}_frame*
+    ${lib.getExe' pkgs.coreutils "rm"} -f \
+      /dev/shm/{back,front_left,front_right,reolink} \
+      /dev/shm/out-{back,front_left,front_right,reolink} \
+      /dev/shm/{back,front_left,front_right,reolink}_frame*
   '';
   go2rtcStart = pkgs.writeShellScript "go2rtc-start" ''
     urlencode() {

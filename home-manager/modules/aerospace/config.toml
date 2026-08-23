@@ -85,7 +85,7 @@ alt-0 = 'workspace A'
 
 # Move windows to workspaces
 alt-shift-1 = [ 'move-node-to-workspace 1', 'workspace 1' ]
-alt-shift-2 = [ 'move-node-to-workspace 2', "workspace 2" ] 
+alt-shift-2 = [ 'move-node-to-workspace 2', "workspace 2" ]
 alt-shift-3 = [ 'move-node-to-workspace 3', "workspace 3" ]
 alt-shift-4 = [ 'move-node-to-workspace 4', "workspace 4" ]
 alt-shift-5 = [ 'move-node-to-workspace 5', "workspace 5" ]
@@ -122,6 +122,9 @@ alt-shift-j = ['join-with down', 'mode main']
 alt-shift-k = ['join-with up', 'mode main']
 alt-shift-l = ['join-with right', 'mode main']
 
+[mode.vnc.binding]
+ctrl-alt-esc = 'mode main'
+
 # Window detection rules
 [[on-window-detected]]
 if.app-id = 'net.kovidgoyal.kitty'
@@ -130,6 +133,10 @@ run = 'move-node-to-workspace 1'
 [[on-window-detected]]
 if.app-id = 'org.mozilla.firefox'
 run = 'move-node-to-workspace 2'
+
+[[on-window-detected]]
+if.app-id = 'org.turbovnc.vncviewer'
+run = 'layout floating'
 
 
 [[on-window-detected]]

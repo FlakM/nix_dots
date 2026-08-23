@@ -247,7 +247,7 @@
             (if hostName == "odroid" then librus-notifications.nixosModules.default else { })
 
             # Private Coralogix host services
-            (if hostName == "amd-pc" then inputs.coralogix-private.nixosModules.hermesAgent else { })
+            (if hostName == "odroid" then inputs.coralogix-private.nixosModules.hermesAgent else { })
 
             # home-manager
             home-manager.nixosModules.home-manager

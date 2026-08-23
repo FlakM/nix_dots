@@ -834,12 +834,12 @@ in
         wallpaperPath = "${config.home.homeDirectory}/.config/wallpaper.png";
       in
       ''
-        # Preload wallpaper
-        preload = ${wallpaperPath}
-      
-        # Set wallpaper for monitor
-        wallpaper = DP-1,${wallpaperPath}
-      
+        wallpaper {
+          monitor = DP-1
+          path = ${wallpaperPath}
+          fit_mode = cover
+        }
+
         # Enable splash text
         splash = false
       
@@ -853,22 +853,6 @@ in
     source = "${inputs.self}/wallpapers/wallpaper.png";
   };
 
-  # Re-apply the wallpaper after each switch. hyprpaper keeps running across
-  # rebuilds but holds the old (eventually GC'd) nix store path, so the wallpaper
-  # silently vanishes. Re-issuing the IPC set command reloads it from the fresh
-  # path. No-op when hyprpaper isn't running (e.g. during boot before login).
-  home.activation.reloadHyprpaper = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    if ${pkgs.procps}/bin/pgrep -x hyprpaper > /dev/null 2>&1; then
-      hyprDir="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/hypr"
-      sig="$(ls -1t "$hyprDir" 2>/dev/null | head -n1)"
-      if [ -n "$sig" ]; then
-        run env HYPRLAND_INSTANCE_SIGNATURE="$sig" \
-          ${inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland}/bin/hyprctl \
-          hyprpaper wallpaper "DP-1,${config.home.homeDirectory}/.config/wallpaper.png" || true
-      fi
-    fi
-  '';
-
   # SwayNotificationCenter configuration
   xdg.configFile."swaync/config.json" = {
     text = builtins.toJSON {
@@ -877,6 +861,7 @@ in
       layer = "overlay";
       control-center-layer = "top";
       layer-shell = true;
+      ignore-gtk-theme = true;
       cssPriority = "application";
       control-center-margin-top = 60;
       control-center-margin-bottom = 20;
@@ -901,6 +886,16 @@ in
       hide-on-clear = false;
       hide-on-action = true;
       script-fail-notify = true;
+      widgets = [ "title" "dnd" "notifications" ];
+      widget-config = {
+        notifications.vexpand = true;
+        title = {
+          text = "Notifications";
+          clear-all-button = true;
+          button-text = "Clear All";
+        };
+        dnd.text = "Do Not Disturb";
+      };
     };
   };
 
@@ -927,7 +922,7 @@ in
         background: rgba(16, 16, 24, 0.9);
         border: 3px solid rgba(51, 204, 255, 0.4);
         border-radius: 24px;
-        margin: 15px auto;
+        margin: 15px;
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 
                     0 0 0 1px rgba(255, 255, 255, 0.05);
         transition: all 0.3s ease;
@@ -1015,7 +1010,6 @@ in
         color: rgba(255, 255, 255, 0.6);
         font-size: 18px;
         margin: 24px;
-        text-align: center;
       }
 
       .notification.critical {
@@ -1059,42 +1053,15 @@ in
         background: rgba(255, 255, 255, 0.15);
         border-radius: 8px;
         margin: 12px 0;
-        overflow: hidden;
-        height: 8px;
       }
 
       .notification-progress-bar {
         background: linear-gradient(90deg, #33ccff, #00ff99);
-        height: 100%;
         border-radius: 8px;
         transition: width 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
         box-shadow: 0 0 8px rgba(51, 204, 255, 0.4);
       }
 
-      .notification-content {
-        position: relative;
-      }
-
-      .notification-content::before {
-        content: "";
-        position: absolute;
-        top: -1px;
-        left: -1px;
-        right: -1px;
-        bottom: -1px;
-        background: linear-gradient(45deg, 
-                    rgba(51, 204, 255, 0.1), 
-                    rgba(0, 255, 153, 0.1), 
-                    rgba(51, 204, 255, 0.1));
-        border-radius: 28px;
-        z-index: -1;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-      }
-
-      .notification:hover .notification-content::before {
-        opacity: 1;
-      }
     '';
   };
 
@@ -1618,6 +1585,34 @@ in
     };
   };
 
+  systemd.user.services.swaync = {
+    Unit = {
+      Description = "SwayNC notification daemon";
+      PartOf = [ "graphical-session.target" ];
+      After = [ "graphical-session.target" ];
+    };
+    Service = {
+      ExecStart = "${pkgs.swaynotificationcenter}/bin/swaync";
+      Restart = "on-failure";
+      RestartSec = 3;
+    };
+    Install.WantedBy = [ "graphical-session.target" ];
+  };
+
+  systemd.user.services.hyprpaper = {
+    Unit = {
+      Description = "Hyprpaper wallpaper daemon";
+      PartOf = [ "graphical-session.target" ];
+      After = [ "graphical-session.target" ];
+    };
+    Service = {
+      ExecStart = "${pkgs.hyprpaper}/bin/hyprpaper --config ${config.xdg.configHome}/hypr/hyprpaper.conf";
+      Restart = "on-failure";
+      RestartSec = 3;
+    };
+    Install.WantedBy = [ "graphical-session.target" ];
+  };
+
   services.hypridle = {
     enable = true;
     systemdTarget = "wayland-session@Hyprland.target";
@@ -1657,6 +1652,9 @@ in
   xdg.configFile."hypr/hyprland.lua".text = ''
     -- Monitors
     hl.monitor({ output = "desc:LG Electronics LG ULTRAWIDE 404NTMXDC219", mode = "5120x1440@143.98Hz", position = "auto", scale = 1 })
+    ${lib.optionalString (lib.attrByPath [ "networking" "hostName" ] "" osConfig == "amd-pc") ''
+    hl.monitor({ output = "REMOTE-1", mode = "3456x2234@60", position = "auto-right", scale = 2 })
+    ''}
     hl.monitor({ output = "",                                              mode = "preferred",          position = "auto", scale = 1 })
 
     -- Environment
@@ -1720,6 +1718,14 @@ in
             slave_count_for_center_master = 0,
             always_keep_position          = true,
         },
+        scrolling = {
+            fullscreen_on_one_column = true,
+            column_width            = 0.9,
+            focus_fit_method         = 1,
+            follow_focus             = true,
+            wrap_focus               = true,
+            direction                = "right",
+        },
     })
 
     -- Animations
@@ -1735,8 +1741,6 @@ in
     hl.on("hyprland.start", function()
         hl.exec_cmd("copyq --start-server")
         hl.exec_cmd("${configure-gtk-dark}/bin/configure-gtk-dark")
-        hl.exec_cmd("hyprpaper")
-        hl.exec_cmd("swaync")
         hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=Hyprland")
 
         hl.exec_cmd("[workspace 1 silent] kitty")
@@ -1781,6 +1785,10 @@ in
     hl.bind("CTRL + SHIFT + l", hl.dsp.focus({ direction = "right" }))
     hl.bind("CTRL + SHIFT + k", hl.dsp.focus({ direction = "up"    }))
     hl.bind("CTRL + SHIFT + j", hl.dsp.focus({ direction = "down"  }))
+    hl.bind("CTRL + SHIFT + H", hl.dsp.focus({ direction = "left"  }))
+    hl.bind("CTRL + SHIFT + L", hl.dsp.focus({ direction = "right" }))
+    hl.bind("CTRL + SHIFT + K", hl.dsp.focus({ direction = "up"    }))
+    hl.bind("CTRL + SHIFT + J", hl.dsp.focus({ direction = "down"  }))
 
     -- Window movement
     hl.bind(mod .. " + CTRL + H", hl.dsp.window.move({ direction = "left"  }))

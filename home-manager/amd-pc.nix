@@ -87,8 +87,7 @@
     };
     gtk3.extraConfig.gtk-application-prefer-dark-theme = 1;
     gtk4.extraConfig.gtk-application-prefer-dark-theme = 1;
-    # 26.05 changes the gtk4 theme default to null; keep theming gtk4 like gtk3.
-    gtk4.theme = config.gtk.theme;
+    gtk4.theme = null;
     font = {
       name = "FiraCode";
       size = 11;
@@ -169,45 +168,87 @@
     Service = {
       Type = "simple";
       ExecStart = pkgs.writeShellScript "wayvnc-remote" ''
-        output="$(${config.wayland.windowManager.hyprland.package}/bin/hyprctl -j monitors all \
-          | ${pkgs.jq}/bin/jq -r '[.[] | .name | select(startswith("HEADLESS-"))][0] // empty')"
-        if [ -z "$output" ]; then
-          ${config.wayland.windowManager.hyprland.package}/bin/hyprctl output create headless
-          output="$(${config.wayland.windowManager.hyprland.package}/bin/hyprctl -j monitors all \
-            | ${pkgs.jq}/bin/jq -r '[.[] | .name | select(startswith("HEADLESS-"))][0] // empty')"
+        set -euo pipefail
+        hyprctl=${config.wayland.windowManager.hyprland.package}/bin/hyprctl
+        state_dir="$XDG_RUNTIME_DIR/wayvnc-remote"
+        output="REMOTE-1"
+        ${pkgs.coreutils}/bin/mkdir -p "$state_dir"
+
+        primary="$($hyprctl -j monitors \
+          | ${pkgs.jq}/bin/jq -r '[.[] | select(.focused).name][0] // empty')"
+        ${pkgs.coreutils}/bin/printf '%s\n' "$output" > "$state_dir/output"
+        ${pkgs.coreutils}/bin/printf '%s\n' "$primary" > "$state_dir/primary"
+
+        if ! $hyprctl -j monitors all \
+          | ${pkgs.jq}/bin/jq -e --arg output "$output" \
+            '.[] | select(.name == $output)' >/dev/null; then
+          $hyprctl output create headless "$output"
         fi
 
-        ${config.wayland.windowManager.hyprland.package}/bin/hyprctl eval \
-          "remote_workspace_rule = hl.workspace_rule({ workspace = \"11\", monitor = \"$output\", default = true, persistent = true, layout = \"dwindle\" })"
-        ${config.wayland.windowManager.hyprland.package}/bin/hyprctl dispatch \
-          'hl.dsp.focus({ workspace = 11 })'
+        mode=""
+        for _ in $(${pkgs.coreutils}/bin/seq 1 50); do
+          mode="$($hyprctl -j monitors all \
+            | ${pkgs.jq}/bin/jq -r --arg output "$output" \
+              '.[] | select(.name == $output) | "\(.width)x\(.height)@\(.scale)"')"
+          [ "$mode" = "3456x2234@2" ] && break
+          ${pkgs.coreutils}/bin/sleep 0.1
+        done
+        [ "$mode" = "3456x2234@2" ]
 
+        active_workspace="$($hyprctl -j monitors \
+          | ${pkgs.jq}/bin/jq -r --arg primary "$primary" \
+            '.[] | select(.name == $primary) | .activeWorkspace.id')"
+        workspaces="$($hyprctl -j workspaces \
+          | ${pkgs.jq}/bin/jq -r --arg primary "$primary" \
+            '.[] | select(.monitor == $primary) | .id')"
+        for workspace in $workspaces; do
+          $hyprctl eval \
+            "hl.dispatch(hl.dsp.workspace.move({ workspace = $workspace, monitor = \"$output\" }))"
+        done
+        $hyprctl eval \
+          "hl.dispatch(hl.dsp.focus({ monitor = \"$output\" }))"
+        if [ -n "$active_workspace" ]; then
+          $hyprctl eval \
+            "hl.dispatch(hl.dsp.focus({ workspace = $active_workspace }))"
+        fi
         password="$(< /run/secrets/wayvnc_password)"
         umask 077
-        ${pkgs.coreutils}/bin/printf '%s\n' "$output" > "$XDG_RUNTIME_DIR/wayvnc-remote.output"
         ${pkgs.coreutils}/bin/printf '%s\n' \
           'enable_auth=true' \
           "password=$password" \
           'relax_encryption=true' \
           'allow_broken_crypto=true' \
-          > "$XDG_RUNTIME_DIR/wayvnc-remote.conf"
+          > "$state_dir/config"
 
         exec ${pkgs.wayvnc}/bin/wayvnc \
-          -C "$XDG_RUNTIME_DIR/wayvnc-remote.conf" \
-          -f 30 -k pl -o "$output" 127.0.0.1:5900
+          -C "$state_dir/config" \
+          -e -f 60 -g -r -R -k pl -o "$output" 127.0.0.1:5900
       '';
       ExecStopPost = pkgs.writeShellScript "wayvnc-remote-cleanup" ''
-        ${config.wayland.windowManager.hyprland.package}/bin/hyprctl eval \
-          'if remote_workspace_rule then remote_workspace_rule:set_enabled(false); remote_workspace_rule = nil end' \
-          || true
-        if [ -s "$XDG_RUNTIME_DIR/wayvnc-remote.output" ]; then
-          output="$(< "$XDG_RUNTIME_DIR/wayvnc-remote.output")"
-          ${config.wayland.windowManager.hyprland.package}/bin/hyprctl output remove "$output" || true
+        state_dir="$XDG_RUNTIME_DIR/wayvnc-remote"
+        if [ -s "$state_dir/output" ]; then
+          output="$(< "$state_dir/output")"
+          primary="$(< "$state_dir/primary")"
+          if [ -n "$primary" ]; then
+            workspaces="$(${config.wayland.windowManager.hyprland.package}/bin/hyprctl \
+              -j workspaces \
+              | ${pkgs.jq}/bin/jq -r --arg output "$output" \
+                '.[] | select(.monitor == $output) | .id')"
+            for workspace in $workspaces; do
+              ${config.wayland.windowManager.hyprland.package}/bin/hyprctl eval \
+                "hl.dispatch(hl.dsp.workspace.move({ workspace = $workspace, monitor = \"$primary\" }))" \
+                || true
+            done
+            ${config.wayland.windowManager.hyprland.package}/bin/hyprctl eval \
+              "hl.dispatch(hl.dsp.focus({ monitor = \"$primary\" }))" || true
+          fi
+          ${config.wayland.windowManager.hyprland.package}/bin/hyprctl output \
+            remove "$output" || true
         fi
-        ${pkgs.coreutils}/bin/rm -f \
-          "$XDG_RUNTIME_DIR/wayvnc-remote.conf" \
-          "$XDG_RUNTIME_DIR/wayvnc-remote.output"
+        ${pkgs.coreutils}/bin/rm -rf "$state_dir"
       '';
+      Restart = "on-failure";
+      RestartSec = 3;
     };
   };
 

@@ -7,6 +7,16 @@ let
     text = ''
       control="$HOME/.ssh/amd-vnc-control"
 
+      cleanup() {
+        aerospace mode main >/dev/null 2>&1 || true
+        if ssh -S "$control" -O check amd-pc >/dev/null 2>&1; then
+          ssh -S "$control" amd-pc 'systemctl --user stop wayvnc-remote.service' || true
+          ssh -S "$control" -O exit amd-pc || true
+        fi
+        rm -f "$control"
+      }
+      trap cleanup EXIT INT TERM
+
       if ! ssh -S "$control" -O check amd-pc >/dev/null 2>&1; then
         rm -f "$control"
         ssh -M -S "$control" -fN \
@@ -15,11 +25,30 @@ let
           amd-pc
       fi
 
-      ssh -S "$control" amd-pc \
-        'systemctl --user start wayvnc-remote.service && cat /run/secrets/wayvnc_password' \
-        | /usr/bin/pbcopy
-      /usr/bin/open 'vnc://localhost:5900'
+      password="$(ssh -S "$control" amd-pc '
+        systemctl --user start wayvnc-remote.service
+        for _ in $(seq 1 100); do
+          if wayvncctl output-list >/dev/null 2>&1; then
+            cat /run/secrets/wayvnc_password
+            exit 0
+          fi
+          systemctl --user is-active --quiet wayvnc-remote.service || exit 1
+          sleep 0.1
+        done
+        exit 1
+      ')"
+      printf '%s' "$password" | /usr/bin/pbcopy
       printf '%s\n' 'WayVNC password copied to the clipboard'
+
+      aerospace mode vnc
+      VNC_PASSWORD="$password" "$HOME/Applications/TurboVNC Viewer.app/Contents/MacOS/TurboVNC Viewer" \
+        -FullScreen \
+        -Scale FixedRatio \
+        -DesktopSize Server \
+        -Encoding Tight \
+        -JPEG=0 \
+        -SecurityTypes VNC \
+        127.0.0.1::5900
     '';
   };
   amd-vnc-stop = pkgs.writeShellApplication {
@@ -170,7 +199,7 @@ in
 
     # Set correct SSH_AUTH_SOCK
 
-    export PATH="$HOME/.cargo/bin:$PATH"
+    export PATH="$HOME/.local/state/nix/profiles/home-manager/home-path/bin:$HOME/.cargo/bin:$PATH"
     export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
     export SHELL=/run/current-system/sw/bin/zsh
   '';
