@@ -36,5 +36,6 @@
       "/home/flakm/wallpapers",
       "/home/flakm/.cache/hyprland"
     ]
-  }
+  },
+  "outputStyle": "Concise"
 }

@@ -1785,10 +1785,6 @@ in
     hl.bind("CTRL + SHIFT + l", hl.dsp.focus({ direction = "right" }))
     hl.bind("CTRL + SHIFT + k", hl.dsp.focus({ direction = "up"    }))
     hl.bind("CTRL + SHIFT + j", hl.dsp.focus({ direction = "down"  }))
-    hl.bind("CTRL + SHIFT + H", hl.dsp.focus({ direction = "left"  }))
-    hl.bind("CTRL + SHIFT + L", hl.dsp.focus({ direction = "right" }))
-    hl.bind("CTRL + SHIFT + K", hl.dsp.focus({ direction = "up"    }))
-    hl.bind("CTRL + SHIFT + J", hl.dsp.focus({ direction = "down"  }))
 
     -- Window movement
     hl.bind(mod .. " + CTRL + H", hl.dsp.window.move({ direction = "left"  }))

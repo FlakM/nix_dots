@@ -113,10 +113,10 @@
   # request. DISPLAY/WAYLAND_DISPLAY leak in from the gpg-agent systemd user
   # service env (so they are always set, regardless of the calling shell), and
   # stdin is always an Assuan pipe, never a tty -- so neither can distinguish an
-  # interactive terminal from a GUI session. Interactive zsh sets
-  # PINENTRY_USER_DATA=curses (see .zshrc_local); everything else -- GUI apps and
-  # Claude Code's non-interactive shells, which have no usable terminal driver --
-  # falls through to the GNOME prompter.
+  # interactive terminal from a GUI session. Only interactive zsh inside an SSH
+  # session sets PINENTRY_USER_DATA=curses (see .zshrc_local); everything else --
+  # local terminals, GUI apps and non-interactive shells -- gets the GNOME
+  # prompter.
   xdg.configFile."/.gnupg/gpg-agent.conf".text =
     let
       pinentry-auto = pkgs.writeShellScript "pinentry-auto" ''
@@ -139,13 +139,17 @@
     # Ensure SSH uses gpg-agent socket (YubiKey)
     export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
 
-    # Route the YubiKey PIN prompt to this terminal. ssh requests (git fetch over
-    # the YubiKey) carry no client env, so gpg-agent uses its startup context --
-    # updatestartuptty copies this session's tty and PINENTRY_USER_DATA into it.
-    # Guarded on a real tty so non-interactive shells keep the GUI prompter.
+    # ssh requests (git fetch over the YubiKey) carry no client env, so gpg-agent
+    # uses its startup context -- updatestartuptty copies this session's tty and
+    # PINENTRY_USER_DATA into it. Only fall back to the curses prompter when
+    # there is no local display to draw on (i.e. we are inside an SSH session).
     if [[ -o interactive ]] && [[ -t 0 ]]; then
       export GPG_TTY="$TTY"
-      export PINENTRY_USER_DATA=curses
+      if [[ -n "$SSH_CONNECTION$SSH_TTY$SSH_CLIENT" ]]; then
+        export PINENTRY_USER_DATA=curses
+      else
+        unset PINENTRY_USER_DATA
+      fi
       gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
     fi
   '';

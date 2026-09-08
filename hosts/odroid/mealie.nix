@@ -17,6 +17,12 @@ in
     database.createLocally = true;
   };
 
+  systemd.services.mealie.serviceConfig = {
+    TimeoutStartSec = "10min";
+    Restart = "on-failure";
+    RestartSec = "10s";
+  };
+
   sops.defaultSopsFile = ../../secrets/secrets.yaml;
   sops.secrets = {
     open_api_key = {

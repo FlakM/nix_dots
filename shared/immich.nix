@@ -1,9 +1,10 @@
-{ pkgs, config, ... }:
+{ pkgs-unstable, config, ... }:
 
 {
 
   services.immich = {
     enable = true;
+    package = pkgs-unstable.immich;
     redis.enable = true;
     accelerationDevices = [ "/dev/dri/renderD128" ]; # adjust if your VAAPI device differs
     settings = {

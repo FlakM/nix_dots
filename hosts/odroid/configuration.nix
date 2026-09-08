@@ -42,6 +42,7 @@
     ./home-assistant.nix
     ./mosquitto.nix
     ./frigate.nix
+    ./lionelo-camera.nix
 
     ../../shared/syncthing/odroid.nix
 
@@ -57,6 +58,15 @@
     flake = "github:FlakM/nix_dots#odroid";
     flags = [
       "-L"
+      "--override-input"
+      "coralogix-private"
+      "path:/home/flakm/programming/flakm/nix-coralogix-private"
+      "--override-input"
+      "cx-cli"
+      "path:/home/flakm/programming/coralogix/cx-cli"
+      "--override-input"
+      "eink-bridge"
+      "path:/home/flakm/programming/flakm/eink-bridge"
     ];
     dates = "03:00";
     randomizedDelaySec = "45min";
@@ -123,6 +133,11 @@
 
 
   boot.zfs.extraPools = [ "tank" ];
+
+  services.zfs.autoScrub = {
+    enable = true;
+    interval = "monthly";
+  };
 
 
   # workaround for openforify client

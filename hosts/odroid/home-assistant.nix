@@ -136,6 +136,37 @@ in
             }
           ];
         }
+        {
+          id = "lionelo_onboard_motion_alert";
+          alias = "Lionelo onboard motion alert";
+          mode = "parallel";
+          max = 10;
+          triggers = [
+            {
+              trigger = "mqtt";
+              topic = "lionelo/babyline/events";
+            }
+          ];
+          actions = [
+            {
+              action = "notify.mobile_app_pixel_7";
+              data = {
+                title = "{{ trigger.payload_json.title }}";
+                message = "{{ trigger.payload_json.message }}";
+                data = {
+                  image = "{{ trigger.payload_json.image_url }}";
+                  clickAction = "https://frigate.house.flakm.com/";
+                  tag = "lionelo-onboard-motion";
+                  group = "camera-alerts";
+                  channel = "Camera alerts";
+                  notification_icon = "mdi:motion-sensor";
+                  ttl = 0;
+                  priority = "high";
+                };
+              };
+            }
+          ];
+        }
       ];
       http = {
         server_port = 8123;

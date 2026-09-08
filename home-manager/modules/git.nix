@@ -44,7 +44,7 @@
     settings = {
       user = {
         name = "FlakM";
-        email = "maciej.jan.flak@gmail.com";
+        email = "coder@flakm.com";
       };
       pull = { ff = "only"; };
       init.defaultBranch = "main";

@@ -25,6 +25,20 @@ let
   };
   reolinkMainStream = address: passwordVariable:
     "rtsp://admin:{${passwordVariable}}@${address}:554/Preview_01_main";
+  lioneloCamera = {
+    detect = {
+      width = 640;
+      height = 360;
+    };
+    ffmpeg.hwaccel_args = [ ];
+    ffmpeg.inputs = [
+      {
+        path = "rtsp://127.0.0.1:8554/babyline";
+        input_args = "preset-rtsp-generic";
+        roles = [ "detect" "record" ];
+      }
+    ];
+  };
   go2rtcStream = address: passwordVariable: stream:
     "rtsp://admin:\${${passwordVariable}}@${address}:554/Preview_01_${stream}";
   go2rtcSettings = {
@@ -35,6 +49,7 @@ let
       front_right = go2rtcStream "192.168.0.215" "FRIGATE_REOLINK_PASSWORD" "main";
       front_left = go2rtcStream "192.168.0.221" "FRIGATE_REOLINK_PASSWORD_FRONT_LEFT" "main";
       back = go2rtcStream "192.168.0.131" "FRIGATE_REOLINK_PASSWORD_BACK" "main";
+      babyline = "rtsp://127.0.0.1:38554/Babyline_SMART";
     };
   };
   openvinoModel = pkgs.runCommand "frigate-openvino-model" { } ''
@@ -57,9 +72,9 @@ let
   '';
   frigateClearShm = pkgs.writeShellScript "frigate-clear-shm" ''
     ${lib.getExe' pkgs.coreutils "rm"} -f \
-      /dev/shm/{back,front_left,front_right,reolink} \
-      /dev/shm/out-{back,front_left,front_right,reolink} \
-      /dev/shm/{back,front_left,front_right,reolink}_frame*
+      /dev/shm/{babyline,back,front_left,front_right,reolink} \
+      /dev/shm/out-{babyline,back,front_left,front_right,reolink} \
+      /dev/shm/{babyline,back,front_left,front_right,reolink}_frame*
   '';
   go2rtcStart = pkgs.writeShellScript "go2rtc-start" ''
     urlencode() {
@@ -170,6 +185,7 @@ in
         front_right = reolinkMainStream "192.168.0.215" "FRIGATE_REOLINK_PASSWORD";
         front_left = reolinkMainStream "192.168.0.221" "FRIGATE_REOLINK_PASSWORD_FRONT_LEFT";
         back = reolinkMainStream "192.168.0.131" "FRIGATE_REOLINK_PASSWORD_BACK";
+        babyline = "rtsp://127.0.0.1:38554/Babyline_SMART";
       };
 
       record = {
@@ -250,6 +266,7 @@ in
             detections.required_zones = [ "ogrod" ];
           };
         };
+        babyline = lioneloCamera;
       };
     };
   };
@@ -270,6 +287,8 @@ in
   };
 
   systemd.services.frigate = {
+    after = [ "lionelo-camera.service" ];
+    requires = [ "lionelo-camera.service" ];
     unitConfig.RequiresMountsFor = [
       "/var/lib/frigate/recordings"
       "/var/lib/frigate/clips"

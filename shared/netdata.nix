@@ -1,9 +1,14 @@
 { pkgs, ... }:
+let
+  emptyConfigDir = pkgs.runCommand "empty-netdata-config" { } "mkdir -p $out";
+in
 {
   services.netdata = {
     enable = true;
     package = pkgs.netdata.override {
       withCloudUi = true;
+      withIpmi = false;
+      withOtel = false;
     };
     enableAnalyticsReporting = false;
     config = {
@@ -32,9 +37,21 @@
       "global statistics" = {
         "enabled" = "no";
       };
+      plugins = {
+        "freeipmi" = "no";
+        "otel" = "no";
+        "perf" = "no";
+        "scripts.d" = "no";
+      };
+    };
+    configDir = {
+      "scripts.d" = emptyConfigDir;
+      "statsd.d" = emptyConfigDir;
     };
     claimTokenFile = null;
   };
+
+  systemd.services.netdata.environment.XDG_RUNTIME_DIR = "/run/netdata";
 
 
 
@@ -63,4 +80,3 @@
     };
   };
 }
-

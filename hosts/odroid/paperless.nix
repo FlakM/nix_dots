@@ -127,6 +127,15 @@
     port = 9998;
   };
 
+  systemd.services.tika = {
+    after = [ "network-online.target" "time-sync.target" ];
+    wants = [ "network-online.target" "time-sync.target" ];
+    serviceConfig = {
+      Restart = "on-failure";
+      RestartSec = "10s";
+    };
+  };
+
   # Gotenberg for PDF processing
   virtualisation.oci-containers.containers.gotenberg = {
     image = "gotenberg/gotenberg:8";
