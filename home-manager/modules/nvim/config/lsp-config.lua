@@ -62,9 +62,11 @@ map("n", "gds", function()
 end)
 
 -- show workspace symbols using telescope
+-- dynamic: re-queries the server on every keystroke. The static
+-- lsp_workspace_symbols sends one empty query and filters client-side, which
+-- rust-analyzer truncates to 128 symbols in large workspaces.
 map("n", "gws", function()
-    --vim.lsp.buf.workspace_symbol()
-    builtin.lsp_workspace_symbols()
+    builtin.lsp_dynamic_workspace_symbols()
 end)
 
 map("n", "<leader>cl", function()

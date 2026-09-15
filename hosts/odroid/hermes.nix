@@ -44,6 +44,9 @@ in
         interestKeywords = [ ];
         memoryDir = "/home/flakm/.local/share/hermes-agent/memory";
         memoryMaxChars = 6000;
+        followedRefreshBatchSize = 10;
+        followedRefreshBudgetSeconds = 60;
+        discoveryBudgetSeconds = 60;
         workingDirectory = "/home/flakm/programming/coralogix/aaa-daily-reporter";
         contextPaths = [
           "/home/flakm/programming/coralogix/aaa-daily-reporter"

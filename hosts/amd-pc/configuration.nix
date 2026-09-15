@@ -38,6 +38,7 @@ in
     ./grafana.nix
     ./performance.nix
     ./vpn.nix
+    ./cxdb-dns.nix
     #./clickhouse.nix
   ];
 

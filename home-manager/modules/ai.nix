@@ -99,6 +99,11 @@ in
   // cxSkillFiles
   // cxPrivateSkillFiles;
 
+  xdg.configFile."opencode/command/i-have-adhd.md" = {
+    force = true;
+    source = ./opencode/command/i-have-adhd.md;
+  };
+
   xdg.configFile."opencode/opencode.json" = {
     force = true;
     text = builtins.toJSON {

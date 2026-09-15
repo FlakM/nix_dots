@@ -1,7 +1,17 @@
 { config, pkgs, inputs, lib, ... }:
 
 let
-  librusPackage = inputs.librus-notifications.packages.x86_64-linux.default;
+  librusPackage = inputs.librus-notifications.packages.x86_64-linux.default.overrideAttrs (oldAttrs: {
+    postPatch = (oldAttrs.postPatch or "") + ''
+      substituteInPlace rust/openai.rs \
+        --replace-fail "1A" "2A" \
+        --replace-fail "klasy 1" "klasy 2" \
+        --replace-fail "1 klasy" "2 klasy" \
+        --replace-fail "            temperature: 0.3," "" \
+        --replace-fail "    temperature: f32," ""
+      substituteInPlace rust/email.rs --replace-fail "1A" "2A"
+    '';
+  });
 
   # Wrapper script that sources secrets and runs librus-test
   librusTestWrapper = pkgs.writeShellScriptBin "librus-test" ''
@@ -55,4 +65,6 @@ in
     schedule = [ "*:0/10" ];
     persistent = true;
   };
+
+  systemd.services.librus-notifications.environment.OPENAI_MODEL = "gpt-5.6-sol";
 }

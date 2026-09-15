@@ -59,6 +59,8 @@
 
   xdg.enable = true;
 
+  dconf.settings."org/blueman/plugins/autoconnect".services = [ ];
+
 
 
   wayland.windowManager.hyprland.settings = {
