@@ -60,7 +60,7 @@
       "-L"
       "--override-input"
       "coralogix-private"
-      "path:/home/flakm/programming/flakm/nix-coralogix-private"
+      "path:${inputs.coralogix-private.outPath}"
       "--override-input"
       "cx-cli"
       "path:/home/flakm/programming/coralogix/cx-cli"

@@ -36,9 +36,16 @@ A comprehensive NixOS/nix-darwin flake configuration for multiple machines with 
 # Local switch on current host (e.g., amd-pc)
 sudo nixos-rebuild switch --flake ~/programming/flakm/nix_dots#amd-pc
 
-# Remote build and switch (e.g., odroid)
-nixos-rebuild switch --target-host flakm@odroid --use-remote-sudo --flake ~/programming/flakm/nix_dots#odroid
+# Direct LAN access to odroid using the YubiKey-backed SSH agent (no Tailscale)
+ssh -o PreferredAuthentications=publickey flakm@192.168.0.102
+
+# Build locally and switch odroid over the LAN without changing its checkout
+nixos-rebuild switch --target-host flakm@192.168.0.102 --sudo --flake ~/programming/flakm/nix_dots#odroid
 ```
+
+The `odroid` hostname can resolve through Tailscale; use `192.168.0.102` on the home LAN for ordinary OpenSSH. `ssh-add -l` should show the YubiKey card key. Password and keyboard-interactive SSH authentication remain disabled. Direct access requires a route to the home LAN; it does not expose SSH to the public Internet.
+
+Odroid's nightly upgrade uses the deployed `coralogix-private` store snapshot, not its potentially dirty local checkout. Update the private input and deploy explicitly to advance that snapshot.
 
 #### macOS (nix-darwin):
 ```bash
