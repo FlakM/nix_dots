@@ -70,6 +70,7 @@ in
           "C0BBE5L48AU" # flakm-test
         ];
         pollIntervalSeconds = 65;
+        maxMessageAgeSeconds = 900;
         maxDecisionsPerChannelPerPoll = 5;
         requireThreadParticipation = false;
         backfillOnStart = false;
