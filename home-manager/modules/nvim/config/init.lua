@@ -264,21 +264,85 @@ keymap("n", "<leader>ch", function()
 end, { silent = true, desc = "Copy directory" })
 
 -- Jump CLI integration (github links, markdown references)
-keymap("n", "<leader>cg", function()
-  local file = fn.expand("%:p")
-  local line = fn.line(".")
-  local result = fn.system({ "jump", "github-link", "--file", file, "--start-line", tostring(line) })
-  if vim.v.shell_error == 0 then
-    local ok, parsed = pcall(vim.json.decode, result)
-    if ok and parsed.url then
-      copy_to_clipboard(parsed.markdown)
-      vim.notify("🔗 " .. parsed.markdown, vim.log.levels.INFO)
-    else
-      vim.notify("❌ Failed to parse result", vim.log.levels.ERROR)
-    end
-  else
-    vim.notify("❌ GitHub link failed", vim.log.levels.ERROR)
+-- `impl<E> Foo<E>` / `impl Trait for Foo` -> `Foo`
+local function symbol_name(raw)
+  local name = raw:gsub("<.->", ""):gsub("%s+", " ")
+  return vim.trim(name:match("^impl .+ for (.+)$") or name:match("^impl (.+)$") or name)
+end
+
+-- LSP SymbolKind: containers implied by the file path, locals, and callables
+local implied_kinds = { [3] = true, [4] = true } -- namespace, package
+local local_kinds = { [13] = true, [14] = true } -- variable, constant
+local callable_kinds = { [6] = true, [9] = true, [12] = true } -- method, constructor, function
+
+local symbol_separators = { rust = "::", c = "::", cpp = "::" }
+
+-- Enclosing symbol path for a line, e.g. `UsersInterpreter.evaluateOperation`
+local function enclosing_symbol(line)
+  local bufnr = api.nvim_get_current_buf()
+  if #vim.lsp.get_clients({ bufnr = bufnr }) == 0 then
+    return nil
   end
+  local responses = vim.lsp.buf_request_sync(bufnr, "textDocument/documentSymbol",
+    { textDocument = vim.lsp.util.make_text_document_params(bufnr) }, 2000)
+  local parts = {}
+  local function walk(symbols, parent_kind)
+    for _, sym in ipairs(symbols or {}) do
+      local range = sym.range or (sym.location or {}).range
+      if range and line - 1 >= range.start.line and line - 1 <= range["end"].line then
+        -- a `val` inside a body is a local, not part of the reference
+        if local_kinds[sym.kind] and callable_kinds[parent_kind] then
+          return
+        end
+        if not implied_kinds[sym.kind] then
+          table.insert(parts, symbol_name(sym.name))
+        end
+        walk(sym.children, sym.kind)
+        return
+      end
+    end
+  end
+  for _, response in pairs(responses or {}) do
+    walk(response.result, nil)
+    if #parts > 0 then
+      break
+    end
+  end
+  if #parts == 0 then
+    return nil
+  end
+  return table.concat(parts, symbol_separators[vim.bo[bufnr].filetype] or ".")
+end
+
+local function copy_github_link(start_line, end_line)
+  local args = {
+    "jump", "github-link",
+    "--file", fn.expand("%:p"),
+    "--start-line", tostring(start_line),
+  }
+  if end_line then
+    vim.list_extend(args, { "--end-line", tostring(end_line) })
+  end
+  local symbol = enclosing_symbol(start_line)
+  if symbol then
+    vim.list_extend(args, { "--symbol", symbol })
+  end
+  local result = fn.system(args)
+  if vim.v.shell_error ~= 0 then
+    vim.notify("❌ GitHub link failed", vim.log.levels.ERROR)
+    return
+  end
+  local ok, parsed = pcall(vim.json.decode, result)
+  if not ok or not parsed.url then
+    vim.notify("❌ Failed to parse result", vim.log.levels.ERROR)
+    return
+  end
+  copy_to_clipboard(parsed.markdown)
+  vim.notify("🔗 " .. parsed.markdown, vim.log.levels.INFO)
+end
+
+keymap("n", "<leader>cg", function()
+  copy_github_link(fn.line("."), nil)
 end, { silent = true, desc = "Copy GitHub link" })
 
 keymap("v", "<leader>cg", function()
@@ -287,24 +351,7 @@ keymap("v", "<leader>cg", function()
   if start_line > end_line then
     start_line, end_line = end_line, start_line
   end
-  local file = fn.expand("%:p")
-  local result = fn.system({
-    "jump", "github-link",
-    "--file", file,
-    "--start-line", tostring(start_line),
-    "--end-line", tostring(end_line),
-  })
-  if vim.v.shell_error == 0 then
-    local ok, parsed = pcall(vim.json.decode, result)
-    if ok and parsed.url then
-      copy_to_clipboard(parsed.markdown)
-      vim.notify("🔗 " .. parsed.markdown, vim.log.levels.INFO)
-    else
-      vim.notify("❌ Failed to parse result", vim.log.levels.ERROR)
-    end
-  else
-    vim.notify("❌ GitHub link failed", vim.log.levels.ERROR)
-  end
+  copy_github_link(start_line, end_line)
 end, { silent = true, desc = "Copy GitHub link (selection)" })
 
 local function get_lsp_hover_and_definition()
