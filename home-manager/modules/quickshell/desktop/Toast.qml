@@ -36,6 +36,12 @@ PanelWindow {
             border.color: "#8872d7ff"
             border.width: 1
 
+            MouseArea {
+                anchors.fill: parent
+                z: -1
+                onClicked: shell.activateNotification(notification)
+            }
+
             Rectangle {
                 anchors.fill: parent
                 anchors.margins: 4

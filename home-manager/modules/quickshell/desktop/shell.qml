@@ -71,12 +71,25 @@ ShellRoot {
         toastNotifications = [{ notification, expiresAt }].concat(remaining)
     }
 
-    function hideToast(notification) {
-        toastNotifications = toastNotifications.filter(item => item.notification.id !== notification.id)
+    function hideToastById(id) {
+        toastNotifications = toastNotifications.filter(item => item.notification && item.notification.id !== id)
+    }
+
+    function activateNotification(notification) {
+        if (!notification) return
+        for (let i = 0; i < notification.actions.length; i++) {
+            const action = notification.actions[i]
+            if (action.identifier === "default") {
+                hideToastById(notification.id)
+                action.invoke()
+                return
+            }
+        }
     }
 
     function dismissToast(notification) {
-        hideToast(notification)
+        if (!notification) return
+        hideToastById(notification.id)
         notification.dismiss()
     }
 
@@ -163,7 +176,13 @@ ShellRoot {
         persistenceSupported: true
         keepOnReload: true
         onNotification: notification => {
+            const id = notification.id
+            const actions = []
+            for (let i = 0; i < notification.actions.length; i++) actions.push(notification.actions[i].identifier)
             notification.tracked = true
+            notification.closed.connect(() => root.hideToastById(id))
+            console.info("Notification received:", notification.appName, notification.desktopEntry,
+                JSON.stringify(notification.summary), actions.join(","))
             root.addToast(notification)
         }
     }

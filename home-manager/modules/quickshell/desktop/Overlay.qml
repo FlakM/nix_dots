@@ -281,7 +281,8 @@ PanelWindow {
                         z: -1
                         onClicked: {
                             overlay.selectedIndex = index
-                            if (shell.overlayMode !== "notifications") overlay.activateSelected()
+                            if (shell.overlayMode === "notifications") shell.activateNotification(modelData)
+                            else overlay.activateSelected()
                         }
                     }
                 }
