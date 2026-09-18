@@ -119,7 +119,7 @@
     next=$(${pkgs.khal}/bin/khal list now 8h --format "{start-time} {title}" 2>/dev/null | grep -E "^[0-9]{2}:[0-9]{2}" | head -1)
 
     # Get today's full agenda for tooltip
-    tooltip=$(${pkgs.khal}/bin/khal list today tomorrow --format "{start-time} {title}" 2>/dev/null | head -15 | sed 's/"/\\"/g' | paste -sd'|' - | sed 's/|/\\n/g')
+    tooltip=$(${pkgs.khal}/bin/khal list today tomorrow --format "{start-time} {title}" 2>/dev/null | head -15)
 
     if [ -n "$next" ]; then
       next_time=$(echo "$next" | cut -d' ' -f1)
@@ -138,14 +138,40 @@
       else
         class="has-events"
       fi
+      if [ $diff -le 0 ]; then
+        detail="Now"
+      elif [ $diff -le 15 ]; then
+        detail="Starting soon"
+      elif [ $diff -lt 60 ]; then
+        detail="in ''${diff}m"
+      else
+        hours=$((diff / 60))
+        minutes=$((diff % 60))
+        if [ $minutes -eq 0 ]; then
+          detail="in ''${hours}h"
+        else
+          detail="in ''${hours}h ''${minutes}m"
+        fi
+      fi
+      title="$event_title"
       text="$next_time $event_title"
     else
       class="no-events"
+      title="No events"
+      next_time=""
+      detail="Today is clear"
       text="No events"
       tooltip="No upcoming events today"
     fi
 
-    printf '{"text": "%s", "tooltip": "%s", "class": "%s"}\n' "$text" "$tooltip" "$class"
+    ${pkgs.jq}/bin/jq -cn \
+      --arg text "$text" \
+      --arg title "$title" \
+      --arg time "$next_time" \
+      --arg detail "$detail" \
+      --arg tooltip "$tooltip" \
+      --arg class "$class" \
+      '{ $text, $title, $time, $detail, $tooltip, $class }'
   '';
 
   home.file.".local/bin/khal-notify".source = pkgs.writeShellScript "khal-notify" ''

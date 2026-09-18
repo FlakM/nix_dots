@@ -25,6 +25,14 @@ let
   hyprland-start = pkgs.writeShellScriptBin "Hyprland" ''
     exec ${hyprland-fixed}/bin/start-hyprland --path ${hyprland-fixed}/bin/Hyprland "$@"
   '';
+  quickshell-greeter = pkgs.runCommand "quickshell-greeter" { } ''
+    mkdir -p "$out"
+    cp ${../../home-manager/modules/quickshell/greeter/shell.qml} "$out/shell.qml"
+    substituteInPlace "$out/shell.qml" \
+      --replace-fail '@uwsm@' '${lib.getExe pkgs.uwsm}' \
+      --replace-fail '@hyprland@' '${hyprland-start}/bin/Hyprland' \
+      --replace-fail '@wallpaper@' 'file://${inputs.self}/wallpapers/wallpaper.png'
+  '';
 in
 
 {
@@ -301,27 +309,16 @@ in
 
   services.libinput.enable = true;
 
-  # Login greeter: greetd + ReGreet (GTK on cage). Replaces GDM, which on
-  # GNOME/GDM 50 black-screens without a full GNOME install (nixpkgs#523332).
-  # ReGreet only discovers sessions via XDG_DATA_DIRS, and NixOS doesn't expose
-  # /run/current-system/sw/share/wayland-sessions, so point the greeter at the
-  # display-manager session bundle (which holds the Hyprland (UWSM) entry).
-  programs.regreet = {
+  services.greetd = {
     enable = true;
-    theme.name = "Adwaita-dark";
-    extraCss = ''
-      window,
-      window > box {
-        background-color: #000000;
-      }
-    '';
+    settings.default_session = {
+      user = "greeter";
+      command = lib.mkForce (
+        "${pkgs.dbus}/bin/dbus-run-session ${lib.getExe pkgs.cage} -s -d -- "
+        + "${lib.getExe pkgs.quickshell} --path ${quickshell-greeter}"
+      );
+    };
   };
-  services.greetd.settings.default_session.command = lib.mkForce (
-    "${pkgs.dbus}/bin/dbus-run-session ${lib.getExe pkgs.cage} -s -d -- "
-    + "${pkgs.coreutils}/bin/env "
-    + "XDG_DATA_DIRS=${config.services.displayManager.sessionData.desktops}/share "
-    + "${lib.getExe config.programs.regreet.package}"
-  );
 
 
   services.xserver = {

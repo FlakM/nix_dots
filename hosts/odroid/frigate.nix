@@ -45,10 +45,18 @@ let
     api.listen = "127.0.0.1:1984";
     rtsp.listen = "127.0.0.1:8554";
     webrtc.listen = "127.0.0.1:8555";
+    preload = {
+      front_left_desktop = "video=h264";
+      front_right_desktop = "video=h264";
+      back_desktop = "video=h264";
+    };
     streams = {
       front_right = go2rtcStream "192.168.0.215" "FRIGATE_REOLINK_PASSWORD" "main";
+      front_right_desktop = go2rtcStream "192.168.0.215" "FRIGATE_REOLINK_PASSWORD" "sub";
       front_left = go2rtcStream "192.168.0.221" "FRIGATE_REOLINK_PASSWORD_FRONT_LEFT" "main";
+      front_left_desktop = go2rtcStream "192.168.0.221" "FRIGATE_REOLINK_PASSWORD_FRONT_LEFT" "sub";
       back = go2rtcStream "192.168.0.131" "FRIGATE_REOLINK_PASSWORD_BACK" "main";
+      back_desktop = go2rtcStream "192.168.0.131" "FRIGATE_REOLINK_PASSWORD_BACK" "sub";
       babyline = "rtsp://127.0.0.1:38554/Babyline_SMART";
     };
   };
@@ -217,11 +225,12 @@ in
           width = 640;
           height = 360;
         }) // {
-          motion.mask = "0.001,0.009,0.001,0.221,0.273,0.201,0.757,0.202,0.808,0.121,0.908,0.131,1,0.199,1,0.087,1,0";
+          motion.mask = "0.001,0.009,0.001,0.221,0.273,0.201,0.757,0.202,0.813,0.203,0.901,0.206,1,0.199,1,0.087,1,0";
           zones.podjazd_prawy = {
             friendly_name = "Podjazd prawy";
-            coordinates = "0.01,0.237,0.854,0.313,0.853,0.982,0.004,0.995";
+            coordinates = "0.01,0.237,0.991,0.222,1,0.994,0.004,0.995";
             loitering_time = 0;
+            inertia = 3;
           };
           review = {
             alerts.required_zones = [ "podjazd_prawy" ];
@@ -232,10 +241,14 @@ in
           width = 640;
           height = 360;
         }) // {
-          motion.mask = "0.002,0.008,0.007,0.397,0.353,0.264,0.577,0.19,0.793,0.169,0.897,0.152,0.991,0.119,0.985,0.01";
+          motion.mask = [
+            "0.001,0,0.006,0.389,0.145,0.328,0.361,0.264,0.583,0.22,0.792,0.161,0.896,0.144,0.99,0.111,0.984,0.002"
+            "0.509,0.997,0.851,0.489,1,0.496,0.997,0.999"
+          ];
           zones.podjazd = {
-            coordinates = "0.156,0.358,0.005,0.427,0.001,0.993,0.996,0.995,0.999,0.176,0.887,0.208,0.843,0.196";
+            coordinates = "0.156,0.358,0.005,0.427,0.001,0.993,0.504,1,0.756,0.629,0.778,0.296,0.786,0.188";
             loitering_time = 0;
+            inertia = 3;
           };
           review = {
             alerts.required_zones = [ "podjazd" ];
@@ -274,6 +287,30 @@ in
   services.nginx.virtualHosts."frigate.house.flakm.com" = {
     useACMEHost = "house.flakm.com";
     forceSSL = true;
+    locations."/desktop-camera/" = {
+      proxyPass = "http://127.0.0.1:5000/api/";
+      recommendedProxySettings = true;
+      extraConfig = ''
+        allow 127.0.0.1;
+        allow 192.168.0.0/24;
+        allow 100.64.0.0/10;
+        deny all;
+        add_header Cache-Control "no-store" always;
+      '';
+    };
+    locations."/desktop-stream/" = {
+      proxyPass = "http://127.0.0.1:1984/";
+      recommendedProxySettings = true;
+      extraConfig = ''
+        allow 127.0.0.1;
+        allow 192.168.0.0/24;
+        allow 100.64.0.0/10;
+        deny all;
+        proxy_buffering off;
+        proxy_read_timeout 1h;
+        add_header Cache-Control "no-store" always;
+      '';
+    };
   };
 
   services.go2rtc = {

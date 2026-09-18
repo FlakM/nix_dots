@@ -56,29 +56,48 @@
       NAMES=$(echo "$PRITUNL" | $JQ -r '[.[] | select(.run_state == "Active") | .name | gsub("maciej.flak "; "") | gsub("[()]"; "")] | join(", ")')
 
       TS_ONLINE="false"
+      TS_NAME=""
+      TS_IP=""
       if command -v tailscale &>/dev/null; then
-        TS_ONLINE=$(tailscale status --json 2>/dev/null | $JQ -r '.Self.Online // false')
+        TS_STATUS=$(tailscale status --json 2>/dev/null)
+        TS_ONLINE=$(echo "$TS_STATUS" | $JQ -r '.Self.Online // false')
+        TS_NAME=$(echo "$TS_STATUS" | $JQ -r '.Self.HostName // empty')
+        TS_IP=$(echo "$TS_STATUS" | $JQ -r '.Self.TailscaleIPs[0] // empty')
       fi
 
       if [ "$ACTIVE" -gt 0 ] && [ "$TS_ONLINE" = "true" ]; then
         CLASS="both"
+        TITLE="$NAMES"
+        DETAIL="Pritunl + Tailscale"
         TEXT="󰌘 $NAMES + TS"
-        TOOLTIP="Pritunl: $NAMES\nTailscale: connected"
+        TOOLTIP=$(printf 'Pritunl: %s\nTailscale: %s (%s)' "$NAMES" "$TS_NAME" "$TS_IP")
       elif [ "$ACTIVE" -gt 0 ]; then
         CLASS="pritunl"
+        TITLE="$NAMES"
+        DETAIL="Pritunl connected"
         TEXT="󰌘 $NAMES"
         TOOLTIP="Pritunl: $NAMES"
       elif [ "$TS_ONLINE" = "true" ]; then
         CLASS="tailscale"
+        TITLE="Tailscale"
+        DETAIL="''${TS_IP:-Connected}"
         TEXT="󰒍 TS"
-        TOOLTIP="Tailscale: connected"
+        TOOLTIP="Tailscale: ''${TS_NAME:-connected}''${TS_IP:+ ($TS_IP)}"
       else
         CLASS="disconnected"
+        TITLE="VPN disconnected"
+        DETAIL="Click to connect"
         TEXT="󰌙 VPN off"
         TOOLTIP="VPN: disconnected"
       fi
 
-      printf '{"text": "%s", "tooltip": "%s", "class": "%s"}\n' "$TEXT" "$TOOLTIP" "$CLASS"
+      $JQ -cn \
+        --arg text "$TEXT" \
+        --arg title "$TITLE" \
+        --arg detail "$DETAIL" \
+        --arg tooltip "$TOOLTIP" \
+        --arg class "$CLASS" \
+        '{ $text, $title, $detail, $tooltip, $class }'
     '')
 
     (writeShellScriptBin "vpn-menu" ''

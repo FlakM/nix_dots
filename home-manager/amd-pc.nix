@@ -30,6 +30,7 @@
     ./modules/media.nix
 
     ./modules/hyprland.nix
+    ./modules/quickshell.nix
     #./modules/neomutt.nix
 
     ./modules/atuin.nix

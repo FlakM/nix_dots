@@ -66,6 +66,8 @@ let
         --add-flags "--enable-features=UseOzonePlatform,WaylandWindowDecorations,WebRTCPipeWireCapturer"
     '';
   };
+
+  slk = pkgs.callPackage ../../packages/slk.nix { };
 in
 {
 
@@ -77,6 +79,7 @@ in
     pkgs-master.signal-cli
     signal-desktop
     slack-wayland
+    slk
     zulip-term
     zulip-wayland
   ];

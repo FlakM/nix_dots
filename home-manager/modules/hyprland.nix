@@ -2,6 +2,7 @@
 let
   path = "${config.home.homeDirectory}/.config/current-color_scheme";
   hyprlock-command = "pidof hyprlock || hyprlock";
+  isAmdPc = lib.attrByPath [ "networking" "hostName" ] "" osConfig == "amd-pc";
   apply-theme-script = pkgs.writeScript "apply-theme" ''
     set -e
     curr=$(cat ${path})
@@ -388,13 +389,11 @@ in
 
 
   home.packages = with pkgs; [
-    swaynotificationcenter # modern notifications
     rofi
     libnotify # provides notify-send for testing
     playerctl # media status for waybar
     shotman # screenshot
     dconf
-    copyq
 
     configure-gtk-dark
     configure-gtk-light
@@ -420,6 +419,9 @@ in
     rofimoji
 
     wf-recorder # screen recording
+  ] ++ lib.optionals (!isAmdPc) [
+    copyq
+    swaynotificationcenter
   ];
 
   xdg.configFile."hypr/xdph.conf" = {
@@ -1223,7 +1225,7 @@ in
     # https://github.com/hyprwm/Hyprland/discussions/1729
     #package = pkgs.unstable.waybar;
 
-    enable = true;
+    enable = !isAmdPc;
     systemd = {
       enable = true;
     };
@@ -1585,7 +1587,7 @@ in
     };
   };
 
-  systemd.user.services.swaync = {
+  systemd.user.services.swaync = lib.mkIf (!isAmdPc) {
     Unit = {
       Description = "SwayNC notification daemon";
       PartOf = [ "graphical-session.target" ];
@@ -1739,7 +1741,7 @@ in
 
     -- Autostart (was exec-once)
     hl.on("hyprland.start", function()
-        hl.exec_cmd("copyq --start-server")
+        ${lib.optionalString (!isAmdPc) ''hl.exec_cmd("copyq --start-server")''}
         hl.exec_cmd("${configure-gtk-dark}/bin/configure-gtk-dark")
         hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=Hyprland")
 
@@ -1763,7 +1765,7 @@ in
 
     hl.bind("ALT + SHIFT + Q",            hl.dsp.window.close())
     hl.bind(mod .. " + F",                hl.dsp.window.fullscreen())
-    hl.bind(mod .. " + D",                hl.dsp.exec_cmd("rofi -show drun"))
+    hl.bind(mod .. " + D",                hl.dsp.exec_cmd("${if isAmdPc then "qs --config desktop ipc call desktop toggleLauncher" else "rofi -show drun"}"))
     hl.bind("ALT + CTRL + N",             hl.dsp.exec_cmd("${config.home.homeDirectory}/.config/theme-switch.sh"))
     hl.bind(mod .. " + SHIFT + W",        hl.dsp.exec_cmd([=[hyprctl hyprpaper wallpaper "DP-1,${config.home.homeDirectory}/.config/wallpaper.png"]=]))
     hl.bind(mod .. " + SHIFT + RETURN",   hl.dsp.exec_cmd("kitty"))
@@ -1799,7 +1801,7 @@ in
     hl.bind(mod .. " + CTRL + SHIFT + j", hl.dsp.window.resize({ x =    0, y =  100, relative = true }))
 
     -- Clipboard / emoji
-    hl.bind(mod .. " + V",      hl.dsp.exec_cmd("copyq toggle"))
+    hl.bind(mod .. " + V",      hl.dsp.exec_cmd("${if isAmdPc then "qs --config desktop ipc call desktop toggleClipboard" else "copyq toggle"}"))
     hl.bind(mod .. " + period", hl.dsp.exec_cmd("rofimoji | wl-copy"))
 
     -- Screenshots
@@ -1810,7 +1812,7 @@ in
 
     -- Lock / notifications
     hl.bind(mod .. " + SHIFT + L", hl.dsp.exec_cmd("${hyprlock-command}"))
-    hl.bind(mod .. " + N",       hl.dsp.exec_cmd("swaync-client -t -sw"))
+    hl.bind(mod .. " + N",       hl.dsp.exec_cmd("${if isAmdPc then "qs --config desktop ipc call desktop toggleNotifications" else "swaync-client -t -sw"}"))
 
     -- Audio (binde -> repeating; locked = usable on lockscreen)
     hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+"), { locked = true, repeating = true })
@@ -1918,17 +1920,31 @@ in
     
 
         # Clipboard manager handled by CopyQ
-        exec-once = copyq --start-server
+        ${lib.optionalString (!isAmdPc) "exec-once = copyq --start-server"}
         # walker service managed by systemd
         exec-once = ${configure-gtk-dark}/bin/configure-gtk-dark
         exec-once = hyprpaper
-        exec-once = swaync
+        ${lib.optionalString (!isAmdPc) "exec-once = swaync"}
 
         # Critical for screen sharing - update DBUS environment
         exec-once = dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=Hyprland
 
 
         exec-once=[workspace 1 silent] kitty
+        layerrule {
+            name = quickshell-toast-blur
+            match:namespace = ^(quickshell-toast)$
+            blur = true
+            ignore_alpha = 0.08
+        }
+
+        layerrule {
+            name = quickshell-overlay-blur
+            match:namespace = ^(quickshell-overlay)$
+            blur = true
+            ignore_alpha = 0.08
+        }
+
         windowrule {
             name = spotify-opacity
             match:class = ^(spotify)$
@@ -1975,7 +1991,7 @@ in
     
         bind=$mainMod,F,fullscreen 
 
-        bind = $mainMod, D, exec, rofi -show drun
+        bind = $mainMod, D, exec, ${if isAmdPc then "qs --config desktop ipc call desktop toggleLauncher" else "rofi -show drun"}
         bind = ALT_CTRL, N, exec, ${config.home.homeDirectory}/.config/theme-switch.sh
         bind = $mainMod SHIFT, W, exec, hyprctl hyprpaper wallpaper "DP-1,${config.home.homeDirectory}/.config/wallpaper.png" 
         bind = $mainMod SHIFT, RETURN, exec, kitty
@@ -2017,7 +2033,7 @@ in
 
         # Clipboard actions
         # alt+v to open clipboard history (changed from ctrl+shift+v to avoid conflicts)
-        bind = $mainMod, V, exec, copyq toggle
+        bind = $mainMod, V, exec, ${if isAmdPc then "qs --config desktop ipc call desktop toggleClipboard" else "copyq toggle"}
         # alt+. to open emoji picker
         bind = $mainMod, period, exec, rofimoji | wl-copy
 
@@ -2032,7 +2048,7 @@ in
         bind=$mainMod,Print,exec,grimblast --scale 2 --wait 2 save area ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png
 
         bind=$mainMod SHIFT, L, exec, ${hyprlock-command}
-        bind = $mainMod, N, exec, swaync-client -t -sw
+        bind = $mainMod, N, exec, ${if isAmdPc then "qs --config desktop ipc call desktop toggleNotifications" else "swaync-client -t -sw"}
 
 
         # volume button that allows press and hold, volume limited to 150%

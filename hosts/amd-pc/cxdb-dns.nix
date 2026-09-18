@@ -10,6 +10,7 @@ let
   port = 5354; # 53 is resolved's stub, 5353 is mDNS (spotify/avahi)
   hostsdir = "/run/cxdb/hosts";
   user = "flakm";
+  addr = "192.0.2.1"; # RFC 5737 TEST-NET-1, never routed
 in
 {
   services.dnsmasq = {
@@ -46,6 +47,9 @@ in
     script = ''
       ip link show cxdb0 >/dev/null 2>&1 || ip link add cxdb0 type dummy
       ip link set cxdb0 up
+      # resolved ignores a link whose only address is link-scope (fe80::), leaving
+      # `Current Scopes: none` and the domain unrouted however it is configured.
+      ip addr show dev cxdb0 | grep -q ${addr} || ip addr add ${addr}/32 dev cxdb0
       resolvectl dns cxdb0 127.0.0.1:${toString port}
       resolvectl domain cxdb0 "~${domain}"
       resolvectl default-route cxdb0 false
