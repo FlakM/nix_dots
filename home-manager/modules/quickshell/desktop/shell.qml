@@ -23,6 +23,10 @@ ShellRoot {
     property string activeCamera: ""
     property bool cameraAutoOpened: false
     property bool cameraAlertsSnoozed: false
+    property bool cameraPrivateMode: false
+    property bool cameraPrivateKnown: false
+    property bool cameraPrivateLoading: false
+    property bool cameraPrivateTarget: false
     property var calendarStatus: ({ "text": "Calendar", "title": "Calendar", "time": "", "detail": "Loading...", "tooltip": "Loading calendar...", "class": "no-events" })
     property var calendarAgenda: []
     property bool calendarLoading: false
@@ -140,6 +144,15 @@ ShellRoot {
         cameraAlertsSnoozed = false
     }
 
+    function toggleCameraPrivateMode() {
+        if (!cameraPrivateKnown || cameraPrivateLoading) return
+        cameraPrivateLoading = true
+        cameraPrivateTarget = !cameraPrivateMode
+        cameraPrivateTimeout.restart()
+        cameraPrivateAction.command = ["quickshell-camera-private", "set", cameraPrivateTarget ? "on" : "off"]
+        cameraPrivateAction.running = true
+    }
+
     function refreshVikunja() {
         if (vikunjaProcess.running) return
         vikunjaLoading = true
@@ -220,6 +233,33 @@ ShellRoot {
                 root.showCameraActivity(parts[0].split("/")[1])
             }
         }
+    }
+
+    Process {
+        command: ["quickshell-camera-private", "watch"]
+        running: true
+        stdout: SplitParser {
+            onRead: data => {
+                const state = data.trim().toUpperCase()
+                if (state !== "ON" && state !== "OFF") return
+                root.cameraPrivateMode = state === "ON"
+                root.cameraPrivateKnown = true
+                if (root.cameraPrivateLoading && root.cameraPrivateMode === root.cameraPrivateTarget) {
+                    root.cameraPrivateLoading = false
+                    cameraPrivateTimeout.stop()
+                }
+            }
+        }
+    }
+
+    Process {
+        id: cameraPrivateAction
+    }
+
+    Timer {
+        id: cameraPrivateTimeout
+        interval: 35000
+        onTriggered: root.cameraPrivateLoading = false
     }
 
     Process {

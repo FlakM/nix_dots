@@ -143,6 +143,31 @@ let
         --verbose
     '';
   };
+  cameraPrivate = pkgs.writeShellApplication {
+    name = "quickshell-camera-private";
+    runtimeInputs = [ pkgs.mosquitto ];
+    text = ''
+      case "''${1:-watch}" in
+        watch)
+          exec mosquitto_sub \
+            --host 192.168.0.102 \
+            --topic 'lionelo/babyline/private/state'
+          ;;
+        set)
+          case "''${2:-}" in
+            on) payload=ON ;;
+            off) payload=OFF ;;
+            *) printf 'usage: quickshell-camera-private set on|off\n' >&2; exit 2 ;;
+          esac
+          exec mosquitto_pub \
+            --host 192.168.0.102 \
+            --topic 'lionelo/babyline/private/set' \
+            --message "$payload"
+          ;;
+        *) printf 'usage: quickshell-camera-private watch|set on|off\n' >&2; exit 2 ;;
+      esac
+    '';
+  };
   calendarAgenda = pkgs.writeShellApplication {
     name = "quickshell-calendar";
     runtimeInputs = [ pkgs.jq pkgs.khal ];
@@ -192,7 +217,7 @@ in
     };
   };
 
-  home.packages = [ stats clipboard cameraActivity calendarAgenda tailscaleStatus pkgs.material-symbols ];
+  home.packages = [ stats clipboard cameraActivity cameraPrivate calendarAgenda tailscaleStatus pkgs.material-symbols ];
 
   systemd.user.services.quickshell.Unit = {
     PartOf = [ "wayland-session@Hyprland.target" ];

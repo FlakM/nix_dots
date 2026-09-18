@@ -71,6 +71,14 @@ PanelWindow {
                 }
                 Item { Layout.fillWidth: true }
                 IconButton {
+                    icon: shell.cameraPrivateMode ? "visibility" : "visibility_off"
+                    statusText: shell.cameraPrivateLoading ? "Working..." : shell.cameraPrivateMode ? "Show Babyline" : "Hide Babyline"
+                    tooltip: shell.cameraPrivateKnown ? shell.cameraPrivateMode ? "Disable Babyline private mode" : "Enable Babyline private mode" : "Waiting for Babyline state"
+                    active: shell.cameraPrivateMode
+                    accent: "#f6c177"
+                    onClicked: shell.toggleCameraPrivateMode()
+                }
+                IconButton {
                     icon: shell.cameraAlertsSnoozed ? "notifications_paused" : "snooze"
                     statusText: shell.cameraAlertsSnoozed ? "Snoozed" : "30m"
                     tooltip: shell.cameraAlertsSnoozed ? "Resume camera alerts" : "Snooze camera alerts for 30 minutes"
@@ -108,7 +116,7 @@ PanelWindow {
 
                         Image {
                             anchors.fill: parent
-                            source: cameras.visible ? `https://frigate.house.flakm.com/desktop-camera/${modelData.id}/latest.jpg?t=${cameras.previewTimestamp}` : ""
+                            source: cameras.visible && !(modelData.id === "babyline" && shell.cameraPrivateMode) ? `https://frigate.house.flakm.com/desktop-camera/${modelData.id}/latest.jpg?t=${cameras.previewTimestamp}` : ""
                             asynchronous: true
                             cache: false
                             fillMode: Image.PreserveAspectCrop
@@ -117,7 +125,7 @@ PanelWindow {
 
                         MediaPlayer {
                             id: feedPlayer
-                            source: cameras.visible ? `https://frigate.house.flakm.com/desktop-stream/api/stream.mp4?src=${modelData.stream}&video=h264` : ""
+                            source: cameras.visible && !(modelData.id === "babyline" && shell.cameraPrivateMode) ? `https://frigate.house.flakm.com/desktop-stream/api/stream.mp4?src=${modelData.stream}&video=h264` : ""
                             videoOutput: feedOutput
                             playbackOptions.playbackIntent: PlaybackOptions.LowLatencyStreaming
                             // MP4 supplies codec parameters in its initialization header.
@@ -145,7 +153,7 @@ PanelWindow {
                         }
 
                         Text {
-                            visible: cameras.visible && !feed.hasFrame && feedPlayer.error === MediaPlayer.NoError
+                            visible: cameras.visible && !feed.hasFrame && feedPlayer.error === MediaPlayer.NoError && !(modelData.id === "babyline" && shell.cameraPrivateMode)
                             anchors.horizontalCenter: parent.horizontalCenter
                             anchors.bottom: parent.bottom
                             anchors.bottomMargin: 16
@@ -154,6 +162,14 @@ PanelWindow {
                             style: Text.Outline
                             styleColor: "#101520"
                             font.pixelSize: 14
+                        }
+
+                        Row {
+                            visible: modelData.id === "babyline" && shell.cameraPrivateMode
+                            anchors.centerIn: parent
+                            spacing: 8
+                            Symbol { text: "visibility_off"; color: "#f6c177"; font.pixelSize: 25 }
+                            Text { text: "Private mode"; color: "#f6c177"; font.pixelSize: 18; font.bold: true }
                         }
 
                         Rectangle {
@@ -175,7 +191,7 @@ PanelWindow {
                         }
 
                         Row {
-                            visible: feedPlayer.error !== MediaPlayer.NoError
+                            visible: feedPlayer.error !== MediaPlayer.NoError && !(modelData.id === "babyline" && shell.cameraPrivateMode)
                             anchors.centerIn: parent
                             spacing: 7
                             Symbol { text: "videocam_off"; color: "#ff8a8a"; font.pixelSize: 22 }

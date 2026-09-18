@@ -39,6 +39,7 @@ let
       import json
       import os
       import subprocess
+      import threading
       import time
       import urllib.parse
       import urllib.request
@@ -49,6 +50,7 @@ let
       CAMERA_ID = "bf53751ec1f517dcc8qi3i"
       STATE_PATH = Path("/var/lib/lionelo-camera/alert-state.json")
       MQTT = "${pkgs.mosquitto}/bin/mosquitto_pub"
+      MQTT_SUB = "${pkgs.mosquitto}/bin/mosquitto_sub"
       SIGN_KEYS = {
           "a", "v", "lat", "lon", "lang", "deviceId", "appVersion", "ttid",
           "isH5", "h5Token", "os", "clientId", "postData", "time", "requestId",
@@ -108,7 +110,7 @@ let
           subprocess.run(command, check=True)
 
       def publish_discovery():
-          config = {
+          motion_config = {
               "name": "Babyline onboard motion",
               "unique_id": "babyline_onboard_motion",
               "object_id": "babyline_onboard_motion",
@@ -126,8 +128,58 @@ let
                   "model": "Babyline Smart",
               },
           }
-          publish("homeassistant/binary_sensor/babyline_onboard_motion/config", json.dumps(config), True)
+          private_config = {
+              "name": "Babyline private mode",
+              "unique_id": "babyline_private_mode",
+              "object_id": "babyline_private_mode",
+              "command_topic": "lionelo/babyline/private/set",
+              "state_topic": "lionelo/babyline/private/state",
+              "payload_on": "ON",
+              "payload_off": "OFF",
+              "icon": "mdi:cctv-off",
+              "device": motion_config["device"],
+          }
+          publish("homeassistant/binary_sensor/babyline_onboard_motion/config", json.dumps(motion_config), True)
+          publish("homeassistant/switch/babyline_private/config", json.dumps(private_config), True)
           publish("lionelo/babyline/motion/state", "OFF", True)
+
+      def get_private_mode():
+          device = call("tuya.m.device.get", "1.0", {"devId": CAMERA_ID})
+          return device["dps"]["105"]
+
+      def set_private_mode(enabled):
+          call(
+              "tuya.m.device.dp.publish",
+              "1.0",
+              {"devId": CAMERA_ID, "gwId": CAMERA_ID, "dps": {"105": enabled}},
+          )
+          for _ in range(30):
+              time.sleep(1)
+              current = get_private_mode()
+              publish("lionelo/babyline/private/state", "ON" if current else "OFF", True)
+              if current == enabled:
+                  return
+          raise RuntimeError("camera did not confirm private mode change")
+
+      def watch_private_mode():
+          while True:
+              subscriber = None
+              try:
+                  subscriber = subprocess.Popen(
+                      [MQTT_SUB, "-h", "127.0.0.1", "-t", "lionelo/babyline/private/set"],
+                      stdout=subprocess.PIPE,
+                      text=True,
+                  )
+                  for line in subscriber.stdout:
+                      command = line.strip().upper()
+                      if command in ("ON", "OFF"):
+                          set_private_mode(command == "ON")
+              except Exception as error:
+                  print(f"Private mode control failed: {error}", flush=True)
+              finally:
+                  if subscriber is not None and subscriber.poll() is None:
+                      subscriber.terminate()
+              time.sleep(1)
 
       def load_last_id():
           try:
@@ -167,8 +219,14 @@ let
       def main():
           publish_discovery()
           last_id = load_last_id()
+          threading.Thread(target=watch_private_mode, daemon=True).start()
+          next_private_poll = 0
           while True:
               try:
+                  if time.monotonic() >= next_private_poll:
+                      enabled = get_private_mode()
+                      publish("lionelo/babyline/private/state", "ON" if enabled else "OFF", True)
+                      next_private_poll = time.monotonic() + 15
                   events = query_events()
                   event_ids = [int(event.get("idStr") or event.get("id")) for event in events]
                   if last_id is None:
