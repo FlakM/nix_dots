@@ -7,6 +7,7 @@
       default_pack = "rick-and-morty";
       volume = 0.5;
       enabled = true;
+      notification_dismiss_seconds = 4;
       categories = {
         "session.start" = true;
         "task.complete" = true;
@@ -41,6 +42,7 @@
     volume = 0.5;
     enabled = true;
     desktop_notifications = true;
+    notification_dismiss_seconds = 4;
     use_sound_effects_device = true;
     categories = {
       "session.start" = true;

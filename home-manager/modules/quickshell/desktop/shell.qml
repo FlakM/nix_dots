@@ -7,8 +7,7 @@ ShellRoot {
     id: root
 
     property string overlayMode: ""
-    property var latestNotification: null
-    property bool toastVisible: false
+    property var toastNotifications: []
     property int cpuUsage: 0
     property int memoryUsage: 0
     property int diskUsage: 0
@@ -63,6 +62,27 @@ ShellRoot {
             .replace(/(^|[^*])\*([^*\n]+)\*/g, "$1<i>$2</i>")
             .replace(/^\s*[-*+] (.+)$/gm, "&#8226; $1")
             .replace(/\n/g, "<br>")
+    }
+
+    function addToast(notification) {
+        const timeout = notification.expireTimeout
+        const expiresAt = timeout === 0 ? 0 : Date.now() + (timeout > 0 ? timeout : 8000)
+        const remaining = toastNotifications.filter(item => item.notification.id !== notification.id)
+        toastNotifications = [{ notification, expiresAt }].concat(remaining)
+    }
+
+    function hideToast(notification) {
+        toastNotifications = toastNotifications.filter(item => item.notification.id !== notification.id)
+    }
+
+    function dismissToast(notification) {
+        hideToast(notification)
+        notification.dismiss()
+    }
+
+    function pruneToasts() {
+        const now = Date.now()
+        toastNotifications = toastNotifications.filter(item => item.expiresAt === 0 || item.expiresAt > now)
     }
 
     function refreshCalendar() {
@@ -144,16 +164,15 @@ ShellRoot {
         keepOnReload: true
         onNotification: notification => {
             notification.tracked = true
-            root.latestNotification = notification
-            root.toastVisible = true
-            toastTimer.restart()
+            root.addToast(notification)
         }
     }
 
     Timer {
-        id: toastTimer
-        interval: 8000
-        onTriggered: root.toastVisible = false
+        interval: 250
+        running: true
+        repeat: true
+        onTriggered: root.pruneToasts()
     }
 
     Timer {
