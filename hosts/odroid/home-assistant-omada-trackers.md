@@ -8,7 +8,7 @@ are disabled by default.
 
 | Device | Home Assistant entity | Person |
 | --- | --- | --- |
-| Pixel 7 | `device_tracker.pixel_7` | Maciek |
+| Pixel 10a | `device_tracker.pixel_10a_2` | Maciek |
 | Galaxy S24 | `device_tracker.galaxy_s24` | Patrycja |
 
 Keep each phone's randomized Wi-Fi MAC stable for the `dom` network. Changing
@@ -39,9 +39,13 @@ Devices & services**, then check the entity list again.
 4. Remove obsolete trackers for replaced devices.
 5. Save and verify the resulting `person` entity state.
 
-Assign `device_tracker.pixel_7` to Maciek and
+Assign `device_tracker.pixel_10a_2` to Maciek and
 `device_tracker.galaxy_s24` to Patrycja. Do not assign infrastructure clients,
 cameras, televisions, or another person's devices to a person.
+
+Camera alerts are always sent to Pixel 10a. They are also sent to SM-S921B
+when `device_tracker.pixel_10a_2` is not `home`, including while the tracker is
+missing or unavailable.
 
 ## Replace or remove a tracker
 

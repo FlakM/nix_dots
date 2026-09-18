@@ -13,6 +13,26 @@ let
   homeAssistantPackage = (patchHomeAssistant pkgs.home-assistant) // {
     override = args: patchHomeAssistant (pkgs.home-assistant.override args);
   };
+  phoneNotificationActions = notification: [
+    {
+      action = "notify.mobile_app_pixel_10a";
+      data = notification;
+    }
+    {
+      "if" = [
+        {
+          condition = "template";
+          value_template = "{{ not is_state('device_tracker.pixel_10a_2', 'home') }}";
+        }
+      ];
+      "then" = [
+        {
+          action = "notify.mobile_app_sm_s921b";
+          data = notification;
+        }
+      ];
+    }
+  ];
   frigateComponent = pkgs.home-assistant-custom-components.frigate.overridePythonAttrs (old: {
     doCheck = false;
     dependencies = map
@@ -116,25 +136,20 @@ in
             } %}
             {{ cameras[trigger.entity_id] }}
           '';
-          actions = [
-            {
-              action = "notify.mobile_app_pixel_7";
-              data = {
-                title = "Person detected";
-                message = "{{ camera_id | replace('_', ' ') | title }} camera detected a person.";
-                data = {
-                  image = "/api/image_proxy/image.{{ camera_id }}_person";
-                  clickAction = "https://frigate.house.flakm.com/review";
-                  tag = "frigate-person-{{ camera_id }}";
-                  group = "camera-alerts";
-                  channel = "Camera alerts";
-                  notification_icon = "mdi:cctv";
-                  ttl = 0;
-                  priority = "high";
-                };
-              };
-            }
-          ];
+          actions = phoneNotificationActions {
+            title = "Person detected";
+            message = "{{ camera_id | replace('_', ' ') | title }} camera detected a person.";
+            data = {
+              image = "/api/image_proxy/image.{{ camera_id }}_person";
+              clickAction = "https://frigate.house.flakm.com/review";
+              tag = "frigate-person-{{ camera_id }}";
+              group = "camera-alerts";
+              channel = "Camera alerts";
+              notification_icon = "mdi:cctv";
+              ttl = 0;
+              priority = "high";
+            };
+          };
         }
         {
           id = "lionelo_onboard_motion_alert";
@@ -147,25 +162,20 @@ in
               topic = "lionelo/babyline/events";
             }
           ];
-          actions = [
-            {
-              action = "notify.mobile_app_pixel_7";
-              data = {
-                title = "{{ trigger.payload_json.title }}";
-                message = "{{ trigger.payload_json.message }}";
-                data = {
-                  image = "{{ trigger.payload_json.image_url }}";
-                  clickAction = "https://frigate.house.flakm.com/";
-                  tag = "lionelo-onboard-motion";
-                  group = "camera-alerts";
-                  channel = "Camera alerts";
-                  notification_icon = "mdi:motion-sensor";
-                  ttl = 0;
-                  priority = "high";
-                };
-              };
-            }
-          ];
+          actions = phoneNotificationActions {
+            title = "{{ trigger.payload_json.title }}";
+            message = "{{ trigger.payload_json.message }}";
+            data = {
+              image = "{{ trigger.payload_json.image_url }}";
+              clickAction = "https://frigate.house.flakm.com/";
+              tag = "lionelo-onboard-motion";
+              group = "camera-alerts";
+              channel = "Camera alerts";
+              notification_icon = "mdi:motion-sensor";
+              ttl = 0;
+              priority = "high";
+            };
+          };
         }
       ];
       http = {
