@@ -11,8 +11,8 @@ PanelWindow {
     visible: shell.toastVisible && shell.latestNotification !== null && shell.overlayMode !== "notifications"
     anchors.top: true
     margins.top: 10
-    implicitWidth: 540
-    implicitHeight: 144
+    implicitWidth: 620
+    implicitHeight: 180
     exclusiveZone: 0
     color: "transparent"
     WlrLayershell.layer: WlrLayer.Overlay
@@ -57,18 +57,29 @@ PanelWindow {
 
             Rectangle {
                 property string appIcon: shell.latestNotification?.appIcon || ""
-                visible: appIcon !== ""
-                Layout.preferredWidth: visible ? 56 : 0
-                Layout.preferredHeight: 56
+                property string notificationImage: shell.latestNotification?.image || ""
+                visible: notificationImage !== "" || appIcon !== ""
+                Layout.preferredWidth: notificationImage !== "" ? 132 : visible ? 56 : 0
+                Layout.preferredHeight: notificationImage !== "" ? 132 : 56
                 radius: 18
                 color: "#50303d50"
                 border.width: 1
                 border.color: "#385b718d"
+                clip: true
+
+                Image {
+                    anchors.fill: parent
+                    source: parent.notificationImage
+                    fillMode: Image.PreserveAspectCrop
+                    asynchronous: true
+                    visible: parent.notificationImage !== ""
+                }
 
                 IconImage {
                     anchors.centerIn: parent
                     implicitSize: 38
-                    source: parent.visible ? Quickshell.iconPath(parent.appIcon) : ""
+                    source: parent.notificationImage === "" && parent.appIcon !== "" ? Quickshell.iconPath(parent.appIcon) : ""
+                    visible: parent.notificationImage === "" && parent.appIcon !== ""
                 }
             }
 
@@ -93,13 +104,15 @@ PanelWindow {
                 }
                 Text {
                     Layout.fillWidth: true
-                    text: shell.latestNotification?.body || ""
-                    textFormat: Text.PlainText
+                    text: shell.renderNotificationBody(shell.latestNotification?.body || "")
+                    textFormat: Text.RichText
                     color: "#aeb9cb"
+                    linkColor: "#72d7ff"
                     font.pixelSize: 16
-                    maximumLineCount: 2
+                    maximumLineCount: 4
                     wrapMode: Text.Wrap
                     elide: Text.ElideRight
+                    onLinkActivated: link => Qt.openUrlExternally(link)
                 }
             }
             Rectangle {

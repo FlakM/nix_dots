@@ -43,6 +43,28 @@ ShellRoot {
         overlayMode = overlayMode === mode ? "" : mode
     }
 
+    function renderNotificationBody(body) {
+        if (/<\/?[a-z][^>]*>/i.test(body)) return body
+
+        return body
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/```(?:[^\n]*)\n([\s\S]*?)```/g, "<pre>$1</pre>")
+            .replace(/^### (.+)$/gm, "<h3>$1</h3>")
+            .replace(/^## (.+)$/gm, "<h2>$1</h2>")
+            .replace(/^# (.+)$/gm, "<h1>$1</h1>")
+            .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">')
+            .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
+            .replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")
+            .replace(/__(.+?)__/g, "<b>$1</b>")
+            .replace(/~~(.+?)~~/g, "<s>$1</s>")
+            .replace(/`(.+?)`/g, "<code>$1</code>")
+            .replace(/(^|[^*])\*([^*\n]+)\*/g, "$1<i>$2</i>")
+            .replace(/^\s*[-*+] (.+)$/gm, "&#8226; $1")
+            .replace(/\n/g, "<br>")
+    }
+
     function refreshCalendar() {
         if (calendarAgendaProcess.running) return
         calendarLoading = true
@@ -114,6 +136,9 @@ ShellRoot {
     NotificationServer {
         id: notificationServer
         actionsSupported: true
+        bodyMarkupSupported: true
+        bodyHyperlinksSupported: true
+        bodyImagesSupported: true
         imageSupported: true
         persistenceSupported: true
         keepOnReload: true

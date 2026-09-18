@@ -171,7 +171,7 @@ PanelWindow {
                     required property var modelData
                     required property int index
                     width: results.width
-                    height: shell.overlayMode === "notifications" ? 124
+                    height: shell.overlayMode === "notifications" ? (modelData.image ? 220 : 180)
                         : shell.overlayMode === "launcher" ? 70
                         : modelData.type === "image" ? 110 : 60
                     radius: 15
@@ -192,21 +192,30 @@ PanelWindow {
                         }
                         Rectangle {
                             property string appIcon: modelData.appIcon || ""
+                            property string notificationImage: modelData.image || ""
                             visible: shell.overlayMode === "notifications"
-                            Layout.preferredWidth: visible ? 52 : 0
-                            Layout.preferredHeight: 52
+                            Layout.preferredWidth: notificationImage !== "" ? 110 : visible ? 52 : 0
+                            Layout.preferredHeight: notificationImage !== "" ? 110 : 52
                             radius: 16
                             color: "#40303d50"
                             border.width: 1
                             border.color: "#305b718d"
+                            clip: true
+                            Image {
+                                anchors.fill: parent
+                                source: parent.notificationImage
+                                fillMode: Image.PreserveAspectCrop
+                                asynchronous: true
+                                visible: parent.notificationImage !== ""
+                            }
                             IconImage {
-                                visible: parent.appIcon !== ""
+                                visible: parent.notificationImage === "" && parent.appIcon !== ""
                                 anchors.centerIn: parent
                                 implicitSize: 34
                                 source: visible ? Quickshell.iconPath(parent.appIcon) : ""
                             }
                             Symbol {
-                                visible: parent.appIcon === ""
+                                visible: parent.notificationImage === "" && parent.appIcon === ""
                                 anchors.centerIn: parent
                                 text: "notifications"
                                 color: "#72d7ff"
@@ -247,13 +256,15 @@ PanelWindow {
                             Text {
                                 visible: shell.overlayMode === "notifications" || shell.overlayMode === "launcher"
                                 Layout.fillWidth: true
-                                text: shell.overlayMode === "launcher" ? (modelData.genericName || modelData.comment || "") : visible ? (modelData.body || "") : ""
-                                textFormat: Text.PlainText
+                                text: shell.overlayMode === "launcher" ? (modelData.genericName || modelData.comment || "") : visible ? shell.renderNotificationBody(modelData.body || "") : ""
+                                textFormat: shell.overlayMode === "notifications" ? Text.RichText : Text.PlainText
                                 color: "#929eb3"
+                                linkColor: "#72d7ff"
                                 font.pixelSize: shell.overlayMode === "notifications" ? 16 : 13
-                                maximumLineCount: 2
+                                maximumLineCount: shell.overlayMode === "notifications" ? 5 : 2
                                 wrapMode: Text.Wrap
                                 elide: Text.ElideRight
+                                onLinkActivated: link => Qt.openUrlExternally(link)
                             }
                         }
                         Symbol {
