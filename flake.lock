@@ -94,8 +94,8 @@
         "protofetch-nix": "protofetch-nix"
       },
       "locked": {
-        "lastModified": 1789974331,
-        "narHash": "sha256-4NJjvKzEh6Vc2MXHNL08r65cpwIXJ1aEXGcUlFZwav0=",
+        "lastModified": 1789976582,
+        "narHash": "sha256-/xTOLJRqO93wVokuOlVmSbhp61eEcZzkLMqy3ZpFJGU=",
         "path": "/home/flakm/programming/flakm/nix-coralogix-private",
         "type": "path"
       },
@@ -785,11 +785,11 @@
     "internal-aaa-agents-team-skills": {
       "flake": false,
       "locked": {
-        "lastModified": 1782131702,
-        "narHash": "sha256-gl0NPJUaQO7xmwCd66daaCk2NHDT53FQzL3idSqrkG4=",
+        "lastModified": 1789468359,
+        "narHash": "sha256-Ji6kETMx4bKiyB3UObvrJN5De5CaQ9APZLV1a2qM+Wg=",
         "ref": "refs/heads/master",
-        "rev": "ffbb626ea5626a38e26a70b3a88376d6db283564",
-        "revCount": 5,
+        "rev": "a56fffb46ffdcce260c4478d790cdaf4811116a7",
+        "revCount": 22,
         "type": "git",
         "url": "ssh://git@github.com/coralogix/internal-aaa-agents-team-skills"
       },
@@ -801,11 +801,11 @@
     "internal-agent-skills": {
       "flake": false,
       "locked": {
-        "lastModified": 1778502231,
-        "narHash": "sha256-S1Nk61RNhFeYfH+cpMRxWkt1QW4lHqz4Q7cFKWdcbYM=",
+        "lastModified": 1787822875,
+        "narHash": "sha256-RQaBeL99UtvAShBPokEFN/SdShZDblgUJGV/Qb11rPk=",
         "ref": "refs/heads/main",
-        "rev": "62e1f0c29ddfe730de35c3e9e44647189cb3cd92",
-        "revCount": 11,
+        "rev": "bc3e655bc62f9dc10c67bf8956072e257b939a54",
+        "revCount": 34,
         "type": "git",
         "url": "ssh://git@github.com/coralogix/internal-agent-skills"
       },
