@@ -66,7 +66,10 @@ in
     amp
     catchup
     inputs.cx-cli.packages.${pkgs.stdenv.hostPlatform.system}.default
-  ] ++ lib.optional hasCxPrivate inputs.coralogix-private.packages.${pkgs.stdenv.hostPlatform.system}.aaa-help;
+  ] ++ lib.optionals hasCxPrivate (with inputs.coralogix-private.packages.${pkgs.stdenv.hostPlatform.system}; [
+    aaa-help
+    cxdb
+  ]);
 
   home.file = {
     ".claude/CLAUDE.md" = {

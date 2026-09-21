@@ -86,6 +86,7 @@
     },
     "coralogix-private": {
       "inputs": {
+        "cxdb": "cxdb",
         "internal-aaa-agents-team-skills": "internal-aaa-agents-team-skills",
         "internal-agent-skills": "internal-agent-skills",
         "nixpkgs": "nixpkgs",
@@ -93,8 +94,8 @@
         "protofetch-nix": "protofetch-nix"
       },
       "locked": {
-        "lastModified": 1789476292,
-        "narHash": "sha256-wFF1Y1c2WcHCqRqlcKywbEvq4vQUt3vNXEXXRJNf17o=",
+        "lastModified": 1789974331,
+        "narHash": "sha256-4NJjvKzEh6Vc2MXHNL08r65cpwIXJ1aEXGcUlFZwav0=",
         "path": "/home/flakm/programming/flakm/nix-coralogix-private",
         "type": "path"
       },
@@ -146,6 +147,22 @@
       "original": {
         "path": "/home/flakm/programming/coralogix/cx-cli",
         "type": "path"
+      }
+    },
+    "cxdb": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1789505744,
+        "narHash": "sha256-8n54snLK9vrTfZUtnjmYFAANBOXw+ZfcNLb+9J+Gg4w=",
+        "ref": "refs/heads/master",
+        "rev": "93dfcbb893c308eda13d5a4aeae9ba4f028078d7",
+        "revCount": 23,
+        "type": "git",
+        "url": "ssh://git@github.com/coralogix/internal-cxdb"
+      },
+      "original": {
+        "type": "git",
+        "url": "ssh://git@github.com/coralogix/internal-cxdb"
       }
     },
     "darwin": {
