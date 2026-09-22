@@ -134,14 +134,15 @@ ShellRoot {
     }
 
     function snoozeCameraAlerts(minutes) {
-        cameraAlertsSnoozed = true
-        cameraSnoozeTimer.interval = minutes * 60000
-        cameraSnoozeTimer.restart()
+        if (cameraAlertsAction.running) return
+        cameraAlertsAction.command = ["quickshell-camera-alerts", "snooze"]
+        cameraAlertsAction.running = true
     }
 
     function resumeCameraAlerts() {
-        cameraSnoozeTimer.stop()
-        cameraAlertsSnoozed = false
+        if (cameraAlertsAction.running) return
+        cameraAlertsAction.command = ["quickshell-camera-alerts", "resume"]
+        cameraAlertsAction.running = true
     }
 
     function toggleCameraPrivateMode() {
@@ -217,12 +218,6 @@ ShellRoot {
         }
     }
 
-    Timer {
-        id: cameraSnoozeTimer
-        interval: 1800000
-        onTriggered: root.cameraAlertsSnoozed = false
-    }
-
     Process {
         command: ["quickshell-camera-activity"]
         running: true
@@ -233,6 +228,22 @@ ShellRoot {
                 root.showCameraActivity(parts[0].split("/")[1])
             }
         }
+    }
+
+    Process {
+        command: ["quickshell-camera-alerts", "watch"]
+        running: true
+        stdout: SplitParser {
+            onRead: data => {
+                const state = data.trim().toUpperCase()
+                if (state === "ON" || state === "OFF")
+                    root.cameraAlertsSnoozed = state === "ON"
+            }
+        }
+    }
+
+    Process {
+        id: cameraAlertsAction
     }
 
     Process {

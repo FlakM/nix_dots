@@ -143,6 +143,35 @@ let
         --verbose
     '';
   };
+  cameraAlerts = pkgs.writeShellApplication {
+    name = "quickshell-camera-alerts";
+    runtimeInputs = [ pkgs.mosquitto ];
+    text = ''
+      case "''${1:-watch}" in
+        watch)
+          exec mosquitto_sub \
+            --host 192.168.0.102 \
+            --topic 'home/camera-alerts/snooze/state' \
+            --qos 1
+          ;;
+        snooze)
+          exec mosquitto_pub \
+            --host 192.168.0.102 \
+            --topic 'home/camera-alerts/snooze/set' \
+            --message 30 \
+            --qos 1
+          ;;
+        resume)
+          exec mosquitto_pub \
+            --host 192.168.0.102 \
+            --topic 'home/camera-alerts/snooze/set' \
+            --message 0 \
+            --qos 1
+          ;;
+        *) printf 'usage: quickshell-camera-alerts watch|snooze|resume\n' >&2; exit 2 ;;
+      esac
+    '';
+  };
   cameraPrivate = pkgs.writeShellApplication {
     name = "quickshell-camera-private";
     runtimeInputs = [ pkgs.mosquitto ];
@@ -217,7 +246,7 @@ in
     };
   };
 
-  home.packages = [ stats clipboard cameraActivity cameraPrivate calendarAgenda tailscaleStatus pkgs.material-symbols ];
+  home.packages = [ stats clipboard cameraActivity cameraAlerts cameraPrivate calendarAgenda tailscaleStatus pkgs.material-symbols ];
 
   systemd.user.services.quickshell.Unit = {
     PartOf = [ "wayland-session@Hyprland.target" ];

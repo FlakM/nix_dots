@@ -64,6 +64,46 @@ in
   services.home-assistant = {
     enable = true;
     package = homeAssistantPackage;
+    lovelaceConfig = {
+      title = "Camera controls";
+      views = [
+        {
+          title = "Camera alerts";
+          path = "camera-alerts";
+          icon = "mdi:cctv";
+          cards = [
+            {
+              type = "horizontal-stack";
+              cards = [
+                {
+                  type = "button";
+                  name = "Silence for 30 min";
+                  icon = "mdi:bell-sleep";
+                  tap_action = {
+                    action = "perform-action";
+                    perform_action = "script.camera_alerts_snooze_30m";
+                  };
+                }
+                {
+                  type = "button";
+                  name = "Resume alerts";
+                  icon = "mdi:bell-ring";
+                  tap_action = {
+                    action = "perform-action";
+                    perform_action = "script.camera_alerts_resume";
+                  };
+                }
+              ];
+            }
+            {
+              type = "entities";
+              title = "Status";
+              entities = [ "timer.camera_alerts_snooze" ];
+            }
+          ];
+        }
+      ];
+    };
     extraComponents = [
       "default_config"
       "met"
@@ -110,6 +150,43 @@ in
         external_url = "https://homeassistant.house.flakm.com";
       };
       mobile_app = { };
+      timer.camera_alerts_snooze = {
+        name = "Camera alerts snooze";
+        duration = "00:30:00";
+        restore = true;
+        icon = "mdi:bell-sleep";
+      };
+      script = {
+        camera_alerts_snooze_30m = {
+          alias = "Silence camera alerts for 30 minutes";
+          icon = "mdi:bell-sleep";
+          mode = "restart";
+          sequence = [
+            {
+              action = "timer.start";
+              target.entity_id = "timer.camera_alerts_snooze";
+              data.duration = "00:30:00";
+            }
+          ];
+        };
+        camera_alerts_resume = {
+          alias = "Resume camera alerts";
+          icon = "mdi:bell-ring";
+          sequence = [
+            {
+              action = "timer.cancel";
+              target.entity_id = "timer.camera_alerts_snooze";
+            }
+          ];
+        };
+      };
+      lovelace.dashboards.nixos-lovelace = {
+        mode = "yaml";
+        filename = "ui-lovelace.yaml";
+        title = "Camera controls";
+        icon = "mdi:cctv";
+        show_in_sidebar = true;
+      };
       automation = [
         {
           id = "frigate_person_alert";
@@ -126,6 +203,13 @@ in
               ];
               from = "off";
               to = "on";
+            }
+          ];
+          conditions = [
+            {
+              condition = "state";
+              entity_id = "timer.camera_alerts_snooze";
+              state = "idle";
             }
           ];
           variables.camera_id = ''
@@ -148,6 +232,12 @@ in
               notification_icon = "mdi:cctv";
               ttl = 0;
               priority = "high";
+              actions = [
+                {
+                  action = "SNOOZE_CAMERA_ALERTS_30M";
+                  title = "Silence for 30 min";
+                }
+              ];
             };
           };
         }
@@ -162,6 +252,13 @@ in
               topic = "lionelo/babyline/events";
             }
           ];
+          conditions = [
+            {
+              condition = "state";
+              entity_id = "timer.camera_alerts_snooze";
+              state = "idle";
+            }
+          ];
           actions = phoneNotificationActions {
             title = "{{ trigger.payload_json.title }}";
             message = "{{ trigger.payload_json.message }}";
@@ -174,8 +271,77 @@ in
               notification_icon = "mdi:motion-sensor";
               ttl = 0;
               priority = "high";
+              actions = [
+                {
+                  action = "SNOOZE_CAMERA_ALERTS_30M";
+                  title = "Silence for 30 min";
+                }
+              ];
             };
           };
+        }
+        {
+          id = "camera_alert_snooze_commands";
+          alias = "Camera alert snooze commands";
+          mode = "restart";
+          triggers = [
+            {
+              trigger = "event";
+              event_type = "mobile_app_notification_action";
+              event_data.action = "SNOOZE_CAMERA_ALERTS_30M";
+            }
+            {
+              trigger = "mqtt";
+              topic = "home/camera-alerts/snooze/set";
+              payload = "30";
+            }
+          ];
+          actions = [
+            {
+              action = "script.camera_alerts_snooze_30m";
+            }
+          ];
+        }
+        {
+          id = "camera_alert_resume_command";
+          alias = "Camera alert resume command";
+          triggers = [
+            {
+              trigger = "mqtt";
+              topic = "home/camera-alerts/snooze/set";
+              payload = "0";
+            }
+          ];
+          actions = [
+            {
+              action = "script.camera_alerts_resume";
+            }
+          ];
+        }
+        {
+          id = "camera_alert_snooze_state";
+          alias = "Publish camera alert snooze state";
+          triggers = [
+            {
+              trigger = "state";
+              entity_id = "timer.camera_alerts_snooze";
+            }
+            {
+              trigger = "homeassistant";
+              event = "start";
+            }
+          ];
+          actions = [
+            {
+              action = "mqtt.publish";
+              data = {
+                topic = "home/camera-alerts/snooze/state";
+                payload = "{{ 'ON' if is_state('timer.camera_alerts_snooze', 'active') else 'OFF' }}";
+                qos = 1;
+                retain = true;
+              };
+            }
+          ];
         }
       ];
       http = {
