@@ -33,24 +33,35 @@ outer.top =        6
 outer.right =      6
 
 # Main mode bindings
+# Kept in sync with home-manager/modules/hyprland.nix (mod = ALT).
 [mode.main.binding]
-# Switch themes
+# Switch themes (hyprland: ALT+CTRL+N)
 ctrl-alt-n = 'exec-and-forget /run/current-system/sw/bin/zsh -c apply-theme'
 
 # Launch applications
 alt-shift-enter = 'exec-and-forget /run/current-system/sw/bin/zsh -c kitty'
-alt-shift-b = 'exec-and-forget open -a "Brave Browser"'
-alt-shift-t = 'exec-and-forget open -a "Telegram"'
 alt-shift-f = 'exec-and-forget open -a Finder'
 
+# Launcher (hyprland: ALT+D) — Spotlight stands in for rofi/quickshell
+alt-d = "exec-and-forget osascript -e 'tell application \"System Events\" to key code 49 using command down'"
+
+# Clipboard history (hyprland: ALT+V -> copyq)
+alt-v = 'exec-and-forget open -a Maccy'
+
+# Emoji picker (hyprland: ALT+period -> rofimoji)
+alt-period = "exec-and-forget osascript -e 'tell application \"System Events\" to key code 49 using {control down, command down}'"
+
+# Lock screen (hyprland: ALT+SHIFT+L -> hyprlock)
+alt-shift-l = "exec-and-forget osascript -e 'tell application \"System Events\" to keystroke \"q\" using {command down, control down}'"
+
+# Reload config (hyprland: ALT+SHIFT+R)
+alt-shift-r = 'reload-config'
+
 # Window management
-alt-q = "close"
-alt-shift-q = "close"
+alt-shift-q = 'close'
+alt-f = 'fullscreen'
 alt-slash = 'layout tiles horizontal vertical'
 alt-comma = 'layout accordion horizontal vertical'
-alt-period = 'layout tiling floating'
-
-alt-f = 'fullscreen'
 
 # Focus movement
 ctrl-shift-h = 'focus left'
@@ -64,12 +75,11 @@ alt-ctrl-j = 'move down'
 alt-ctrl-k = 'move up'
 alt-ctrl-l = 'move right'
 
-# Resize windows
+# Resize windows (h/l on the parent axis, k/j on the opposite — matches hyprland resizeactive)
 ctrl-alt-shift-h = 'resize smart -50'
-ctrl-alt-shift-j = 'resize smart -50'
-ctrl-alt-shift-k = 'resize smart +50'
 ctrl-alt-shift-l = 'resize smart +50'
-
+ctrl-alt-shift-k = 'resize smart-opposite -50'
+ctrl-alt-shift-j = 'resize smart-opposite +50'
 
 # Workspace management
 alt-1 = 'workspace 1'
@@ -81,23 +91,27 @@ alt-6 = 'workspace 6'
 alt-7 = 'workspace 7'
 alt-8 = 'workspace 8'
 alt-9 = 'workspace 9'
-alt-0 = 'workspace A'
+alt-0 = 'workspace 10'
 
 # Move windows to workspaces
 alt-shift-1 = [ 'move-node-to-workspace 1', 'workspace 1' ]
-alt-shift-2 = [ 'move-node-to-workspace 2', "workspace 2" ]
-alt-shift-3 = [ 'move-node-to-workspace 3', "workspace 3" ]
-alt-shift-4 = [ 'move-node-to-workspace 4', "workspace 4" ]
-alt-shift-5 = [ 'move-node-to-workspace 5', "workspace 5" ]
-alt-shift-6 = [ 'move-node-to-workspace 6', "workspace 6" ]
-alt-shift-7 = [ 'move-node-to-workspace 7', "workspace 7" ]
-alt-shift-8 = [ 'move-node-to-workspace 8', "workspace 8" ]
-alt-shift-9 = [ 'move-node-to-workspace 9', "workspace 9" ]
-alt-shift-0 = [ 'move-node-to-workspace A', "workspace A" ]
+alt-shift-2 = [ 'move-node-to-workspace 2', 'workspace 2' ]
+alt-shift-3 = [ 'move-node-to-workspace 3', 'workspace 3' ]
+alt-shift-4 = [ 'move-node-to-workspace 4', 'workspace 4' ]
+alt-shift-5 = [ 'move-node-to-workspace 5', 'workspace 5' ]
+alt-shift-6 = [ 'move-node-to-workspace 6', 'workspace 6' ]
+alt-shift-7 = [ 'move-node-to-workspace 7', 'workspace 7' ]
+alt-shift-8 = [ 'move-node-to-workspace 8', 'workspace 8' ]
+alt-shift-9 = [ 'move-node-to-workspace 9', 'workspace 9' ]
+alt-shift-0 = [ 'move-node-to-workspace 10', 'workspace 10' ]
 
-# Workspace navigation
-alt-tab = 'workspace-back-and-forth'
-alt-shift-tab = 'move-workspace-to-monitor --wrap-around next'
+# Window cycling (hyprland: ALT+TAB / ALT+SHIFT+TAB)
+alt-tab = 'focus dfs-next --boundaries workspace --boundaries-action wrap-around-the-workspace'
+alt-shift-tab = 'focus dfs-prev --boundaries workspace --boundaries-action wrap-around-the-workspace'
+
+# macOS-only extras: no hyprland counterpart
+alt-backtick = 'workspace-back-and-forth'
+alt-shift-m = 'move-workspace-to-monitor --wrap-around next'
 
 # Enter service mode
 alt-shift-semicolon = 'mode service'
@@ -125,7 +139,7 @@ alt-shift-l = ['join-with right', 'mode main']
 [mode.vnc.binding]
 ctrl-alt-esc = 'mode main'
 
-# Window detection rules
+# Window detection rules — mirrors hyprland exec-once workspace placement
 [[on-window-detected]]
 if.app-id = 'net.kovidgoyal.kitty'
 run = 'move-node-to-workspace 1'
@@ -135,19 +149,17 @@ if.app-id = 'org.mozilla.firefox'
 run = 'move-node-to-workspace 2'
 
 [[on-window-detected]]
-if.app-id = 'org.turbovnc.vncviewer'
-run = 'layout floating'
-
-
-[[on-window-detected]]
-if.app-id = 'com.tinyspeck.slackmacgap'
-run = 'move-node-to-workspace A'
-
-[[on-window-detected]]
 if.app-id = 'md.obsidian'
 run = 'move-node-to-workspace 3'
-
 
 [[on-window-detected]]
 if.app-id = 'com.spotify.client'
 run = 'move-node-to-workspace 4'
+
+[[on-window-detected]]
+if.app-id = 'com.tinyspeck.slackmacgap'
+run = 'move-node-to-workspace 10'
+
+[[on-window-detected]]
+if.app-id = 'org.turbovnc.vncviewer'
+run = 'layout floating'

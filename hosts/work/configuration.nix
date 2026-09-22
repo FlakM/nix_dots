@@ -121,6 +121,7 @@
 
     casks = [
       "aerospace"
+      "maccy"
     ];
     user = "flakm";
 
