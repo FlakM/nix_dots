@@ -602,6 +602,24 @@ in
   services.printing = {
     enable = true;
     drivers = [ pkgs.brlaser ];
+    browsed.enable = false;
+  };
+
+  hardware.printers = {
+    ensureDefaultPrinter = "brother";
+    ensurePrinters = [
+      {
+        name = "brother";
+        description = "Brother DCP-B7520DW series";
+        deviceUri = "ipp://192.168.0.170/ipp/print";
+        model = "everywhere";
+        ppdOptions = {
+          PageSize = "A4";
+          ColorModel = "Gray";
+          Duplex = "DuplexNoTumble";
+        };
+      }
+    ];
   };
 
   # Avahi for network printer discovery
