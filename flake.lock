@@ -94,14 +94,17 @@
         "protofetch-nix": "protofetch-nix"
       },
       "locked": {
-        "lastModified": 1789976582,
-        "narHash": "sha256-/xTOLJRqO93wVokuOlVmSbhp61eEcZzkLMqy3ZpFJGU=",
-        "path": "/home/flakm/programming/flakm/nix-coralogix-private",
-        "type": "path"
+        "lastModified": 1790026837,
+        "narHash": "sha256-c+kXcnllMgTX19hdjelCuOlYV9Wm+A6JX9XKhf6PlAE=",
+        "ref": "refs/heads/main",
+        "rev": "5f4baec2d17d8864f7a34c9ed404da7924398298",
+        "revCount": 16,
+        "type": "git",
+        "url": "ssh://git@github.com/FlakM/nix-coralogix-private"
       },
       "original": {
-        "path": "/home/flakm/programming/flakm/nix-coralogix-private",
-        "type": "path"
+        "type": "git",
+        "url": "ssh://git@github.com/FlakM/nix-coralogix-private"
       }
     },
     "crane": {
@@ -139,14 +142,18 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1788125052,
-        "narHash": "sha256-/eqvXGnsJBRBHuPHhMKS9tiYm8Q91Gg/c5E6lwg0RL0=",
-        "path": "/home/flakm/programming/coralogix/cx-cli",
-        "type": "path"
+        "lastModified": 1788861040,
+        "narHash": "sha256-dvfLPo6KWxWL0fU6tk+kq+xbwNEP5z4856yS1K4j8kM=",
+        "ref": "fix-nix",
+        "rev": "b59a3d4c2a0c1931b1c265c55256922df52742c0",
+        "revCount": 158,
+        "type": "git",
+        "url": "ssh://git@github.com/coralogix/cx-cli"
       },
       "original": {
-        "path": "/home/flakm/programming/coralogix/cx-cli",
-        "type": "path"
+        "ref": "fix-nix",
+        "type": "git",
+        "url": "ssh://git@github.com/coralogix/cx-cli"
       }
     },
     "cxdb": {
@@ -1026,11 +1033,11 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1777578337,
-        "narHash": "sha256-Ad49moKWeXtKBJNy2ebiTQUEgdLyvGmTeykAQ9xM+Z4=",
+        "lastModified": 1788752844,
+        "narHash": "sha256-VaWGJ6+cIYN2erfSecbRV+4ljI185Ty2wUrXyvQbgOw=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "15f4ee454b1dce334612fa6843b3e05cf546efab",
+        "rev": "dc5d91f840324650bac8c379428c7037a416959a",
         "type": "github"
       },
       "original": {

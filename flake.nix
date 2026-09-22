@@ -76,10 +76,10 @@
 
     nix-openclaw.url = "github:openclaw/nix-openclaw";
 
-    cx-cli.url = "path:/home/flakm/programming/coralogix/cx-cli";
+    cx-cli.url = "git+ssh://git@github.com/coralogix/cx-cli?ref=fix-nix";
 
     coralogix-private = {
-      url = "path:/home/flakm/programming/flakm/nix-coralogix-private";
+      url = "git+ssh://git@github.com/FlakM/nix-coralogix-private";
       # Don't override nixpkgs: aaa-help's deps (cx_* common-rs crates) need
       # rustc 1.92+, which 25.11 stable doesn't ship.
     };

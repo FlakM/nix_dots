@@ -67,8 +67,11 @@ in
     catchup
     inputs.cx-cli.packages.${pkgs.stdenv.hostPlatform.system}.default
   ] ++ lib.optionals hasCxPrivate (with inputs.coralogix-private.packages.${pkgs.stdenv.hostPlatform.system}; [
-    aaa-help
     cxdb
+  ] ++ lib.optionals pkgs.stdenv.isLinux [
+    # aaa-help vendors protos over ssh from private repos at build time; darwin
+    # hosts have no github auth in the nix builder, so it can't build there.
+    aaa-help
   ]);
 
   home.file = {
