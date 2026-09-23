@@ -29,10 +29,11 @@ PanelWindow {
         })
         .slice(0, 40)
     property var clipboardEntries: []
+    property var filteredClipboardEntries: clipboardEntries.filter(entry => entry.text.toLowerCase().includes(search.text.toLowerCase()))
     property int selectedIndex: 0
 
     function activateSelected() {
-        const items = shell.overlayMode === "launcher" ? applications : clipboardEntries
+        const items = shell.overlayMode === "launcher" ? applications : filteredClipboardEntries
         if (selectedIndex < 0 || selectedIndex >= items.length) return
         if (shell.overlayMode === "launcher") items[selectedIndex].execute()
         else Quickshell.execDetached(["quickshell-clipboard", "copy", items[selectedIndex].id, items[selectedIndex].mime])
@@ -147,7 +148,7 @@ PanelWindow {
                     clip: true
                     onTextChanged: overlay.selectedIndex = 0
                     Keys.onPressed: event => {
-                        const count = shell.overlayMode === "launcher" ? overlay.applications.length : overlay.clipboardEntries.length
+                        const count = shell.overlayMode === "launcher" ? overlay.applications.length : overlay.filteredClipboardEntries.length
                         if (event.key === Qt.Key_Escape) shell.overlayMode = ""
                         else if (event.key === Qt.Key_Down) overlay.selectedIndex = Math.min(count - 1, overlay.selectedIndex + 1)
                         else if (event.key === Qt.Key_Up) overlay.selectedIndex = Math.max(0, overlay.selectedIndex - 1)
@@ -163,7 +164,7 @@ PanelWindow {
                 spacing: 6
                 clip: true
                 model: shell.overlayMode === "launcher" ? overlay.applications
-                    : shell.overlayMode === "clipboard" ? overlay.clipboardEntries
+                    : shell.overlayMode === "clipboard" ? overlay.filteredClipboardEntries
                     : notifications.trackedNotifications
                 currentIndex: overlay.selectedIndex
 
