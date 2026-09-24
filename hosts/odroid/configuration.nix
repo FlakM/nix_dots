@@ -23,6 +23,7 @@
     #../../shared/wireguard.nix
     ../../shared/netdata.nix
     ./audiobookshelf.nix
+    ./bookorbit.nix
     #../../shared/oom_killer.nix
     #./smokeping.nix
 
