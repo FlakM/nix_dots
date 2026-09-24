@@ -15,7 +15,7 @@ in
     "d ${dataDir} 0755 root root - -"
     "d ${dataDir}/app 0770 bookorbit media - -"
     "d ${dataDir}/postgres 0755 root root - -"
-    "d /var/media/books 2775 bookorbit media - -"
+    "d /var/media/books 2775 deluge media - -"
     "d /var/media/books/ebooks 2775 bookorbit media - -"
     "d /var/media/bookorbit-dock 2775 bookorbit media - -"
   ];
