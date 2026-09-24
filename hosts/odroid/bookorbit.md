@@ -9,7 +9,7 @@ BookOrbit runs at `https://bookorbit.house.flakm.com`; Prowlarr runs at `https:/
 
 ## Connect searches and downloads
 
-1. BookOrbit is connected to Prowlarr at `http://127.0.0.1:9696`, with automatic indexer sync enabled. Add an indexer that carries ebooks (7020) and audiobooks (3030) in Prowlarr. The existing Readarr NZBgeek credential was rejected by NZBgeek (HTTP 403) on September 24, 2026, so it could not be imported as a working source. Update it or add another indexer. Prowlarr can also sync indexers to Readarr if desired.
+1. BookOrbit is connected to Prowlarr at `http://127.0.0.1:9696`, with automatic indexer sync enabled. The NZBgeek Books indexer uses the `nzb_api_key` SOPS credential and searches ebooks (7020) and audiobooks (3030); Readarr uses the same credential. If that key rotates, update both indexers and sync BookOrbit again. Prowlarr can also sync indexers to Readarr if desired.
 2. BookOrbit's SABnzbd download client is connected and tested at `http://127.0.0.1:8080` with its own `bookorbit` category. Its completed downloads are mounted read-only at `/var/lib/sabnzbd/Downloads/complete` and mapped to the same path in BookOrbit. BookOrbit's v3.0 release supports SABnzbd, even though the public requests guide still lists only NZBGet for Usenet.
 3. To use torrent sources too, add Deluge at `http://127.0.0.1:8112` with its Web UI password, enable Deluge's Label plugin, and map its `/var/media/...` completed path to itself.
 4. Grant other users **Request books**; grant **Download books directly** to users who should choose releases without approval. Automatic downloading is off by default.
