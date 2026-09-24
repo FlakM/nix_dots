@@ -60,6 +60,7 @@ in
         "${dataDir}/app:/data"
         "${secretsDir}:/run/secrets:ro"
         "/var/media:/var/media"
+        "/var/lib/sabnzbd/Downloads/complete:/var/lib/sabnzbd/Downloads/complete:ro"
       ];
       environment = {
         NODE_ENV = "production";
