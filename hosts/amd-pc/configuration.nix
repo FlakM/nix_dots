@@ -622,6 +622,17 @@ in
     ];
   };
 
+  # model=everywhere queries the printer, so wait for network and retry while it's offline
+  systemd.services.ensure-printers = {
+    wants = [ "network-online.target" ];
+    after = [ "network-online.target" ];
+    startLimitIntervalSec = 0;
+    serviceConfig = {
+      Restart = "on-failure";
+      RestartSec = 60;
+    };
+  };
+
   # Avahi for network printer discovery
   # mDNS/DNS-SD protocols (Multicast DNS / DNS Service Discovery),
   services.avahi = {
