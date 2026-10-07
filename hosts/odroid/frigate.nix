@@ -8,6 +8,10 @@ let
     "nofail"
     "X-mount.mkdir=0750"
   ];
+  frontLeftMasks = [
+    "0.001,0,0.006,0.389,0.145,0.328,0.361,0.264,0.583,0.22,0.792,0.161,0.896,0.144,0.99,0.111,0.984,0.002"
+    "0.509,0.997,0.851,0.489,1,0.496,0.997,0.999"
+  ];
   reolinkCamera = address: passwordVariable: detectResolution: {
     detect = detectResolution;
     ffmpeg.inputs = [
@@ -241,10 +245,8 @@ in
           width = 640;
           height = 360;
         }) // {
-          motion.mask = [
-            "0.001,0,0.006,0.389,0.145,0.328,0.361,0.264,0.583,0.22,0.792,0.161,0.896,0.144,0.99,0.111,0.984,0.002"
-            "0.509,0.997,0.851,0.489,1,0.496,0.997,0.999"
-          ];
+          motion.mask = frontLeftMasks;
+          objects.filters.person.mask = frontLeftMasks;
           zones.podjazd = {
             coordinates = "0.156,0.358,0.005,0.427,0.001,0.993,0.504,1,0.756,0.629,0.778,0.296,0.786,0.188";
             loitering_time = 0;
