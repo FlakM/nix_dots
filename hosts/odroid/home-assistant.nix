@@ -190,7 +190,7 @@ in
       automation = [
         {
           id = "frigate_person_alert";
-          alias = "Frigate person alert";
+          alias = "Frigate person or car alert";
           mode = "parallel";
           max = 10;
           triggers = [
@@ -200,6 +200,7 @@ in
                 "binary_sensor.podjazd_person_occupancy"
                 "binary_sensor.ogrod_person_occupancy"
                 "binary_sensor.podjazd_prawy_person_occupancy"
+                "binary_sensor.podjazd_prawy_car_occupancy"
               ];
               from = "off";
               to = "on";
@@ -212,21 +213,25 @@ in
               state = "idle";
             }
           ];
-          variables.camera_id = ''
-            {% set cameras = {
-              "binary_sensor.podjazd_person_occupancy": "front_left",
-              "binary_sensor.ogrod_person_occupancy": "back",
-              "binary_sensor.podjazd_prawy_person_occupancy": "front_right"
-            } %}
-            {{ cameras[trigger.entity_id] }}
-          '';
+          variables = {
+            camera_id = ''
+              {% set cameras = {
+                "binary_sensor.podjazd_person_occupancy": "front_left",
+                "binary_sensor.ogrod_person_occupancy": "back",
+                "binary_sensor.podjazd_prawy_person_occupancy": "front_right",
+                "binary_sensor.podjazd_prawy_car_occupancy": "front_right"
+              } %}
+              {{ cameras[trigger.entity_id] }}
+            '';
+            object_label = "{{ 'car' if trigger.entity_id.endswith('_car_occupancy') else 'person' }}";
+          };
           actions = phoneNotificationActions {
-            title = "Person detected";
-            message = "{{ camera_id | replace('_', ' ') | title }} camera detected a person.";
+            title = "{{ object_label | title }} detected";
+            message = "{{ camera_id | replace('_', ' ') | title }} camera detected a {{ object_label }}.";
             data = {
-              image = "/api/image_proxy/image.{{ camera_id }}_person";
+              image = "/api/image_proxy/image.{{ camera_id }}_{{ object_label }}";
               clickAction = "https://frigate.house.flakm.com/review";
-              tag = "frigate-person-{{ camera_id }}";
+              tag = "frigate-{{ object_label }}-{{ camera_id }}";
               group = "camera-alerts";
               channel = "Camera alerts";
               notification_icon = "mdi:cctv";
