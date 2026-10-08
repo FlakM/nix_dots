@@ -15,7 +15,7 @@ let
       notification_icon = "{{ 'mdi:car' if object_label == 'car' else 'mdi:account' }}";
       ttl = 0;
       priority = "high";
-      alert_once = "{{ trigger.payload_json.type == 'end' or object_label == 'person' }}";
+      alert_once = true;
       actions = [
         { action = "URI"; title = "View clip"; uri = "{{ clip_url }}"; }
         { action = "URI"; title = "Live camera"; uri = "https://homeassistant.house.flakm.com/nixos-lovelace/camera-{{ camera_id }}"; }
@@ -53,6 +53,10 @@ let
 in
 {
   services.home-assistant.config = {
+    input_text = lib.genAttrs [ "frigate_car_arrivals_notified" "frigate_car_departures_notified" ] (_: {
+      max = 255;
+      icon = "mdi:car";
+    });
     input_boolean = lib.genAttrs (map healthFlag (healthEntities ++ [ "binary_sensor.frigate_service_healthy" "binary_sensor.frigate_detector_healthy" "sensor.frigate_recording_space_free" ])) (_: { icon = "mdi:cctv"; });
     timer = lib.genAttrs (map timerFor cameras ++ [ "camera_alerts_snooze_cars" ]) (_: {
       duration = "00:30:00";
@@ -155,24 +159,53 @@ in
         alias = "Frigate driveway car arrivals and departures";
         mode = "queued";
         max = 30;
+        trace.stored_traces = 30;
         triggers = [{ trigger = "mqtt"; topic = "frigate/events"; }];
         variables = {
+          arrival_ids = "{{ states('input_text.frigate_car_arrivals_notified').removeprefix('ids:').split(',') | reject('in', ['', 'unknown', 'unavailable']) | list }}";
           camera_id = "{{ trigger.payload_json.after.camera }}";
+          departure_ids = "{{ states('input_text.frigate_car_departures_notified').removeprefix('ids:').split(',') | reject('in', ['', 'unknown', 'unavailable']) | list }}";
           object_label = "car";
           event_id = "{{ trigger.payload_json.after.id }}";
           inside_before = "{{ 'podjazd_prawy' in trigger.payload_json.before.current_zones | default([]) }}";
           inside_after = "{{ 'podjazd_prawy' in trigger.payload_json.after.current_zones | default([]) }}";
+          moving = "{{ trigger.payload_json.after.get('active', not trigger.payload_json.after.get('stationary', false)) }}";
           notification_tag = "frigate-car-{{ event_id }}";
-          notification_title = "{{ 'Car detected' if trigger.payload_json.type in ['new', 'end'] else ('Car arrived' if inside_after else 'Car left') }}";
-          notification_message = "{{ 'Car detected in the right driveway.' if trigger.payload_json.type in ['new', 'end'] else ('Car entered the right driveway.' if inside_after else 'Car left the right driveway.') }}";
+          notification_title = "{{ 'Car left' if (event_id in departure_ids if trigger.payload_json.type == 'end' else not inside_after) else 'Car arrived' }}";
+          notification_message = "{{ 'Car left the right driveway.' if (event_id in departure_ids if trigger.payload_json.type == 'end' else not inside_after) else 'Car entered the right driveway.' }}";
           image_url = "/api/frigate/notifications/{{ event_id }}/snapshot.jpg?v={{ (trigger.payload_json.after.get('snapshot') or {}).get('frame_time', trigger.payload_json.after.frame_time) }}{{ '-end' if trigger.payload_json.type == 'end' else '' }}";
           clip_url = "https://homeassistant.house.flakm.com/api/frigate/notifications/{{ trigger.payload_json.after.id }}/clip.mp4";
         };
         conditions = [{
           condition = "template";
-          value_template = "{{ camera_id == 'front_right' and trigger.payload_json.after.label == 'car' and not trigger.payload_json.after.false_positive and ((trigger.payload_json.type == 'new' and inside_after) or (trigger.payload_json.type == 'update' and inside_before != inside_after) or (trigger.payload_json.type == 'end' and inside_after)) }}";
+          value_template = "{{ camera_id == 'front_right' and trigger.payload_json.after.label == 'car' and not trigger.payload_json.after.false_positive and ((trigger.payload_json.type == 'update' and moving and ((not inside_before and inside_after and event_id not in arrival_ids and event_id not in departure_ids) or (inside_before and not inside_after and event_id not in departure_ids))) or (trigger.payload_json.type == 'end' and (event_id in arrival_ids or event_id in departure_ids))) }}";
         }] ++ notSnoozed;
-        actions = notifyActivity;
+        actions = [
+          {
+            condition = "template";
+            value_template = "{{ trigger.payload_json.type == 'end' or ((inside_after and event_id not in states('input_text.frigate_car_arrivals_notified').removeprefix('ids:').split(',') and event_id not in states('input_text.frigate_car_departures_notified').removeprefix('ids:').split(',')) or (not inside_after and event_id not in states('input_text.frigate_car_departures_notified').removeprefix('ids:').split(','))) }}";
+          }
+          {
+            choose = [
+              {
+                conditions = [{ condition = "template"; value_template = "{{ trigger.payload_json.type == 'update' and inside_after }}"; }];
+                sequence = [{
+                  action = "input_text.set_value";
+                  target.entity_id = "input_text.frigate_car_arrivals_notified";
+                  data.value = "ids:{{ ([event_id] + (states('input_text.frigate_car_arrivals_notified').removeprefix('ids:').split(',') | reject('in', ['', 'unknown', 'unavailable', event_id]) | list))[:8] | join(',') }}";
+                }];
+              }
+              {
+                conditions = [{ condition = "template"; value_template = "{{ trigger.payload_json.type == 'update' and not inside_after }}"; }];
+                sequence = [{
+                  action = "input_text.set_value";
+                  target.entity_id = "input_text.frigate_car_departures_notified";
+                  data.value = "ids:{{ ([event_id] + (states('input_text.frigate_car_departures_notified').removeprefix('ids:').split(',') | reject('in', ['', 'unknown', 'unavailable', event_id]) | list))[:8] | join(',') }}";
+                }];
+              }
+            ];
+          }
+        ] ++ notifyActivity;
       }
       {
         id = "camera_alert_selective_snooze";

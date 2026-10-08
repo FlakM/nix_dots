@@ -27,6 +27,7 @@ def evaluate(automation_id, trigger, states=None):
     states = states or {}
     context = {
         "trigger": trigger,
+        "states": lambda entity: states.get(entity, ""),
         "is_state": lambda entity, state: states.get(entity, "idle" if entity.startswith("timer.") else "off") == state,
         "now": lambda: now,
         "as_timestamp": lambda value: value.timestamp(),
@@ -41,7 +42,25 @@ def evaluate(automation_id, trigger, states=None):
             accepted = context["is_state"](condition["entity_id"], condition["state"])
         if not accepted:
             return None
-    return render(automation["actions"], context)
+    actions = render(automation["actions"], context)
+    if any(action.get("condition") == "template" and not action["value_template"] for action in actions):
+        return None
+    return actions
+
+
+def notification(actions):
+    return next(action["data"] for action in actions if action.get("action", "").startswith("notify."))
+
+
+def apply_helper_actions(actions, states):
+    for action in actions:
+        if "choose" in action:
+            for branch in action["choose"]:
+                if all(condition["value_template"] for condition in branch["conditions"]):
+                    apply_helper_actions(branch["sequence"], states)
+                    break
+        elif action.get("action") == "input_text.set_value":
+            states[action["target"]["entity_id"]] = action["data"]["value"]
 
 
 def review(severity="alert", objects=None, kind="new"):
@@ -68,6 +87,16 @@ def car(before=False, after=True, kind="update", event_id="99-car", camera="fron
 
 
 class NotificationTests(unittest.TestCase):
+    def test_car_border_jitter_notifies_each_direction_once(self):
+        states = {}
+        messages = []
+        for before, after in [(False, True), (True, False), (False, True), (True, False), (False, True)]:
+            actions = evaluate("frigate_driveway_car_transitions", car(before, after), states)
+            if actions:
+                messages.append(notification(actions)["title"])
+                apply_helper_actions(actions, states)
+        self.assertEqual(messages, ["Car arrived", "Car left"])
+
     def test_confirmed_reviews_and_incident_media(self):
         self.assertIsNone(evaluate("frigate_person_alert", review("detection")))
         self.assertIsNone(evaluate("frigate_person_alert", review(objects=["car"])))
@@ -84,21 +113,47 @@ class NotificationTests(unittest.TestCase):
         self.assertTrue(final["data"]["alert_once"])
 
     def test_individual_car_arrivals_departures_and_updates(self):
-        entered = evaluate("frigate_driveway_car_transitions", car())[0]["data"]
+        entered = notification(evaluate("frigate_driveway_car_transitions", car()))
         self.assertEqual(entered["title"], "Car arrived")
         self.assertEqual(entered["data"]["channel"], "Cars")
         self.assertIn("99-car/snapshot.jpg", entered["data"]["image"])
         self.assertIsNone(evaluate("frigate_driveway_car_transitions", car(True, True)))
-        self.assertEqual(evaluate("frigate_driveway_car_transitions", car(True, False))[0]["data"]["title"], "Car left")
+        self.assertEqual(notification(evaluate("frigate_driveway_car_transitions", car(True, False)))["title"], "Car left")
         self.assertIsNone(evaluate("frigate_driveway_car_transitions", car(camera="front_left")))
         self.assertIsNone(evaluate("frigate_driveway_car_transitions", car(false_positive=True)))
         self.assertIsNone(evaluate("frigate_driveway_car_transitions", car(True, False, "end")))
-        present = evaluate("frigate_driveway_car_transitions", car(kind="new"))[0]["data"]
-        self.assertEqual(present["title"], "Car detected")
-        second = evaluate("frigate_driveway_car_transitions", car(event_id="100-car"))[0]["data"]
+        self.assertIsNone(evaluate("frigate_driveway_car_transitions", car(kind="new")))
+        second = notification(evaluate("frigate_driveway_car_transitions", car(event_id="100-car")))
         self.assertNotEqual(second["data"]["tag"], entered["data"]["tag"])
-        final = evaluate("frigate_driveway_car_transitions", car(True, True, "end"))[0]["data"]
+        states = {"input_text.frigate_car_arrivals_notified": "ids:99-car"}
+        final = notification(evaluate("frigate_driveway_car_transitions", car(True, True, "end"), states))
         self.assertTrue(final["data"]["alert_once"])
+        self.assertTrue(entered["data"]["alert_once"])
+        self.assertEqual(final["title"], "Car arrived")
+        stationary = car()
+        stationary["payload_json"]["after"]["active"] = False
+        self.assertIsNone(evaluate("frigate_driveway_car_transitions", stationary))
+
+    def test_departure_does_not_turn_into_jitter_arrivals(self):
+        states = {}
+        actions = evaluate("frigate_driveway_car_transitions", car(True, False), states)
+        apply_helper_actions(actions, states)
+        self.assertIsNone(evaluate("frigate_driveway_car_transitions", car(), states))
+        final = notification(evaluate("frigate_driveway_car_transitions", car(False, False, "end"), states))
+        self.assertEqual(final["title"], "Car left")
+        self.assertTrue(final["data"]["alert_once"])
+
+    def test_deduplication_cache_is_bounded_and_keeps_other_cars(self):
+        states = {}
+        for index in range(12):
+            actions = evaluate("frigate_driveway_car_transitions", car(event_id=f"1791463818.200811-car{index:03}"), states)
+            self.assertIsNotNone(actions)
+            apply_helper_actions(actions, states)
+        remembered = states["input_text.frigate_car_arrivals_notified"]
+        self.assertIsInstance(remembered, str)
+        self.assertLessEqual(len(remembered), 255)
+        self.assertEqual(len(remembered.removeprefix("ids:").split(",")), 8)
+        self.assertIsNone(evaluate("frigate_driveway_car_transitions", car(event_id="1791463818.200811-car011"), states))
 
     def test_selective_and_global_snoozing(self):
         resumed = config["script"]["camera_alerts_resume"]["sequence"][0]["target"]["entity_id"]
@@ -139,6 +194,10 @@ class NotificationTests(unittest.TestCase):
         event = car(True, False, "end")
         event["payload_json"]["after"]["snapshot"] = None
         self.assertIsNone(evaluate("frigate_driveway_car_transitions", event))
+        states = {"input_text.frigate_car_arrivals_notified": "ids:99-car"}
+        update = notification(evaluate("frigate_driveway_car_transitions", event, states))
+        self.assertEqual(update["title"], "Car arrived")
+        self.assertTrue(update["data"]["alert_once"])
 
 
 unittest.main(argv=[sys.argv[0]])
