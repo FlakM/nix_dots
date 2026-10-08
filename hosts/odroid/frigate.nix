@@ -232,6 +232,7 @@ in
           width = 640;
           height = 360;
         }) // {
+          objects.track = [ "person" "car" ];
           motion.mask = "0.001,0.009,0.001,0.221,0.273,0.201,0.757,0.202,0.813,0.203,0.901,0.206,1,0.199,1,0.087,1,0";
           zones.podjazd_prawy = {
             friendly_name = "Podjazd prawy";
