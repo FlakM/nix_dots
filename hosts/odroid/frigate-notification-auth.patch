@@ -1,0 +1,32 @@
+diff --git a/custom_components/frigate/views.py b/custom_components/frigate/views.py
+--- a/custom_components/frigate/views.py
++++ b/custom_components/frigate/views.py
+@@ -356,1 +356,1 @@
+-            allow_unauthenticated=True,
++            allow_unauthenticated=False,
+@@ -378,24 +378,1 @@
+-        # If request is not authenticated, check whether it is expired.
+-        notification_expiration_seconds = int(
+-            config_entry.options.get(CONF_NOTIFICATION_PROXY_EXPIRE_AFTER_SECONDS, 0)
+-        )
+-
+-        # If notification events never expire, immediately permit.
+-        if notification_expiration_seconds == 0:
+-            return True
+-
+-        try:
+-            event_id_timestamp = int(event_id.partition(".")[0])
+-            event_datetime = datetime.datetime.fromtimestamp(
+-                event_id_timestamp, tz=datetime.timezone.utc
+-            )
+-            now_datetime = datetime.datetime.now(tz=datetime.timezone.utc)
+-            expiration_datetime = event_datetime + datetime.timedelta(
+-                seconds=notification_expiration_seconds
+-            )
+-
+-            # Otherwise, permit only if notification event is not expired
+-            return now_datetime.timestamp() <= expiration_datetime.timestamp()
+-        except ValueError:
+-            _LOGGER.warning("The event id %s does not have a valid format.", event_id)
+-            return False
++        return False

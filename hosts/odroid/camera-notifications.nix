@@ -146,7 +146,7 @@ in
           notification_title = "Person detected";
           notification_message = "{{ camera_id | replace('_', ' ') | title }}: confirmed person activity.";
           image_url = "/api/frigate/notifications/{{ trigger.payload_json.after.id }}/{{ camera_id }}/review_thumbnail.webp?v={{ trigger.payload_json.after.data.thumb_time | default(trigger.payload_json.after.start_time) }}{{ '-end' if trigger.payload_json.type == 'end' else '' }}";
-          clip_url = "https://homeassistant.house.flakm.com/api/frigate/notifications/{{ trigger.payload_json.after.data.detections | first | default('') }}/clip.mp4";
+          clip_url = "https://homeassistant.house.flakm.com/media-browser/browser/{{ ('video,media-source://frigate/event-search/clips//' ~ (((trigger.payload_json.after.data.detections | first | default('0')).split('.')[0] | int) - 1) ~ '/' ~ (((trigger.payload_json.after.data.detections | first | default('0')).split('.')[0] | int) + 1) ~ '/' ~ camera_id) | urlencode | replace('/', '%2F') }}";
         };
         conditions = [{
           condition = "template";
@@ -174,7 +174,7 @@ in
           notification_title = "{{ 'Car left' if (event_id in departure_ids if trigger.payload_json.type == 'end' else not inside_after) else 'Car arrived' }}";
           notification_message = "{{ 'Car left the right driveway.' if (event_id in departure_ids if trigger.payload_json.type == 'end' else not inside_after) else 'Car entered the right driveway.' }}";
           image_url = "/api/frigate/notifications/{{ event_id }}/snapshot.jpg?v={{ (trigger.payload_json.after.get('snapshot') or {}).get('frame_time', trigger.payload_json.after.frame_time) }}{{ '-end' if trigger.payload_json.type == 'end' else '' }}";
-          clip_url = "https://homeassistant.house.flakm.com/api/frigate/notifications/{{ trigger.payload_json.after.id }}/clip.mp4";
+          clip_url = "https://homeassistant.house.flakm.com/media-browser/browser/{{ ('video,media-source://frigate/event-search/clips//' ~ ((trigger.payload_json.after.id.split('.')[0] | int) - 1) ~ '/' ~ ((trigger.payload_json.after.id.split('.')[0] | int) + 1) ~ '/' ~ camera_id ~ '/car') | urlencode | replace('/', '%2F') }}";
         };
         conditions = [{
           condition = "template";
@@ -273,10 +273,21 @@ in
       inactive = "24h";
       levels = "1:2";
     };
+    virtualHosts."homeassistant.house.flakm.com".locations."= /_camera_notification_auth" = {
+      proxyPass = "http://127.0.0.1:8123/api/";
+      recommendedProxySettings = true;
+      extraConfig = ''
+        internal;
+        proxy_pass_request_body off;
+        proxy_set_header Content-Length "";
+        proxy_set_header Authorization $http_authorization;
+      '';
+    };
     virtualHosts."homeassistant.house.flakm.com".locations."~ ^/api/frigate/notifications/[a-zA-Z0-9.-]+/(snapshot\\.jpg|thumbnail\\.jpg|[a-z_]+/review_thumbnail\\.webp)$" = {
       proxyPass = "http://127.0.0.1:8123";
       recommendedProxySettings = true;
       extraConfig = ''
+        auth_request /_camera_notification_auth;
         proxy_buffering on;
         proxy_cache camera_snapshots;
         proxy_cache_key "$scheme$host$request_uri";
@@ -284,7 +295,8 @@ in
         proxy_cache_lock on;
         proxy_ignore_headers Cache-Control Expires;
         proxy_hide_header Cache-Control;
-        add_header Cache-Control "private, max-age=10" always;
+        add_header Cache-Control "private, max-age=10";
+        add_header Vary Authorization always;
         add_header X-Snapshot-Cache $upstream_cache_status always;
       '';
     };

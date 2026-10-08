@@ -2,6 +2,7 @@ import datetime
 import json
 import sys
 import unittest
+from urllib.parse import unquote
 
 from jinja2 import StrictUndefined
 from jinja2.nativetypes import NativeEnvironment
@@ -69,7 +70,7 @@ def review(severity="alert", objects=None, kind="new"):
         "after": {
             "id": "100-review", "camera": "front_right", "severity": severity,
             "start_time": 100,
-            "data": {"detections": ["99-event"], "objects": objects or ["person"], "thumb_time": 101},
+            "data": {"detections": ["99.0-event"], "objects": objects or ["person"], "thumb_time": 101},
         },
     }}
 
@@ -104,7 +105,9 @@ class NotificationTests(unittest.TestCase):
         notification = result[0]["data"]
         self.assertEqual(notification["data"]["tag"], "frigate-review-100-review")
         self.assertIn("100-review/front_right/review_thumbnail.webp", notification["data"]["image"])
-        self.assertIn("99-event/clip.mp4", notification["data"]["actions"][0]["uri"])
+        clip_link = unquote(notification["data"]["actions"][0]["uri"])
+        self.assertIn("/media-browser/browser/video,media-source://frigate/event-search/clips//98/100/front_right", clip_link)
+        self.assertNotIn("/api/frigate/notifications/", clip_link)
         self.assertIn("camera-front_right", notification["data"]["actions"][1]["uri"])
         self.assertEqual(notification["data"]["actions"][2]["action"], "SNOOZE_CAMERA_front_right_30M")
         final = evaluate("frigate_person_alert", review(kind="end"))[0]["data"]

@@ -34,6 +34,7 @@ let
     }
   ];
   frigateComponent = pkgs.home-assistant-custom-components.frigate.overridePythonAttrs (old: {
+    patches = (old.patches or [ ]) ++ [ ./frigate-notification-auth.patch ];
     doCheck = false;
     dependencies = map
       (dependency:
