@@ -149,6 +149,9 @@ in
 
   services.frigate = {
     enable = true;
+    package = pkgs.frigate.overridePythonAttrs (old: {
+      patches = (old.patches or [ ]) ++ [ ./frigate-opencv-threads.patch ];
+    });
     hostname = "frigate.house.flakm.com";
     preCheckConfig = ''
       export FRIGATE_REOLINK_PASSWORD=validation-only
@@ -326,6 +329,7 @@ in
   };
 
   systemd.services.frigate = {
+    environment.PYTHONPATH = lib.mkForce "${config.services.frigate.package}/${config.services.frigate.package.python.sitePackages}:${config.services.frigate.package.pythonPath}";
     after = [ "lionelo-camera.service" ];
     requires = [ "lionelo-camera.service" ];
     unitConfig.RequiresMountsFor = [

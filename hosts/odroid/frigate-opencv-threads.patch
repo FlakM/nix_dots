@@ -1,0 +1,9 @@
+diff --git a/frigate/util/process.py b/frigate/util/process.py
+--- a/frigate/util/process.py
++++ b/frigate/util/process.py
+@@ -11,1 +11,2 @@
+ from typing import Callable, Optional
++import cv2
+@@ -57,1 +58,2 @@
+     def pre_run_setup(self, logConfig: LoggerConfig | None = None) -> None:
++        cv2.setNumThreads(1)
