@@ -50,6 +50,7 @@ let
   });
 in
 {
+  imports = [ (import ./camera-notifications.nix { inherit phoneNotificationActions; }) ];
   sops.secrets = {
     omada_ha_username = {
       sopsFile = ../../secrets/secrets.yaml;
@@ -98,11 +99,28 @@ in
             {
               type = "entities";
               title = "Status";
-              entities = [ "timer.camera_alerts_snooze" ];
+              entities = [ "timer.camera_alerts_snooze" "timer.camera_alerts_snooze_cars" "binary_sensor.frigate_service_healthy" "binary_sensor.frigate_detector_healthy" "sensor.frigate_recording_space_free" ];
             }
           ];
         }
-      ];
+      ] ++ map
+        (camera: {
+          title = builtins.replaceStrings [ "_" ] [ " " ] camera;
+          path = "camera-${camera}";
+          icon = "mdi:cctv";
+          cards = [
+            { type = "picture-entity"; entity = "camera.${camera}"; camera_view = "live"; show_state = false; }
+            {
+              type = "horizontal-stack";
+              cards = [
+                { type = "button"; name = "Mute this camera 30 min"; icon = "mdi:bell-sleep"; tap_action = { action = "perform-action"; perform_action = "script.camera_alerts_snooze_camera"; data.camera_id = camera; }; }
+                { type = "button"; name = "Resume this camera"; icon = "mdi:bell-ring"; tap_action = { action = "perform-action"; perform_action = "script.camera_alerts_resume_camera"; data.camera_id = camera; }; }
+                { type = "button"; name = "Mute cars 30 min"; icon = "mdi:car-off"; tap_action = { action = "perform-action"; perform_action = "script.camera_alerts_snooze_cars"; }; }
+              ];
+            }
+            { type = "entities"; entities = [ "timer.camera_alerts_snooze_${camera}" "timer.camera_alerts_snooze_cars" "binary_sensor.frigate_${camera}_stream_healthy" ]; }
+          ];
+        }) [ "front_left" "front_right" "back" "babyline" ];
     };
     extraComponents = [
       "default_config"
@@ -175,7 +193,7 @@ in
           sequence = [
             {
               action = "timer.cancel";
-              target.entity_id = "timer.camera_alerts_snooze";
+              target.entity_id = [ "timer.camera_alerts_snooze" "timer.camera_alerts_snooze_cars" "timer.camera_alerts_snooze_front_left" "timer.camera_alerts_snooze_front_right" "timer.camera_alerts_snooze_back" "timer.camera_alerts_snooze_babyline" ];
             }
           ];
         };
@@ -188,64 +206,6 @@ in
         show_in_sidebar = true;
       };
       automation = [
-        {
-          id = "frigate_person_alert";
-          alias = "Frigate person or car alert";
-          mode = "parallel";
-          max = 10;
-          triggers = [
-            {
-              trigger = "state";
-              entity_id = [
-                "binary_sensor.podjazd_person_occupancy"
-                "binary_sensor.ogrod_person_occupancy"
-                "binary_sensor.podjazd_prawy_person_occupancy"
-                "binary_sensor.podjazd_prawy_car_occupancy"
-              ];
-              from = "off";
-              to = "on";
-            }
-          ];
-          conditions = [
-            {
-              condition = "state";
-              entity_id = "timer.camera_alerts_snooze";
-              state = "idle";
-            }
-          ];
-          variables = {
-            camera_id = ''
-              {% set cameras = {
-                "binary_sensor.podjazd_person_occupancy": "front_left",
-                "binary_sensor.ogrod_person_occupancy": "back",
-                "binary_sensor.podjazd_prawy_person_occupancy": "front_right",
-                "binary_sensor.podjazd_prawy_car_occupancy": "front_right"
-              } %}
-              {{ cameras[trigger.entity_id] }}
-            '';
-            object_label = "{{ 'car' if trigger.entity_id.endswith('_car_occupancy') else 'person' }}";
-          };
-          actions = phoneNotificationActions {
-            title = "{{ object_label | title }} detected";
-            message = "{{ camera_id | replace('_', ' ') | title }} camera detected a {{ object_label }}.";
-            data = {
-              image = "/api/image_proxy/image.{{ camera_id }}_{{ object_label }}";
-              clickAction = "https://frigate.house.flakm.com/review";
-              tag = "frigate-{{ object_label }}-{{ camera_id }}";
-              group = "camera-alerts";
-              channel = "Camera alerts";
-              notification_icon = "mdi:cctv";
-              ttl = 0;
-              priority = "high";
-              actions = [
-                {
-                  action = "SNOOZE_CAMERA_ALERTS_30M";
-                  title = "Silence for 30 min";
-                }
-              ];
-            };
-          };
-        }
         {
           id = "lionelo_onboard_motion_alert";
           alias = "Lionelo onboard motion alert";
@@ -263,6 +223,7 @@ in
               entity_id = "timer.camera_alerts_snooze";
               state = "idle";
             }
+            { condition = "state"; entity_id = "timer.camera_alerts_snooze_babyline"; state = "idle"; }
           ];
           actions = phoneNotificationActions {
             title = "{{ trigger.payload_json.title }}";
