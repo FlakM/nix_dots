@@ -2,15 +2,6 @@
 let
   inherit (pkgs) stdenv;
   jump = inputs.jump.packages.${pkgs.stdenv.hostPlatform.system}.default;
-  nvim-dap-probe-rs = pkgs.vimUtils.buildVimPlugin {
-    name = "nvim-dap-probe-rs";
-    src = pkgs.fetchFromGitHub {
-      owner = "abayomi185";
-      repo = "nvim-dap-probe-rs";
-      rev = "6df52c49755d78a2d7754c0630dd58694ea39ada";
-      hash = "sha256-SVEJG+2oVqJKaH4+jDp2ZpbJIWIL4nqGkH0cN9pCa6M=";
-    };
-  };
   servicePath = lib.concatStringsSep ":" (
     (config.home.sessionPath or [ ])
     ++ [
@@ -33,10 +24,12 @@ in
     nodejs_24
     go
     gopls
+    gotools
 
-    pyright
+    basedpyright
+    ruff
 
-    nil
+    nixd
 
     # for toggling dark mode
     neovim-remote
@@ -51,6 +44,7 @@ in
 
     # bash lsp
     pkgs-unstable.bash-language-server
+    shellcheck
     shfmt
 
     tree-sitter
@@ -67,30 +61,36 @@ in
     pkgs.prettier
     vscode-langservers-extracted
     eslint
+    vtsls
 
     # lua
     lua-language-server
+    stylua
 
 
     # nix
-    nixpkgs-fmt
+    nixfmt
+    deadnix
+    statix
 
     # yaml
-    #yaml-language-server
+    yaml-language-server
 
     # golang & terraform
-    terraform-lsp
+    terraform
+    terraform-ls
+
+    actionlint
+    gh
+    pkgs-unstable.lspmux
 
     # https://github.com/mrcjkb/rustaceanvim?tab=readme-ov-file#using-codelldb-for-debugging
     vscode-extensions.vadimcn.vscode-lldb
 
     # for linux only
-  ] ++ lib.optionals stdenv.isLinux [
-    # for debugging
-    bashdb
+  ] ++ lib.optionals stdenv.hostPlatform.isLinux [
     # clipboard support for Wayland
     wl-clipboard
-    pkgs-unstable.lspmux
     # code navigation for hyprland/tmux/nvim workflow
     jump
   ];
@@ -103,7 +103,6 @@ in
     #package = pkgs-unstable.neovim-unwrapped;
     plugins = with pkgs.vimPlugins; [
       # VIM enhancments
-      editorconfig-vim
       vim-sneak
       # base16-vim
 
@@ -115,13 +114,7 @@ in
       #vim-rooter
       fzf-vim
 
-      # Synctactic language support
-      vim-toml
-      vim-yaml
-      rust-vim
       tabular
-      vim-nix
-      vim-terraform
 
       #Theme
       edge
@@ -140,8 +133,6 @@ in
       nvim-nio
 
       fidget-nvim
-
-      git-blame-nvim
 
       nvim-lspconfig
 
@@ -163,8 +154,11 @@ in
       # Tree viewer
       nvim-tree-lua
 
-      vim-gitgutter
+      gitsigns-nvim
       diffview-nvim
+      octo-nvim
+      trouble-nvim
+      which-key-nvim
 
       rustaceanvim
 
@@ -181,8 +175,9 @@ in
       # notes plugins for obsidian
       obsidian-nvim
 
-      none-ls-nvim
-      lsp_lines-nvim
+      conform-nvim
+      nvim-lint
+      SchemaStore-nvim
 
 
       # database access
@@ -203,6 +198,8 @@ in
     ++ [
       # pkgs.unstable.vimPlugins
       nvim-treesitter.withAllGrammars
+      nvim-treesitter-context
+      nvim-treesitter-textobjects
       #nvim-treesitter
       #(nvim-treesitter.withPlugins (plugins: [
       #  plugins.tree-sitter-c
@@ -224,6 +221,10 @@ in
         (builtins.readFile ./config/init.lua)
         (builtins.readFile ./config/databases.lua)
         (builtins.readFile ./config/lsp-config.lua)
+        (builtins.readFile ./config/formatting.lua)
+        (builtins.readFile ./config/git.lua)
+        (builtins.readFile ./config/review.lua)
+        (builtins.readFile ./config/treesitter.lua)
         "local dap_path  = \"${pkgs-unstable.vscode-extensions.vadimcn.vscode-lldb}/share/vscode/extensions/vadimcn.vscode-lldb/\""
         (builtins.readFile ./config/rust-config.lua)
         "local metals_path = \"${pkgs-unstable.metals}/bin/metals\""
@@ -233,17 +234,14 @@ in
         (builtins.readFile ./config/node.lua)
         (builtins.readFile ./config/lua.lua)
         (builtins.readFile ./config/marks.lua)
-        #(builtins.readFile ./config/yaml.lua)
+        (builtins.readFile ./config/yaml.lua)
         (builtins.readFile ./config/diffview.lua)
-        (if stdenv.isLinux then
-          "local bashdb_path = \"${pkgs.bashdb}/bin/bashdb\""
-        else
-          "local bashdb_path = nil")
         (builtins.readFile ./config/bash.lua)
         (builtins.readFile ./config/golang.lua)
         (builtins.readFile ./config/python.lua)
         (builtins.readFile ./config/html.lua)
-        (builtins.readFile ./config/eink-bridge.lua)
+        # do-block: the file ends with `return M`, which must be last in its chunk
+        "do\n${builtins.readFile ./config/eink-bridge.lua}\nend"
       ];
 
 
@@ -298,7 +296,7 @@ in
     ]
   '';
 
-  systemd.user.services."lspmux" = lib.mkIf stdenv.isLinux {
+  systemd.user.services."lspmux" = lib.mkIf stdenv.hostPlatform.isLinux {
     Unit = {
       Description = "lspmux rust-analyzer multiplexer";
       After = [ "network-online.target" ];
@@ -317,7 +315,7 @@ in
     };
   };
 
-  launchd.agents."lspmux" = lib.mkIf stdenv.isDarwin {
+  launchd.agents."lspmux" = lib.mkIf stdenv.hostPlatform.isDarwin {
     enable = true;
     config = {
       ProgramArguments = [

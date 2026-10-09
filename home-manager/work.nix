@@ -74,6 +74,7 @@ in
     ./modules/nvim/neovim.nix
     ./modules/rust.nix
     ./modules/tmux.nix
+    ./modules/herdr.nix
     ./modules/git.nix
     ./modules/gpg_home.nix
 
@@ -102,7 +103,6 @@ in
 
     ./modules/ai.nix
 
-    ./modules/peon-ping.nix
     ./modules/pw-play-wrapper.nix
   ];
 
@@ -199,7 +199,7 @@ in
 
     # Set correct SSH_AUTH_SOCK
 
-    export PATH="$HOME/.local/state/nix/profiles/home-manager/home-path/bin:$HOME/.cargo/bin:$PATH"
+    export PATH="$HOME/.cargo/bin:$PATH"
     export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
     export SHELL=/run/current-system/sw/bin/zsh
   '';

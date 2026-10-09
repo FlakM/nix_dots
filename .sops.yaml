@@ -21,5 +21,6 @@ creation_rules:
       - *odroid
       age:
       - *server_amd_pc
+      - *server_odroid
       - *user_amd_pc
       - *work

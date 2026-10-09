@@ -3,17 +3,18 @@ local cmd = vim.cmd
 local map = vim.keymap.set
 local builtin = require('telescope.builtin')
 
-local lsp_lines = require("lsp_lines")
-lsp_lines.setup()
-
 vim.diagnostic.config({
     virtual_text = false,
-    virtual_lines = true,
+    virtual_lines = { current_line = true },
     signs = {
         priority = 20,
     },
     underline = true,
     severity_sort = true,
+})
+
+vim.lsp.config("*", {
+    capabilities = require("cmp_nvim_lsp").default_capabilities(),
 })
 
 vim.api.nvim_set_hl(0, "DiagnosticVirtualTextError", { fg = "#ff4d4d", bg = "NONE" })
@@ -78,7 +79,7 @@ map("n", "<leader>sh", function()
 end)
 
 map("n", "<leader>FF", function()
-    vim.lsp.buf.format { async = true }
+    require("conform").format({ async = true, lsp_format = "fallback" })
 end)
 
 
@@ -111,20 +112,19 @@ map("n", "<leader>d", function()
     vim.diagnostic.setloclist()
 end)
 
-map("n", "[c", function()
-    vim.diagnostic.goto_prev({ wrap = false })
+map("n", "[d", function()
+    vim.diagnostic.jump({ count = -1, wrap = false })
 end)
 
-map("n", "]c", function()
-    vim.diagnostic.goto_next({ wrap = false })
+map("n", "]d", function()
+    vim.diagnostic.jump({ count = 1, wrap = false })
 end)
 
 -- Toggle inlay hints
 map("n", "<leader>l", function()
     local enabled = vim.lsp.inlay_hint.is_enabled()
     vim.lsp.inlay_hint.enable(not enabled)
-    lsp_lines.toggle()
-end, { desc = "Toggle inlay hints and diagnostics" })
+end, { desc = "Toggle inlay hints" })
 
 -- Example mappings for usage with nvim-dap. If you don't use that, you can skip these
 
@@ -171,20 +171,19 @@ map("n", "<leader>duc", function()
 end)
 
 
-vim.lsp.config('nil_ls', {
-    cmd = { 'nil' },
+vim.lsp.config('nixd', {
+    cmd = { 'nixd' },
     filetypes = { 'nix' },
     root_markers = { 'flake.nix', '.git' },
     settings = {
-        ['nil'] = {
-            testSetting = 42,
+        nixd = {
             formatting = {
-                command = { "nixpkgs-fmt" },
+                command = { "nixfmt" },
             },
         },
     },
 })
-vim.lsp.enable('nil_ls')
+vim.lsp.enable('nixd')
 
 -- completion related settings
 -- This is similiar to what I use
@@ -193,8 +192,6 @@ cmp.setup({
     sources = {
         { name = 'path',                   keyword_length = 3 }, -- file paths
         { name = 'nvim_lsp', },                                  -- from language server
-        { name = 'nvim_lsp_signature_help' },                    -- display function signatures with current parameter emphasized
-        { name = 'nvim_lua',               keyword_length = 2 }, -- complete neovim's Lua runtime API such vim.lsp.*
         { name = 'buffer',                 keyword_length = 2 }, -- source current buffer
         { name = 'vsnip',                  keyword_length = 2 }, -- nvim-cmp source for vim-vsnip
         { name = 'vim-dadbod-completion' },                      -- source for vim-dadbod
@@ -220,4 +217,14 @@ cmp.setup({
             select = true,
         })
     }),
+})
+
+cmp.setup.cmdline('/', {
+    mapping = cmp.mapping.preset.cmdline(),
+    sources = { { name = 'buffer' } },
+})
+
+cmp.setup.cmdline(':', {
+    mapping = cmp.mapping.preset.cmdline(),
+    sources = cmp.config.sources({ { name = 'path' } }, { { name = 'cmdline' } }),
 })

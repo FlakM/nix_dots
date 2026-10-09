@@ -1,5 +1,6 @@
 -- Set up the nvim-metals configuration for Scala, SBT, and Java file types
 local metals_config = require("metals").bare_config()
+metals_config.capabilities = require("cmp_nvim_lsp").default_capabilities()
 
 metals_config.settings = { 
     metalsBinaryPath = metals_path,

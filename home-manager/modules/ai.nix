@@ -39,7 +39,6 @@ let
     sed '4i version: ${catchupVersion}' ${catchupSkillSource} > "$out"
   '';
   cxSkills = inputs.cx-cli.packages.${pkgs.stdenv.hostPlatform.system}.skills;
-  peonPingEnabled = lib.attrByPath [ "programs" "peon-ping" "enable" ] false config;
   cxSkillFiles = lib.mapAttrs'
     (name: _: lib.nameValuePair ".claude/skills/${name}" { force = true; source = "${cxSkills}/${name}"; })
     (lib.filterAttrs (_: t: t == "directory") (builtins.readDir cxSkills));
@@ -54,8 +53,19 @@ let
     if hasCxPrivate then
       lib.mapAttrs'
         (name: _: lib.nameValuePair ".claude/skills/${name}" { force = true; source = "${cxPrivateSkills}/${name}"; })
-        (lib.filterAttrs (_: t: t == "directory") (builtins.readDir cxPrivateSkills))
+        # grill-me: prefer the upstream mattpocock version over the private fork
+        (lib.filterAttrs (name: t: t == "directory" && name != "grill-me") (builtins.readDir cxPrivateSkills))
     else { };
+
+  # https://github.com/mattpocock/skills - plugin.json lists the shipped subset
+  mattSkills = inputs.mattpocock-skills;
+  mattSkillFiles = lib.filterAttrs (name: _: !(cxSkillFiles ? ${name} || cxPrivateSkillFiles ? ${name}))
+    (builtins.listToAttrs (map
+      (rel: {
+        name = ".claude/skills/${baseNameOf rel}";
+        value = { force = true; source = "${mattSkills}/${lib.removePrefix "./" rel}"; };
+      })
+      (builtins.fromJSON (builtins.readFile "${mattSkills}/.claude-plugin/plugin.json")).skills));
 in
 {
   home.packages = with llm-agents-pkgs; [
@@ -103,7 +113,8 @@ in
     })
     (builtins.attrNames (builtins.readDir ./claude/skills)))
   // cxSkillFiles
-  // cxPrivateSkillFiles;
+  // cxPrivateSkillFiles
+  // mattSkillFiles;
 
   xdg.configFile."opencode/command/i-have-adhd.md" = {
     force = true;
@@ -165,7 +176,7 @@ in
       plugin = [
         "opencode-gemini-auth@latest"
         "opencode-handoff@0.5.0"
-      ] ++ lib.optional peonPingEnabled "./plugins/peon-ping.ts";
+      ];
       provider.google.options.projectId = "904216483369";
     };
   };

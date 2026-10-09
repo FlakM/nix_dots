@@ -1,7 +1,7 @@
 { config, lib, pkgs, llm-agents-pkgs, ... }:
 
 let
-  SSH = "${pkgs.openssh}/bin/ssh -o BatchMode=yes -i /home/flakm/.ssh/ccusage_push flakm@amd-pc";
+  SSH = "${pkgs.openssh}/bin/ssh -o BatchMode=yes -o ConnectTimeout=10 -o ServerAliveInterval=10 -o ServerAliveCountMax=2 -i /home/flakm/.ssh/ccusage_push flakm@amd-pc";
   JQ = "${pkgs.jq}/bin/jq";
   CURL = "${pkgs.curl}/bin/curl";
   CCUSAGE = "${llm-agents-pkgs.ccusage}/bin/ccusage";
@@ -120,6 +120,7 @@ in
     Unit.Description = "Push ccusage daily stats to Prometheus Pushgateway";
     Service = {
       Type = "oneshot";
+      TimeoutStartSec = 90;
       ExecStart = "${ccusage-push}";
     };
   };

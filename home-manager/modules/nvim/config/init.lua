@@ -85,15 +85,21 @@ require("lualine").setup({
 
 require("fidget").setup({})
 
-require("gitblame").setup({
-  enabled = true,
-})
-
 require("nvim-tree").setup({
   view = { width = 50 },
   hijack_cursor = true,
   update_focused_file = { enable = true },
 })
+
+local telescope = require("telescope")
+telescope.setup({
+  extensions = {
+    ["ui-select"] = require("telescope.themes").get_dropdown({}),
+  },
+})
+for _, extension in ipairs({ "ui-select", "live_grep_args", "fzy_native" }) do
+  pcall(telescope.load_extension, extension)
+end
 
 map("n", "<C-n>", [[<cmd>NvimTreeToggle<CR>]])
 map("n", "<leader>r", [[<cmd>NvimTreeRefresh<CR>]])
@@ -209,7 +215,7 @@ local function project_root()
   local markers = { ".git", ".hg", "package.json", "Cargo.toml", "pyproject.toml", "go.mod" }
   local root_file = vim.fs.find(markers, {
     upward = true,
-    stop = vim.loop.os_homedir(),
+    stop = vim.uv.os_homedir(),
     path = vim.fs.dirname(bufpath),
   })[1]
   if root_file then
@@ -578,6 +584,12 @@ autocmd("BufRead", {
   callback = function(args)
     vim.bo[args.buf].readonly = true
   end,
+})
+
+vim.filetype.add({
+  pattern = {
+    [".*/%.github/workflows/.*%.ya?ml"] = "yaml.ghaction",
+  },
 })
 
 autocmd("InsertLeave", {

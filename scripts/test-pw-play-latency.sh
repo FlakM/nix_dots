@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-sample="${1:-$HOME/.openpeon/packs/rick-and-morty/sounds/because_i_invent_transform_create_and_destroy_for_a_living.mp3}"
+sample="${1:?usage: $0 <sample-file>}"
 system_pw_play="/run/current-system/sw/bin/pw-play"
 wrapper_pw_play="$HOME/.local/bin/pw-play"
 

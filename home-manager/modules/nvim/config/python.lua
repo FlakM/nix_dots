@@ -1,8 +1,17 @@
--- Setup Pyright via lspmux
-local pyright_path = vim.fn.exepath("pyright-langserver")
-if pyright_path ~= "" then
-  vim.lsp.config('pyright', {
-    cmd = { "lspmux", "client", "--server-path", pyright_path, "--", "--stdio" },
+local basedpyright_path = vim.fn.exepath("basedpyright-langserver")
+if basedpyright_path ~= "" then
+  vim.lsp.config("basedpyright", {
+    cmd = { "lspmux", "client", "--server-path", basedpyright_path, "--", "--stdio" },
+    settings = {
+      basedpyright = {
+        analysis = {
+          diagnosticMode = "openFilesOnly",
+          typeCheckingMode = "standard",
+        },
+      },
+    },
   })
+  vim.lsp.enable("basedpyright")
 end
-vim.lsp.enable('pyright')
+
+vim.lsp.enable("ruff")

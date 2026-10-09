@@ -145,6 +145,72 @@
 
   services.sonarr.enable = true;
 
+  sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+  sops.secrets.nzb_api_key = {
+    sopsFile = ../../secrets/secrets.yaml;
+  };
+
+  systemd.services.sonarr-nzbgeek-key = {
+    description = "Sync and test Sonarr's NZBgeek API key";
+    wantedBy = [ "multi-user.target" ];
+    requires = [ "sonarr.service" ];
+    after = [ "sonarr.service" ];
+    serviceConfig.Type = "oneshot";
+    script = ''
+      ${pkgs.python3}/bin/python3 - <<'PY'
+      import json
+      import time
+      import urllib.request
+      import xml.etree.ElementTree as ET
+      from pathlib import Path
+
+      secret = Path("${config.sops.secrets.nzb_api_key.path}").read_text().strip()
+      if not secret:
+          raise SystemExit("NZBgeek key is empty")
+
+      api_key = ET.parse("/var/lib/sonarr/.config/NzbDrone/config.xml").findtext("ApiKey")
+      base = "http://127.0.0.1:8989/api/v3/"
+      headers = {"X-Api-Key": api_key, "Content-Type": "application/json"}
+
+      def request(path, method="GET", data=None):
+          body = json.dumps(data).encode() if data is not None else None
+          req = urllib.request.Request(base + path, headers=headers, data=body, method=method)
+          with urllib.request.urlopen(req, timeout=30) as response:
+              return json.load(response) if response.status != 204 else None
+
+      for attempt in range(30):
+          try:
+              indexers = request("indexer")
+              break
+          except OSError:
+              if attempt == 29:
+                  raise
+              time.sleep(1)
+
+      matches = [indexer for indexer in indexers if indexer["name"] == "NZBgeek"]
+      if len(matches) != 1:
+          raise SystemExit("Expected exactly one NZBgeek indexer")
+      indexer = matches[0]
+      fields = [field for field in indexer["fields"] if field["name"] == "apiKey"]
+      if len(fields) != 1:
+          raise SystemExit("NZBgeek API key field is missing")
+
+      fields[0]["value"] = secret
+      request("indexer/test", "POST", indexer)
+      request("indexer/" + str(indexer["id"]), "PUT", indexer)
+      print("NZBgeek key applied and tested")
+      PY
+    '';
+  };
+
+  systemd.timers.sonarr-nzbgeek-key = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "daily";
+      Persistent = true;
+    };
+  };
+
   services.sabnzbd = {
     enable = true;
     # 26.05 deprecates configFile in favour of settings. With stateVersion < 26.05

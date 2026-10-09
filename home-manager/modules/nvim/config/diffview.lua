@@ -32,6 +32,6 @@ local map = vim.keymap.set
 local opts = { noremap = true, silent = true }
 
 map("n", "<leader>do", "<cmd>DiffviewOpen<CR>", vim.tbl_extend("force", opts, { desc = "Diffview open" }))
-map("n", "<leader>dc", "<cmd>DiffviewClose<CR>", vim.tbl_extend("force", opts, { desc = "Diffview close" }))
+map("n", "<leader>dx", "<cmd>DiffviewClose<CR>", vim.tbl_extend("force", opts, { desc = "Diffview close" }))
 map("n", "<leader>df", "<cmd>DiffviewFileHistory %<CR>", vim.tbl_extend("force", opts, { desc = "Diffview file history" }))
 map("n", "<leader>dF", "<cmd>DiffviewFileHistory<CR>", vim.tbl_extend("force", opts, { desc = "Diffview repo history" }))

@@ -57,6 +57,7 @@ vim.g.rustaceanvim = {
     -- LSP configuration
     server = {
         cmd = { "lspmux", "client", "--server-path", rust_analyzer_path },
+        capabilities = require("cmp_nvim_lsp").default_capabilities(),
         on_attach = function(client, bufnr)
             -- you can also put keymaps in here
         end,
@@ -209,23 +210,6 @@ end
 --         -- ...,
 --     },
 -- }
-
--- This is your opts table
-require("telescope").setup {
-    defaults = {
-    },
-    extensions = {
-        ["ui-select"] = {
-            require("telescope.themes").get_dropdown {
-                -- even more opts
-            },
-        }
-    }
-}
--- To get ui-select loaded and working with telescope, you need to call
--- load_extension, somewhere after setup function:
-require("telescope").load_extension("ui-select")
-
 
 --dap.configurations.rust = {
 --  {

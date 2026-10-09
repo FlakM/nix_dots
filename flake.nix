@@ -59,11 +59,6 @@
 
     llm-agents.url = "github:numtide/llm-agents.nix";
 
-    peon-ping = {
-      url = "github:PeonPing/peon-ping";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     eink-bridge = {
       url = "path:/home/flakm/programming/flakm/eink-bridge";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -77,6 +72,11 @@
     nix-openclaw.url = "github:openclaw/nix-openclaw";
 
     cx-cli.url = "git+ssh://git@github.com/coralogix/cx-cli?ref=fix-nix";
+
+    mattpocock-skills = {
+      url = "github:mattpocock/skills";
+      flake = false;
+    };
 
     coralogix-private = {
       url = "git+ssh://git@github.com/FlakM/nix-coralogix-private";
@@ -116,7 +116,6 @@
     , librus-notifications
     , jump
     , llm-agents
-    , peon-ping
     , microvm
     , eink-bridge
     , nix-openclaw
@@ -276,7 +275,6 @@
               };
               home-manager.sharedModules = [
                 sops-nix.homeManagerModules.sops
-                peon-ping.homeManagerModules.default
               ];
               home-manager.users.flakm = import ./home-manager/${hostName}.nix;
             }
@@ -375,7 +373,6 @@
         ];
         homeManagerSharedModules = [
           sops-nix.homeManagerModules.sops
-          peon-ping.homeManagerModules.default
         ];
         homeManagerBackupFileExtension = "hm-bak";
       };

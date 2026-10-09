@@ -12,6 +12,7 @@ in
     port = port;
     settings = {
       BASE_URL = domain;
+      OPENAI_MODEL = "gpt-6.1-sol";
     };
     credentialsFile = config.sops.secrets.open_api_key.path;
     database.createLocally = true;

@@ -1,66 +1,43 @@
-local util = require('lspconfig.util')
+local eslint_on_attach = vim.lsp.config.eslint.on_attach
+vim.lsp.config("eslint", {
+  settings = {
+    format = false,
+    workingDirectory = { mode = "auto" },
+  },
+  on_attach = function(client, bufnr)
+    if eslint_on_attach then
+      eslint_on_attach(client, bufnr)
+    end
+    local group = vim.api.nvim_create_augroup("eslint_fix_all", { clear = false })
+    vim.api.nvim_clear_autocmds({ group = group, buffer = bufnr })
+    vim.api.nvim_create_autocmd("BufWritePre", {
+      group = group,
+      buffer = bufnr,
+      command = "EslintFixAll",
+    })
+  end,
+})
+vim.lsp.enable("eslint")
 
--- Only setup ESLint if the project root has a .eslintrc.json file
-local eslint_root = util.root_pattern(".eslintrc.json")
-if eslint_root(vim.fn.getcwd()) then
-  vim.lsp.config('eslint', {
-    root_dir = eslint_root,
+local vtsls_path = vim.fn.exepath("vtsls")
+if vtsls_path ~= "" then
+  vim.lsp.config("vtsls", {
+    cmd = { "lspmux", "client", "--server-path", vtsls_path, "--", "--stdio" },
     settings = {
-      format = true,
-    },
-    on_attach = function(client, bufnr)
-      vim.api.nvim_create_autocmd("BufWritePre", {
-        buffer = bufnr,
-        command = "EslintFixAll",
-      })
-    end,
-  })
-  vim.lsp.enable('eslint')
-end
-
--- Setup TypeScript Language Server via lspmux
-local ts_ls_path = vim.fn.exepath("typescript-language-server")
-if ts_ls_path ~= "" then
-  vim.lsp.config('ts_ls', {
-    cmd = { "lspmux", "client", "--server-path", ts_ls_path, "--", "--stdio" },
-    init_options = {
-      hostInfo = 'neovim',
-      maxTsServerMemory = 8192,
-      disableAutomaticTypingAcquisition = true,
-    },
-    settings = {
-      completions = {
-        completeFunctionCalls = true,
+      vtsls = {
+        autoUseWorkspaceTsdk = true,
+      },
+      typescript = {
+        inlayHints = {
+          parameterNames = { enabled = "literals" },
+          parameterTypes = { enabled = true },
+          variableTypes = { enabled = true },
+          propertyDeclarationTypes = { enabled = true },
+          functionLikeReturnTypes = { enabled = true },
+          enumMemberValues = { enabled = true },
+        },
       },
     },
   })
-end
-vim.lsp.enable('ts_ls')
-
--- Only setup Prettier formatting if the project root has a .prettierrc file
-local prettier_root = util.root_pattern(".prettierrc")
-if prettier_root(vim.fn.getcwd()) then
-  local null_ls = require('null-ls')
-  local formatting = null_ls.builtins.formatting
-  local augroup = vim.api.nvim_create_augroup("LspFormatting", {})
-
-  null_ls.setup({
-    debug = true,
-    filetypes = { "javascript" },
-    sources = {
-      formatting.prettier,
-    },
-    on_attach = function(client)
-      if client.supports_method("textDocument/formatting") then
-        vim.api.nvim_clear_autocmds({ group = augroup })
-        vim.api.nvim_create_autocmd("BufWritePre", {
-          group = augroup,
-          pattern = "*.js",
-          callback = function(args)
-            vim.lsp.buf.format({ bufnr = args.buf })
-          end,
-        })
-      end
-    end,
-  })
+  vim.lsp.enable("vtsls")
 end

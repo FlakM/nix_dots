@@ -14,6 +14,7 @@
     ./modules/nvim/neovim.nix
     ./modules/rust.nix
     ./modules/tmux.nix
+    ./modules/herdr.nix
     ./modules/git.nix
     ./modules/gpg_home.nix
     ./modules/brother.nix
@@ -52,13 +53,17 @@
     ./modules/front.nix
     ./modules/calendar.nix
     ./modules/mermaid
-    ./modules/peon-ping.nix
     ./modules/pw-play-wrapper.nix
     ./modules/eink-bridge.nix
     ./modules/omada.nix
   ];
 
   xdg.enable = true;
+
+  herdr = {
+    sidebarWidth = 56;
+    sidebarMaxWidth = 120;
+  };
 
   dconf.settings."org/blueman/plugins/autoconnect".services = [ ];
 
