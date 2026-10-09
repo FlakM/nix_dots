@@ -94,11 +94,11 @@
         "protofetch-nix": "protofetch-nix"
       },
       "locked": {
-        "lastModified": 1790247680,
-        "narHash": "sha256-pw1fCHmeVNnB0Nkp138Bo1Jyprraz+BGQrwZv8xb32o=",
+        "lastModified": 1791545905,
+        "narHash": "sha256-SMW9k8gtikaGS9IshSerWKsM1BKmtAVruUjOk8hJKUg=",
         "ref": "refs/heads/main",
-        "rev": "f6471e1144dd650320d863d5b1978106462741d8",
-        "revCount": 17,
+        "rev": "81469d6c231b711b3be3271edee02d1f857f2085",
+        "revCount": 18,
         "type": "git",
         "url": "ssh://git@github.com/FlakM/nix-coralogix-private"
       },
@@ -159,11 +159,11 @@
     "cxdb": {
       "flake": false,
       "locked": {
-        "lastModified": 1790241982,
-        "narHash": "sha256-nqZhZfF4DSo9Hu72hWRHCz7CtmaH6/4dvja3tDeMIUA=",
+        "lastModified": 1791545807,
+        "narHash": "sha256-0+rGATfSGRBFjZi28JvtIl7RhOwWoHe+e3tVYt4Oagw=",
         "ref": "refs/heads/master",
-        "rev": "2b5cfc7c11b03b783118d9953418b958e41e8bd7",
-        "revCount": 25,
+        "rev": "52b6fff25f414ba64f957ed0ed600ad6833f6ac2",
+        "revCount": 27,
         "type": "git",
         "url": "ssh://git@github.com/coralogix/internal-cxdb"
       },
