@@ -17,7 +17,7 @@ in
         #"page cache size" = 32;
 
         # update interval
-        #"update every" = 5;
+        "update every" = 5;
       };
       ml = {
         # enable machine learning - set to yes

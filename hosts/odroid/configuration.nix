@@ -135,6 +135,10 @@
 
   boot.zfs.extraPools = [ "tank" ];
 
+  # Cap ARC and reclaim cache before swapping; the box was filling its 4G swap.
+  boot.kernelParams = [ "zfs.zfs_arc_max=42949672960" ]; # 40 GiB
+  boot.kernel.sysctl."vm.swappiness" = 10;
+
   services.zfs.autoScrub = {
     enable = true;
     interval = "monthly";
