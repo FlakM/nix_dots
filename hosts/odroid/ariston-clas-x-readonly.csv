@@ -1,0 +1,4 @@
+# Candidate mappings from ysard/kredow; no automatic polling or writes.
+r,boiler,pump_speed_candidate,Pump speed candidate,,3c,2000,c000,ign,s,IGN:1,,,,value,s,UCH
+r,boiler,register_6847,Unverified register 6847,,3c,2000,6847,ign,s,IGN:1,,,,value,s,UIN,10
+r,boiler,pump_modulation_candidate,Pump modulation candidate,,3c,2000,c300,ign,s,IGN:1,,,,value,s,UCH

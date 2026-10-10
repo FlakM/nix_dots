@@ -42,6 +42,8 @@
 
     ./home-assistant.nix
     ./mosquitto.nix
+    ./ebusd.nix
+    ./heating-monitoring.nix
     ./frigate.nix
     ./lionelo-camera.nix
 
