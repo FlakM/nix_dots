@@ -232,6 +232,49 @@ danych; temperatura i przepływ wody mierzą inny bilans niż paliwo. [M], s. 16
 
 [HA-gaz]: https://www.home-assistant.io/docs/energy/gas/
 
+## Obserwacje weekendu — 2026-10-12
+
+Źródło: historia `states` w PostgreSQL HA, przedział lokalny Europe/Warsaw
+2026-10-10–2026-10-12. Pierwsze dane pieca: 2026-10-11 00:25:55;
+brak próbek z soboty. Czas liczony z długości stanów, epizody ze zmian stanu,
+nie z liczby wierszy. Braku danych nie zaliczano do pracy.
+
+| Niedziela 11.10 | Wynik z dostępnej historii |
+|---|---|
+| Tryb CO | 44,01 min; 43 wejścia w tryb |
+| Tryb CWU | 46,93 min; 104 wejścia w tryb |
+| Tryb COMFORT | 17,63 min; 109 wejść w tryb |
+| Wykryty płomień, od 00:54 | 108,89 min; 101 epizodów |
+| Zakończone epizody płomienia | Mediana 25,1 s; 70 ze 101 poniżej minuty; najdłuższy 410,4 s |
+| Rejestr zapłonów | 33151 → 33374, przyrost 223 między odczytami 00:25 i 23:55 |
+| Zasilanie | 18,4–68,7°C; maksimum o 14:10:48 |
+| Powrót | 19,2–68,0°C; maksimum o 12:07:21 |
+| Status niedostępny | 101,74 min; 87 wejść w niedostępność |
+| Rejestr 6147 | 48,0 w dostępnych zapisach; nadal niepotwierdzone znaczenie |
+
+Nie utożsamiać wejść w tryb z zapłonami lub poborami wody. Przerwy
+dostępności mogą dzielić epizody, a próbkowanie pomijać krótkie płomienie.
+Przyrost rejestru zapłonów jest większy niż liczba wykrytych epizodów;
+różnica wymaga walidacji skali licznika i rozdzielczości próbkowania.
+Delta T osiągała -26,9–35,6 K: przed interpretacją trzeba sprawdzić
+próbki przejściowe i niesynchroniczny odczyt dwóch temperatur.
+
+Wprowadzone zmiany:
+- Wyłączono automatyczny MQTT discovery ebusd; encje pieca definiuje Nix.
+- Usunięto przez API HA 46 nieużywanych encji: duplikaty discovery,
+  stare nazwy, kandydackie odczyty i dwa niewykorzystywane pomocniki płomienia.
+- Dodano kolorowe statusy dashboardu, z osobnym oznaczeniem braku danych.
+- Potwierdzono aktywny odczyt `boiler_status`, dodano go do pollingu
+  (pięć odczytów po kolei co 5 s) i zmieniono wygaszanie statusu z 30 na 120 s.
+
+Następne kroki:
+1. Porównać dostępność i liczbę epizodów po 24–48 h nowego pollingu.
+2. Zarejestrować ciągłe żądanie CO i pobór CWU osobno; porównać płomień,
+   przyrost zapłonów, COMFORT i panel kotła. Krótkie epizody są obserwacją,
+   nie diagnozą usterki. Nie zmieniono nastaw kotła.
+3. Zweryfikować wyrównanie czasowe temperatur i Delta T w stabilnym CO.
+4. Ustalić model gazomierza i sposób rzeczywistego odczytu zużycia.
+
 ## Źródła pierwotne
 
 [M]: https://www.kamody.cz/soubory/relatedfile/PL_ARISTON_CLAS_X_24_CF_3301313_3301314_MANUAL.pdf

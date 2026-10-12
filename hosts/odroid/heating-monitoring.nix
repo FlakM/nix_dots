@@ -96,6 +96,17 @@ let
       }];
   };
   entity = id: name: { entity = id; inherit name; };
+  statusCard = {
+    type = "markdown";
+    title = "Status teraz";
+    content = ''
+      {% set status = states('sensor.piec_status') %}
+      ## {{ {'standby': '🟢 Gotowość', 'heating': '🟠 CO — kaloryfery', 'heating hot water': '🔵 CWU — woda w kranach', 'circulating': '🟡 Obieg pompy', 'comfort': '🟣 Komfort CWU', 'low_water_pressure': '🔴 Niskie ciśnienie — sprawdź panel kotła', 'no_flame': '🔴 Brak płomienia — sprawdź panel kotła', 'unavailable': '🔴 Brak aktualnych danych', 'unknown': '⚪ Oczekiwanie na dane'}.get(status, '⚪ Tryb nierozpoznany: ' ~ status) }}
+      {{ '🟢 Dane aktualne' if is_state('binary_sensor.piec_dane_aktualne', 'on') else '🔴 Dane nieaktualne' }} · {{ '🔥 Płomień wykryty' if is_state('binary_sensor.piec_plomien_aktywne', 'on') else ('⚫ Płomień wyłączony' if is_state('binary_sensor.piec_plomien_aktywne', 'off') else '⚪ Brak danych o płomieniu') }}
+
+      **Zasilanie:** {{ states('sensor.piec_zasilanie') }} °C · **Powrót:** {{ states('sensor.piec_powrot') }} °C
+    '';
+  };
   graph = title: entities: { type = "history-graph"; inherit title entities; hours_to_show = 12; };
   temperatureEntities = [
     { entity = "sensor.piec_zasilanie"; name = "Zasilanie"; color = "#e76f51"; }
@@ -170,6 +181,7 @@ let
         path = "overview";
         icon = "mdi:fire";
         cards = [
+          statusCard
           {
             type = "markdown";
             content = "## Ariston Clas X 24 CF EU\nKociol dwufunkcyjny: **CO = kaloryfery**, **CWU = przeplywowa woda w kranach**. Monitoring tylko do odczytu. Czasy dotycza trybu kotla; nie sa dokladnym pomiarem spalania gazu. Historia szczegolowa: 30 dni; statystyki dlugoterminowe od uruchomienia. Pierwszy dzien/tydzien jest niepelny.";
@@ -301,7 +313,7 @@ let
           }
           {
             type = "markdown";
-            content = "**Ocena pracy CO:** obserwuj długość epizodów, przyrost rejestru zapłonów oraz zasilanie/powrót i Delta T. Krótkie cykle mogą wskazywać taktowanie, ale nie dowodzą usterki. Delta T nie jest sprawnością.\n\n**Liczniki:** skala czasu CO/CWU/pompy wymaga porównania z menu kotła — pokazujemy surowe wartości bez przypisywania godzin. Modulacja również ma niepotwierdzoną jednostkę.\n\n**Gaz:** nie mamy potwierdzonego licznika m³ ani przepływomierza gazu. Czas płomienia i modulacja nie są pomiarem zużycia. Rejestr 6847 ma sprzeczne opisy (moc/przepływ CWU), a 6147 — nastawa/pomiar CWU. Nie wyliczamy na ich podstawie kWh, m³ ani sprawności. Rzeczywisty pomiar wymaga odczytu gazomierza lub potwierdzonego sensora przepływu gazu.";
+            content = "**Ocena pracy CO:** obserwuj długość epizodów, przyrost rejestru zapłonów oraz zasilanie/powrót i Delta T. Krótkie cykle mogą wskazywać taktowanie, ale nie dowodzą usterki. Przerwy dostępności mogą rozdzielać jeden epizod na kilka. Temperatury są odczytywane kolejno; Delta T podczas przełączenia trybu może być chwilowo zniekształcona i nie jest sprawnością.\n\n**Liczniki:** skala czasu CO/CWU/pompy wymaga porównania z menu kotła — pokazujemy surowe wartości bez przypisywania godzin. Modulacja również ma niepotwierdzoną jednostkę.\n\n**Gaz:** nie mamy potwierdzonego licznika m³ ani przepływomierza gazu. Czas płomienia i modulacja nie są pomiarem zużycia. Rejestr 6847 ma sprzeczne opisy (moc/przepływ CWU), a 6147 — nastawa/pomiar CWU. Nie wyliczamy na ich podstawie kWh, m³ ani sprawności. Rzeczywisty pomiar wymaga odczytu gazomierza lub potwierdzonego sensora przepływu gazu.";
           }
         ];
       }
@@ -321,7 +333,7 @@ in
         show_in_sidebar = true;
       };
       mqtt.sensor = [
-        (mqttSensor "piec_status" "Piec status" "boiler/boiler_status" "boilerstatus" { expire_after = 30; })
+        (mqttSensor "piec_status" "Piec status" "boiler/boiler_status" "boilerstatus" { expire_after = 120; })
         (mqttSensor "piec_zasilanie" "Piec zasilanie" "boiler/LWT_temp" "0" (temperature // { force_update = true; }))
         (mqttSensor "piec_powrot" "Piec powrot" "boiler/EWT_temp" "0" (temperature // { force_update = true; }))
         (mqttSensor "piec_modulacja_surowa" "Piec modulacja surowa" "boiler/boiler_current_modulation" "0" { state_class = "measurement"; })
@@ -364,7 +376,7 @@ in
               unique_id = "piec_tryb";
               default_entity_id = "sensor.piec_tryb";
               availability = "{{ has_value('sensor.piec_status') }}";
-              state = "{{ {'standby': 'Gotowosc', 'heating': 'CO — kaloryfery', 'heating hot water': 'CWU — woda w kranach', 'circulating': 'Obieg pompy', 'comfort': 'Komfort CWU'}.get(states('sensor.piec_status'), states('sensor.piec_status')) }}";
+              state = "{{ {'standby': '🟢 Gotowość', 'heating': '🟠 CO — kaloryfery', 'heating hot water': '🔵 CWU — woda w kranach', 'circulating': '🟡 Obieg pompy', 'comfort': '🟣 Komfort CWU', 'low_water_pressure': '🔴 Niskie ciśnienie', 'no_flame': '🔴 Brak płomienia'}.get(states('sensor.piec_status'), '⚪ ' ~ states('sensor.piec_status')) }}";
             }
             {
               name = "Piec CO Delta T";
@@ -378,7 +390,10 @@ in
           ];
         }
       ];
-      sensor = modeStats "co" ++ modeStats "cwu" ++ modeStats "plomien"
+      sensor = modeStats "co" ++ modeStats "cwu" ++ [
+        (historyStat "plomien" "czas dzisiaj" "time" "czas_dzisiaj" "{{ today_at('00:00') }}")
+        (historyStat "plomien" "cykle dzisiaj" "count" "cykle_dzisiaj" "{{ today_at('00:00') }}")
+      ]
         ++ temperatureStats "zasilanie" ++ temperatureStats "powrot"
         ++ temperatureStats "co_zasilanie" ++ temperatureStats "co_powrot" ++ temperatureStats "co_delta_t"
         ++ [
