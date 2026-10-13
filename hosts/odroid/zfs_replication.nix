@@ -1,9 +1,26 @@
-{ ... }: {
+{ pkgs, ... }: {
 
-  # sudo zfs allow -d backup create,receive,destroy,rollback,snapshot,hold,release,mount tank/backup/
   # sudo zfs allow -d backup create,receive,destroy,rollback,snapshot,hold,release,mount rpool/nixos/var/lib/postgresql
   # sudo zfs allow -d backup create,receive,destroy,rollback,snapshot,hold,release,mount rpool/nixos/var/lib/paperless
   # sudo zfs allow -d backup create,receive,destroy,rollback,snapshot,hold,release,mount tank/data/media/audiobookshelf
+
+  # The syncoid module unallows the shared parent tank/backup on every odroid
+  # job stop, which strips the receive delegation amd-pc's push into
+  # tank/backup/programming relies on. Grant it on the dataset itself so it
+  # survives the parent unallow.
+  systemd.services.zfs-allow-tank-backup-programming = {
+    description = "Ensure ZFS receive delegation for amd-pc syncoid target";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "zfs-import.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    script = ''
+      ${pkgs.zfs}/bin/zfs allow backup change-key,compression,create,mount,mountpoint,receive,rollback tank/backup/programming
+    '';
+  };
+
   services.syncoid = {
     enable = true;
     user = "backup";
