@@ -136,7 +136,7 @@ let
     runtimeInputs = [ pkgs.mosquitto ];
     text = ''
       exec mosquitto_sub \
-        --host 192.168.0.102 \
+        --host 192.168.0.102 --port 1884 --username mqtt --pw "$(cat /run/secrets/mqtt_password)" \
         --topic 'frigate/+/person' \
         --qos 1 \
         -R \
@@ -150,20 +150,20 @@ let
       case "''${1:-watch}" in
         watch)
           exec mosquitto_sub \
-            --host 192.168.0.102 \
+            --host 192.168.0.102 --port 1884 --username mqtt --pw "$(cat /run/secrets/mqtt_password)" \
             --topic 'home/camera-alerts/snooze/state' \
             --qos 1
           ;;
         snooze)
           exec mosquitto_pub \
-            --host 192.168.0.102 \
+            --host 192.168.0.102 --port 1884 --username mqtt --pw "$(cat /run/secrets/mqtt_password)" \
             --topic 'home/camera-alerts/snooze/set' \
             --message 30 \
             --qos 1
           ;;
         resume)
           exec mosquitto_pub \
-            --host 192.168.0.102 \
+            --host 192.168.0.102 --port 1884 --username mqtt --pw "$(cat /run/secrets/mqtt_password)" \
             --topic 'home/camera-alerts/snooze/set' \
             --message 0 \
             --qos 1
@@ -179,7 +179,7 @@ let
       case "''${1:-watch}" in
         watch)
           exec mosquitto_sub \
-            --host 192.168.0.102 \
+            --host 192.168.0.102 --port 1884 --username mqtt --pw "$(cat /run/secrets/mqtt_password)" \
             --topic 'lionelo/babyline/private/state'
           ;;
         set)
@@ -189,7 +189,7 @@ let
             *) printf 'usage: quickshell-camera-private set on|off\n' >&2; exit 2 ;;
           esac
           exec mosquitto_pub \
-            --host 192.168.0.102 \
+            --host 192.168.0.102 --port 1884 --username mqtt --pw "$(cat /run/secrets/mqtt_password)" \
             --topic 'lionelo/babyline/private/set' \
             --message "$payload"
           ;;
@@ -253,11 +253,17 @@ in
     After = lib.mkForce [ "wayland-session@Hyprland.target" ];
     X-Restart-Triggers = [ "${./quickshell/desktop}" ];
   };
-  systemd.user.services.quickshell.Service.Environment = [
-    "QML2_IMPORT_PATH=${pkgs.qt6.qtmultimedia}/lib/qt-6/qml"
-    "QT_PLUGIN_PATH=${pkgs.qt6.qtmultimedia}/lib/qt-6/plugins"
-    "QT_FFMPEG_DECODING_HW_DEVICE_TYPES=,"
-  ];
+  systemd.user.services.quickshell.Service = {
+    Environment = [
+      "QML2_IMPORT_PATH=${pkgs.qt6.qtmultimedia}/lib/qt-6/qml"
+      "QT_PLUGIN_PATH=${pkgs.qt6.qtmultimedia}/lib/qt-6/plugins"
+      "QT_FFMPEG_DECODING_HW_DEVICE_TYPES=,"
+    ];
+    # quickshell waits on its long-lived mosquitto_sub children on shutdown;
+    # bound the stop so restarts/relogs cannot hang.
+    KillMode = "control-group";
+    TimeoutStopSec = 10;
+  };
 
   systemd.user.services.cliphist = {
     Unit = {

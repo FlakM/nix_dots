@@ -220,6 +220,11 @@ in
       owner = "flakm";
       group = "users";
     };
+    # shared MQTT credential (odroid's 1884/8883 listeners); read by quickshell
+    mqtt_password = {
+      mode = "0400";
+      owner = "flakm";
+    };
   };
 
   # The global useDHCP flag is deprecated, therefore explicitly set to false here.
