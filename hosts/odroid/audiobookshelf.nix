@@ -12,9 +12,10 @@
 
   services.audiobookshelf = {
     enable = true;
-    # reached only through the nginx vhost below
-    openFirewall = false;
-    host = "127.0.0.1";
+    # clients (mobile app, Chromecast) connect directly to <lan-ip>:8000, so the
+    # app must listen off-loopback; the nginx vhost below still serves TLS.
+    openFirewall = true;
+    host = "0.0.0.0";
   };
 
   services.nginx = {
