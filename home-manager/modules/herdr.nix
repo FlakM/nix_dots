@@ -106,6 +106,28 @@ let
     cp -r $TMPDIR/.config/opencode $out/
   '';
 
+  # herdr can't move tabs across workspaces, only panes: rebuild the tab there
+  herdrMoveTab = pkgs.writeShellApplication {
+    name = "herdr-move-tab";
+    runtimeInputs = [ herdr pkgs.jq pkgs.fzf ];
+    text = ''
+      src=''${1:-''${HERDR_ACTIVE_PANE_ID:?run from herdr or pass a pane id}}
+      pane=$(herdr pane get "$src" | jq -c .result.pane)
+      tab=$(jq -r .tab_id <<<"$pane")
+      ws=$(jq -r .workspace_id <<<"$pane")
+      label=$(herdr tab get "$tab" | jq -r .result.tab.label)
+      dest=''${2:-$(herdr workspace list | jq -r --arg ws "$ws" \
+        '.result.workspaces[] | select(.workspace_id != $ws) | "\(.workspace_id)\t\(.label)"' |
+        fzf --delimiter='\t' --with-nth=2 --reverse --no-info --prompt="move '$label' to> " | cut -f1)} || exit 0
+      [ -n "$dest" ] || exit 0
+      mapfile -t panes < <(herdr pane list --workspace "$ws" | jq -r --arg t "$tab" '.result.panes[] | select(.tab_id == $t) | .pane_id')
+      new=$(herdr pane move "''${panes[0]}" --new-tab --workspace "$dest" --label "$label" --focus | jq -r .result.move_result.created_tab.tab_id)
+      for p in "''${panes[@]:1}"; do
+        herdr pane move "$p" --tab "$new" --split right --no-focus >/dev/null
+      done
+    '';
+  };
+
   herdrAutoname = pkgs.writers.writePython3Bin "herdr-autoname"
     {
       flakeIgnore = [ "E501" ];
@@ -122,9 +144,9 @@ in
   };
 
   config = {
-    home.packages = [ herdr herdrAdopt herdrAutoname ];
+    home.packages = [ herdr herdrAdopt herdrAutoname herdrMoveTab ];
 
-    systemd.user.services.herdr-autoname = lib.mkIf pkgs.stdenv.isLinux {
+    systemd.user.services.herdr-autoname = lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
       Unit.Description = "Rename herdr tabs after their pane title";
       Service = {
         ExecStart = "${herdrAutoname}/bin/herdr-autoname";
@@ -134,7 +156,7 @@ in
       Install.WantedBy = [ "default.target" ];
     };
 
-    launchd.agents.herdr-autoname = lib.mkIf pkgs.stdenv.isDarwin {
+    launchd.agents.herdr-autoname = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
       enable = true;
       config = {
         ProgramArguments = [ "${herdrAutoname}/bin/herdr-autoname" ];
@@ -187,6 +209,14 @@ in
       navigate_workspace_down = ["j", "down"]
       navigate_pane_up = "ctrl+k"
       navigate_pane_down = "ctrl+j"
+
+      [[keys.command]]
+      key = "prefix+shift+m"
+      type = "popup"
+      command = "${herdrMoveTab}/bin/herdr-move-tab"
+      description = "move tab to workspace"
+      width = "50%"
+      height = "40%"
 
       [[keys.command]]
       key = "prefix+shift+e"
