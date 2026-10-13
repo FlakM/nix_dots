@@ -75,8 +75,7 @@ map("n", "<leader>1", [[<cmd>Obsidian yesterday<CR>]])
 map("n", "<leader>2", [[<cmd>Obsidian today<CR>]])
 map("n", "<leader>3", [[<cmd>Obsidian tomorrow<CR>]])
 
--- set conceallevel to 2
-vim.cmd("set conceallevel=2")
+vim.opt.conceallevel = 2
 
 -- Obsidian buffers are opened by background jobs, so disable swapfiles for them
 -- to avoid E325 warnings when the plugin re-edits an already-open note.

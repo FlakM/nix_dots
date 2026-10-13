@@ -173,7 +173,10 @@ opt.listchars = { nbsp = "¬", extends = "»", precedes = "«", trail = "•" }
 opt.tabstop = 4
 opt.shiftwidth = 4
 opt.expandtab = true
+opt.autoindent = true
+opt.ttyfast = true
 opt.visualbell = false
+opt.errorbells = false
 opt.foldenable = false
 opt.backspace = { "indent", "eol", "start" }
 opt.backup = false
@@ -662,8 +665,6 @@ autocmd("FileType", {
     pcall(vim.treesitter.start, args.buf)
   end,
 })
-
-cmd([[runtime! plugin/python_setup.vim]])
 
 -- Copilot --------------------------------------------------------------------
 vim.g.copilot_no_tab_map = true
