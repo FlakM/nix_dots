@@ -124,14 +124,11 @@
     let
       default_system = "x86_64-linux";
 
-      insecurePackages = [
-        # In use: electron-39 (obsidian/slack on amd-pc+dell-xps), minio
-        # (services.minio on amd-pc), pnpm bootstrap for frontend tooling.
-        # Re-audit if those apps/services are dropped.
-        "electron-39.8.10"
-        "minio-2025-10-15T17-29-55Z"
-        "pnpm-10.29.2"
-      ];
+      # Insecure packages allowed by name (electron: obsidian/slack on
+      # amd-pc+dell-xps; minio: services.minio on amd-pc; pnpm: frontend
+      # tooling bootstrap). Name-based rather than version-pinned so nixpkgs
+      # bumps don't break evaluation.
+      allowInsecurePredicate = p: builtins.elem (p.pname or "") [ "electron" "minio" "pnpm" ];
 
       karabinerOverlay = (self: super: {
         karabiner-elements = super.karabiner-elements.overrideAttrs (old: {
@@ -188,7 +185,7 @@
 
       pkgs-stable = mkPkgs nixpkgs {
         extraConfig = {
-          permittedInsecurePackages = insecurePackages;
+          inherit allowInsecurePredicate;
         };
         overlays = [ karabinerOverlay paperlessOverlay slowapiOverlay ];
       };
@@ -197,18 +194,14 @@
 
       pkgs-unstable = mkPkgs nixpkgs-unstable {
         extraConfig = {
-          permittedInsecurePackages = insecurePackages ++ [
-            "electron-32.3.3"
-          ];
+          inherit allowInsecurePredicate;
         };
         overlays = [ lspmuxOverlay ];
       };
 
       pkgs-master = mkPkgs nixpkgs-master {
         extraConfig = {
-          permittedInsecurePackages = [
-            "electron-32.3.3"
-          ];
+          inherit allowInsecurePredicate;
         };
       };
 
@@ -340,10 +333,6 @@
     {
       formatter.x86_64-linux = pkgs-default.nixpkgs-fmt;
       formatter.aarch64-darwin = (pkgs-stable "aarch64-darwin").nixpkgs-fmt;
-
-      fonts.packages = [
-        nixpkgs.nerd-fonts.fira-code
-      ];
 
       # NixOS configuration entrypoint
       # Available through 'nixos-rebuild --flake .#your-hostname'
