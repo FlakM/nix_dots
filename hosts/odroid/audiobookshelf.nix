@@ -12,8 +12,9 @@
 
   services.audiobookshelf = {
     enable = true;
-    openFirewall = true;
-    host = "0.0.0.0";
+    # reached only through the nginx vhost below
+    openFirewall = false;
+    host = "127.0.0.1";
   };
 
   services.nginx = {

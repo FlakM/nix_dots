@@ -1,4 +1,4 @@
-{ self, config, lib, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 {
 
   networking.firewall.allowedUDPPorts = [ 53 ];
@@ -54,12 +54,17 @@
 
   services.adguardhome = {
     enable = true;
-    openFirewall = true;
+    # admin UI is reached only via the nginx vhost (adguard.house.flakm.com);
+    # DNS 53 is opened explicitly above.
+    openFirewall = false;
     allowDHCP = true;
 
     settings = {
       #auth_attempts = 3;
       #block_auth_min = 10;
+      # NB: runtime config is preserved (mutableSettings implied by
+      # dns.bootstrap_dns), so this bind isn't forced; port 3000 is instead
+      # kept off the firewall (openFirewall = false).
       http.address = "0.0.0.0:3000";
 
       filtering = {
@@ -123,12 +128,8 @@
         upstream_timeout = "3s";
       };
 
-      users = [
-        {
-          name = "admin";
-          password = "$2y$10$PjU1eo8TxgRWekuVfihCZu9H9kwZ8duzmqD.DV2ByDAgQ5e3b7Bri";
-        }
-      ];
+      # admin credentials are kept in AdGuard's own runtime config
+      # (mutableSettings), not committed here.
 
       #statistics = {
       #  enabled = true;

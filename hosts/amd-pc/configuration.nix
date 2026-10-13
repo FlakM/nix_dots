@@ -190,7 +190,7 @@ in
     ];
   };
 
-  services.redis.servers."".enable = false;
+
 
 
   # networking.hostName = "nixos"; # Define your hostname.
@@ -206,14 +206,13 @@ in
   sops.secrets = {
     coralogix_blog_send_key = {
       path = "/var/secrets/coralogix_send_key";
-      mode = "0440";
+      mode = "0400";
       owner = "flakm";
-      group = "users";
     };
     samba_flakm_password = {
-      mode = "0440";
-      owner = "flakm";
-      group = "users";
+      # consumed by create-samba-credentials.service (runs as root)
+      mode = "0400";
+      owner = "root";
       restartUnits = [ "create-samba-credentials.service" ];
     };
     wayvnc_password = {
@@ -321,17 +320,7 @@ in
   };
 
 
-  services.xserver = {
-    enable = false; # might need it for xwayland
-    xkb.layout = "pl";
-    xkb.options = "altwin:ctrl_win";
-  };
-
-
-
-  # Configure keymap in X11
-  #services.xserver.layout = "pl";
-  # services.xserver.xkb.options = "eurosign:e";
+  # Keyboard layout comes from Hyprland (home-manager/modules/hyprland.nix).
   i18n.defaultLocale = "en_US.UTF-8";
 
 
@@ -385,6 +374,10 @@ in
     enable = true;
     #storageDriver = "zfs";
     daemon.settings = {
+      # Publish container ports on localhost by default so dev containers
+      # (mysql/redis/...) are never exposed to the LAN/tailnet. Services that
+      # must be reachable externally should be nginx-proxied or bind explicitly.
+      ip = "127.0.0.1";
       log-driver = "json-file";
       log-opts = {
         max-size = "10m";
@@ -409,6 +402,31 @@ in
       #  };
       #};
     };
+  };
+
+  # Docker inserts its own FORWARD rules that bypass networking.firewall, so
+  # published container ports would otherwise be reachable from the LAN/tailnet
+  # regardless of nixos-fw. Drop forwarded traffic destined to container
+  # networks unless it is return traffic for a container-initiated flow, so
+  # published ports stay host-local. Scoped to 172.16/12 so it does not affect
+  # the Tailscale exit-node forwarding or container egress.
+  systemd.services.docker-firewall = {
+    description = "Block external access to Docker-published ports";
+    after = [ "docker.service" ];
+    requires = [ "docker.service" ];
+    partOf = [ "docker.service" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    path = [ pkgs.iptables ];
+    script = ''
+      iptables -w -C DOCKER-USER -m conntrack --ctstate ESTABLISHED,RELATED -j RETURN \
+        || iptables -w -A DOCKER-USER -m conntrack --ctstate ESTABLISHED,RELATED -j RETURN
+      iptables -w -C DOCKER-USER -d 172.16.0.0/12 -j DROP \
+        || iptables -w -A DOCKER-USER -d 172.16.0.0/12 -j DROP
+    '';
   };
 
   # enable the tailscale daemon; this will do a variety of tasks:
@@ -438,10 +456,6 @@ in
   environment.pathsToLink = [ "/share/zsh" ];
 
   security.polkit.enable = true;
-
-  security.pam.services.swaylock = {
-    text = "auth include login";
-  };
 
 
   # List packages installed in system profile. To search, run:
@@ -556,8 +570,6 @@ in
 
     mariadb
 
-    flatpak
-
     ddcutil
 
     bpftune
@@ -581,7 +593,7 @@ in
   };
 
   # Open ports in the firewall.
-  networking.firewall.allowedTCPPorts = [ 8096 8000 3333 ];
+  networking.firewall.allowedTCPPorts = [ 3333 ];
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
@@ -716,7 +728,6 @@ in
   # Add user to i2c group
   users.users.flakm.extraGroups = lib.mkAfter [
     "wheel"
-    "docker"
     "audio"
     "input"
     "video"
@@ -742,7 +753,6 @@ in
 
   # enable gnome keyring for nextcloud-client to store the password
   services.gnome.gnome-keyring.enable = true;
-  security.pam.services.gdm.enableGnomeKeyring = true;
 
   services.zfs.autoScrub = {
     enable = true;

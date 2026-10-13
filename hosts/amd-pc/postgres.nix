@@ -17,7 +17,7 @@
       host all       all     ::1/128        trust
     '';
     initialScript = pkgs.writeText "backend-initScript" ''
-      CREATE ROLE postgres WITH LOGIN PASSWORD 'postgres' CREATEDB;
+      CREATE ROLE postgres WITH LOGIN CREATEDB;
       CREATE DATABASE postgres;
       GRANT ALL PRIVILEGES ON DATABASE postgres TO postgres;
 

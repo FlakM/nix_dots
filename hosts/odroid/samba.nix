@@ -31,7 +31,7 @@
         #use sendfile = yes
         #max protocol = smb2
         # note: localhost is the ipv6 localhost ::1
-        "hosts allow" = "0.0.0.0/0";
+        "hosts allow" = "192.168.0.0/24 100.64.0.0/10"; # LAN + tailnet
         "guest account" = "nobody";
         "map to guest" = "bad user";
       };
@@ -55,17 +55,6 @@
         "directory mask" = "0755";
         "force user" = "victor";
         "force group" = "victor";
-      };
-
-      kleszczow = {
-        path = "/var/data/kleszczow";
-        browseable = "no";
-        "read only" = "no";
-        "guest ok" = "no";
-        "create mask" = "0644";
-        "directory mask" = "0755";
-        "force user" = "kleszczow";
-        "force group" = "kleszczow";
       };
 
       paperless-consume = {
@@ -100,7 +89,7 @@
         # Set Samba password for flakm user using SOPS secret
         if [ -f "${config.sops.secrets.samba_flakm_password.path}" ]; then
           password=$(cat "${config.sops.secrets.samba_flakm_password.path}")
-          echo -e "$password\n$password" | ${pkgs.samba}/bin/smbpasswd -a -s flakm
+          printf '%s\n%s\n' "$password" "$password" | ${pkgs.samba}/bin/smbpasswd -a -s flakm
           echo "Samba password set for flakm user from SOPS secret"
         else
           echo "SOPS secret file not found: ${config.sops.secrets.samba_flakm_password.path}"

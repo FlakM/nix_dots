@@ -63,14 +63,14 @@ in {
   system.activationScripts.clawd-secrets = {
     deps = [ "setupSecrets" ];
     text = ''
-      install -d -m 0555 -o root -g root /run/clawd-secrets
-      install -m 0444 -o root -g root \
+      install -d -m 0700 -o root -g root /run/clawd-secrets
+      install -m 0400 -o root -g root \
         ${config.sops.secrets.nextcloud_talk_bot_secret.path} \
         /run/clawd-secrets/nextcloud_talk_bot_secret
-      install -m 0444 -o root -g root \
+      install -m 0400 -o root -g root \
         ${config.sops.secrets.github_token.path} \
         /run/clawd-secrets/github_token
-      install -m 0444 -o root -g root \
+      install -m 0400 -o root -g root \
         ${config.sops.secrets.jira_coralogix_token.path} \
         /run/clawd-secrets/jira_coralogix_token
     '';

@@ -149,7 +149,7 @@
 
   # Paperless-AI for document analysis and tagging
   virtualisation.oci-containers.containers.paperless-ai = {
-    image = "clusterzx/paperless-ai:latest";
+    image = "docker.io/clusterzx/paperless-ai@sha256:25e1c501891e2d409f1df92e64e4e20b379a0197b7cd35cf98b49184d9da6814";
     ports = [ "127.0.0.1:3011:3000" ];
     volumes = [
       "paperless-ai-data:/app/data"
@@ -215,6 +215,6 @@
     };
   };
 
-  # Open firewall for internal access
-  networking.firewall.allowedTCPPorts = [ 28981 ];
+  # Paperless is reached through the nginx vhost (paperless.house.flakm.com);
+  # no direct port is exposed.
 }

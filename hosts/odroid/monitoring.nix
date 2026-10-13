@@ -123,16 +123,15 @@
         root_url = "https://grafana.house.flakm.com/";
       };
       security = {
-        # 26.05 dropped the built-in default; keep the historical default key so
-        # existing DB-encrypted datasource secrets stay readable.
-        secret_key = "SW2YcwTIb9zpOOhoPsMm";
+        # 26.05 requires an explicit key with no default; use a file-provider
+        # backed by a randomly generated key (activation script below).
+        secret_key = "$__file{/var/lib/grafana/secret_key}";
         cookie_secure = true;
         csrf_trusted_origins = "grafana.house.flakm.com";
       };
-      # allow anonymous read-only access for home lab convenience
+      # anonymous access disabled; log in at grafana.house.flakm.com
       "auth.anonymous" = {
-        enabled = true;
-        org_role = "Viewer";
+        enabled = false;
       };
     };
 
@@ -171,8 +170,19 @@
   };
 
   # Open ports for LAN access
+  # Grafana 26.05 dropped its built-in default secret_key. Generate a stable
+  # random key on first activation (kept out of the repo) and pass it via env.
+  system.activationScripts.grafana-secret-key = ''
+    install -d -m 0700 -o grafana -g grafana /var/lib/grafana
+    if [ ! -s /var/lib/grafana/secret_key ]; then
+      ${pkgs.openssl}/bin/openssl rand -hex 32 > /var/lib/grafana/secret_key
+      chown grafana:grafana /var/lib/grafana/secret_key
+      chmod 600 /var/lib/grafana/secret_key
+    fi
+  '';
+
+  # Prometheus (9090) is reached via the grafana vhost / locally; not exposed.
   networking.firewall.allowedTCPPorts = [
-    9090 # Prometheus (useful for debugging)
     9091 # Pushgateway (Android + CLI push targets)
     4317 # OTLP gRPC
     4318 # OTLP HTTP

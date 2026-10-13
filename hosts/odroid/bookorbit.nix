@@ -71,11 +71,8 @@ in
         POSTGRES_PORT = "5433";
         POSTGRES_USER = "bookorbit";
         POSTGRES_DB = "bookorbit";
-        POSTGRES_PASSWORD = "";
         POSTGRES_PASSWORD_FILE = "/run/secrets/postgres_password";
-        JWT_SECRET = "";
         JWT_SECRET_FILE = "/run/secrets/jwt_secret";
-        SETUP_BOOTSTRAP_TOKEN = "";
         SETUP_BOOTSTRAP_TOKEN_FILE = "/run/secrets/setup_bootstrap_token";
         BOOK_REQUEST_ENCRYPTION_KEY_FILE = "/run/secrets/book_request_encryption_key";
         PODCAST_ENCRYPTION_KEY_FILE = "/run/secrets/podcast_encryption_key";

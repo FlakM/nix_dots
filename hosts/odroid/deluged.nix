@@ -118,7 +118,8 @@ in
   #};
 
 
-  networking.firewall.allowedTCPPorts = [ 8112 6881 6882 6883 6884 6885 6886 6887 6888 6889 6890 6891 ];
+  # 8112 (deluge-web) is nginx-proxied; only torrent peer ports stay open.
+  networking.firewall.allowedTCPPorts = [ 6881 6882 6883 6884 6885 6886 6887 6888 6889 6890 6891 ];
   networking.firewall.allowedUDPPorts = [ 6881 6882 6883 6884 6885 6886 6887 6888 6889 6890 6891 ];
 
   services.nginx = {
