@@ -195,7 +195,15 @@ let
               "sensor.piec_zasilanie"
               "sensor.piec_powrot"
               "sensor.piec_co_delta_t"
+              "switch.piec_ogrzewanie_ta1"
             ];
+          }
+          {
+            type = "tile";
+            entity = "switch.piec_ogrzewanie_ta1";
+            name = "Ogrzewanie (TA1)";
+            color = "red";
+            vertical = true;
           }
           (graph "CO i CWU — ostatnie 12 godzin" [
             (entity "binary_sensor.piec_co_aktywne" "Kaloryfery")
@@ -322,9 +330,20 @@ let
 in
 {
   services.home-assistant = {
-    extraComponents = [ "template" "history" "history_stats" "statistics" ];
+    extraComponents = [ "template" "history" "history_stats" "statistics" "rest" ];
     config = {
       history = { };
+      rest = [
+        {
+          resource = "http://192.168.0.244/api/v1/pin";
+          scan_interval = 5;
+          sensor = [{
+            name = "piec_pin6";
+            unique_id = "piec_pin6";
+            value_template = "{{ value_json.io['6'].value }}";
+          }];
+        }
+      ];
       lovelace.dashboards.heating-monitor = {
         mode = "yaml";
         filename = "${dashboard}";
@@ -360,6 +379,16 @@ in
       template = [
         (modeTemplates "co" "CO" "heating")
         (modeTemplates "cwu" "CWU" "heating hot water")
+        {
+          switch = [{
+            name = "Piec ogrzewanie TA1";
+            unique_id = "piec_ogrzewanie_ta1";
+            optimistic = true;
+            state = "{{ states('sensor.piec_pin6') == '1' }}";
+            turn_on = [{ action = "mqtt.publish"; data = { topic = "eas/io.6"; payload = "1"; }; }];
+            turn_off = [{ action = "mqtt.publish"; data = { topic = "eas/io.6"; payload = "0"; }; }];
+          }];
+        }
         {
           binary_sensor = [{
             name = "Piec dane aktualne";
