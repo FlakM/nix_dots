@@ -32,7 +32,7 @@ in
     pre-commit
     vscode
     oniguruma
-  ] ++ lib.optionals stdenv.isLinux [
+  ] ++ lib.optionals stdenv.hostPlatform.isLinux [
     gdb
     heaptrack
   ];

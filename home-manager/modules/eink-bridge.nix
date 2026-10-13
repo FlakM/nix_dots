@@ -39,7 +39,7 @@ in
 
   home.file = skillFiles // styleFiles;
 
-  systemd.user.services."eink-serve" = lib.mkIf stdenv.isLinux {
+  systemd.user.services."eink-serve" = lib.mkIf stdenv.hostPlatform.isLinux {
     Unit = {
       Description = "eink-bridge review server";
       After = [ "network-online.target" ];

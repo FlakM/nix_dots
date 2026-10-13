@@ -34,9 +34,9 @@
 
     gnuplot
     python3
-  ] ++ lib.optionals stdenv.isDarwin [
+  ] ++ lib.optionals stdenv.hostPlatform.isDarwin [
     coreutils-full # provides `dd` with --status=progress
-  ] ++ lib.optionals stdenv.isLinux [
+  ] ++ lib.optionals stdenv.hostPlatform.isLinux [
     iputils # provides `ping`, `ifconfig`, ...
     libuuid # `uuidgen` (already pre-installed on mac)
   ];

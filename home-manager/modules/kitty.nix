@@ -3,7 +3,7 @@ let
   kitty = pkgs-unstable.kitty;
   url-open = pkgs.writeScriptBin "url-open" ''
     #!/usr/bin/env bash
-    exec ${if pkgs.stdenv.isDarwin then "/usr/bin/open" else "${pkgs.handlr}/bin/handlr open"} "$@"
+    exec ${if pkgs.stdenv.hostPlatform.isDarwin then "/usr/bin/open" else "${pkgs.handlr}/bin/handlr open"} "$@"
   '';
   xdg-open = pkgs.writeScriptBin "xdg-open" ''
     #!/usr/bin/env bash
@@ -13,7 +13,7 @@ let
 in
 {
 
-  home.packages = lib.optionals pkgs.stdenv.isLinux [ xdg-open ];
+  home.packages = lib.optionals pkgs.stdenv.hostPlatform.isLinux [ xdg-open ];
 
   # ── Kitty theme confs — written as files, switch.sh copies the right one ────
   xdg.configFile."kitty/themes/dark.conf".text = ''

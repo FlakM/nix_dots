@@ -9,7 +9,7 @@
     #yubikey-manager
     yubikey-personalization
     yubico-piv-tool
-  ] ++ lib.optionals stdenv.isLinux [
+  ] ++ lib.optionals stdenv.hostPlatform.isLinux [
     parted
     cryptsetup
 
