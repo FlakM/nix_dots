@@ -1,6 +1,7 @@
 { config, inputs, lib, pkgs, ... }:
 let
   hasHermesSlackSecret = lib.hasInfix "hermes_slack_bot_token:" (builtins.readFile ../../secrets/secrets.yaml);
+  hasHermesSlackAppToken = lib.hasInfix "hermes_slack_app_token:" (builtins.readFile ../../secrets/secrets.yaml);
 in
 {
   services.hermes-agent = {
@@ -16,6 +17,8 @@ in
       HOME = "/home/flakm";
     } // lib.optionalAttrs hasHermesSlackSecret {
       SLACK_BOT_TOKEN_FILE = config.sops.secrets.hermes_slack_bot_token.path;
+    } // lib.optionalAttrs hasHermesSlackAppToken {
+      SLACK_APP_TOKEN_FILE = config.sops.secrets.hermes_slack_app_token.path;
     } // {
       TELEGRAM_BOT_TOKEN_FILE = config.sops.secrets.hermes_telegram_bot_token.path;
       TELEGRAM_CHAT_ID_FILE = config.sops.secrets.hermes_telegram_chat_id.path;
@@ -62,6 +65,27 @@ in
 
           When using AAA reporter checks, follow their privacy rules. In particular, login-events checks must not inspect actor/client fields and should aggregate by safe dimensions only.
         '';
+        enrichContext = true;
+        triage = {
+          enable = true;
+          provider = null;
+          model = null;
+        };
+      };
+      memory = {
+        feedback = true;
+        retrieval = true;
+      };
+      maintenance = {
+        enable = true;
+        notifiedDays = 30;
+        threadDays = 90;
+        subscriptionDays = 60;
+        followedFailureLimit = 3;
+      };
+      observability = {
+        heartbeatFile = "/var/lib/hermes-agent/heartbeat";
+        metricsFile = "/var/lib/hermes-agent/metrics.prom";
       };
       slack = {
         watchedChannels = [
@@ -75,9 +99,14 @@ in
         requireThreadParticipation = false;
         backfillOnStart = false;
         threadLookback = "2d";
+        mode = "poll";
+        socketMinIntervalSeconds = 5;
+        rateLimitMaxSleepSeconds = 30;
       };
       escalation = {
         urgentChannels = [ ];
+        interactive = true;
+        priorityRouting = true;
         desktopNotifications = false;
         signal = {
           enable = false;
@@ -103,7 +132,14 @@ in
         mode = "0400";
         restartUnits = [ "hermes-agent.service" ];
       };
-    } // {
+    } // lib.optionalAttrs hasHermesSlackAppToken {
+    hermes_slack_app_token = {
+      owner = "flakm";
+      group = "users";
+      mode = "0400";
+      restartUnits = [ "hermes-agent.service" ];
+    };
+  } // {
     hermes_telegram_bot_token = {
       owner = "flakm";
       group = "users";
