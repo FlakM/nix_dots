@@ -1,7 +1,17 @@
 { config, inputs, lib, pkgs, ... }:
 let
-  hasHermesSlackSecret = lib.hasInfix "hermes_slack_bot_token:" (builtins.readFile ../../secrets/secrets.yaml);
-  hasHermesSlackAppToken = lib.hasInfix "hermes_slack_app_token:" (builtins.readFile ../../secrets/secrets.yaml);
+  secretsFile = builtins.readFile ../../secrets/secrets.yaml;
+  hasHermesSlackSecret = lib.hasInfix "hermes_slack_bot_token:" secretsFile;
+  hasHermesSlackAppToken = lib.hasInfix "hermes_slack_app_token:" secretsFile;
+  hasTelegramBotToken = lib.hasInfix "hermes_telegram_bot_token:" secretsFile;
+  hasTelegramChatId = lib.hasInfix "hermes_telegram_chat_id:" secretsFile;
+
+  # Control workspace: a separate Slack app that DMs Maciej and accepts
+  # follow-up questions/commands about a thread. Gated on the secrets so the
+  # build keeps working before the app is created (see hermes-control-setup.md).
+  hasControlBotToken = lib.hasInfix "hermes_control_slack_bot_token:" secretsFile;
+  hasControlAppToken = lib.hasInfix "hermes_control_slack_app_token:" secretsFile;
+  hasControlUserId = lib.hasInfix "hermes_control_slack_user_id:" secretsFile;
 in
 {
   services.hermes-agent = {
@@ -19,13 +29,21 @@ in
       SLACK_BOT_TOKEN_FILE = config.sops.secrets.hermes_slack_bot_token.path;
     } // lib.optionalAttrs hasHermesSlackAppToken {
       SLACK_APP_TOKEN_FILE = config.sops.secrets.hermes_slack_app_token.path;
-    } // {
+    } // lib.optionalAttrs hasControlBotToken {
+      CONTROL_SLACK_BOT_TOKEN_FILE = config.sops.secrets.hermes_control_slack_bot_token.path;
+    } // lib.optionalAttrs hasControlAppToken {
+      CONTROL_SLACK_APP_TOKEN_FILE = config.sops.secrets.hermes_control_slack_app_token.path;
+    } // lib.optionalAttrs hasControlUserId {
+      CONTROL_SLACK_USER_ID_FILE = config.sops.secrets.hermes_control_slack_user_id.path;
+    } // lib.optionalAttrs (hasTelegramBotToken && hasTelegramChatId) {
+      # Kept for a quick fallback; the Telegram client stays disabled below.
       TELEGRAM_BOT_TOKEN_FILE = config.sops.secrets.hermes_telegram_bot_token.path;
       TELEGRAM_CHAT_ID_FILE = config.sops.secrets.hermes_telegram_chat_id.path;
     };
     path = [
       inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.codex
       inputs.cx-cli.packages.${pkgs.stdenv.hostPlatform.system}.default
+      pkgs.sqlite
     ];
     settings = {
       agent = {
@@ -76,6 +94,12 @@ in
         feedback = true;
         retrieval = true;
       };
+      history = {
+        # SQLite store of every thread Hermes has seen/decided/notified.
+        # Defaults to <memoryDir>/history.db when path is null.
+        enable = true;
+        path = null;
+      };
       maintenance = {
         enable = true;
         notifiedDays = 30;
@@ -116,8 +140,16 @@ in
           recipients = [ ];
         };
         telegram = {
-          enable = true;
+          # Replaced by the control workspace below.
+          enable = false;
           chatId = null;
+        };
+        slackControl = {
+          # Requires a separate Slack app (hermes-control-setup.md).
+          enable = hasControlBotToken;
+          channel = null; # null -> DM the approver below
+          approverUserId = null; # falls back to CONTROL_SLACK_USER_ID_FILE
+          commandsEnabled = true;
         };
         includeCollectedContext = false;
       };
@@ -139,7 +171,7 @@ in
       mode = "0400";
       restartUnits = [ "hermes-agent.service" ];
     };
-  } // {
+  } // lib.optionalAttrs (hasTelegramBotToken && hasTelegramChatId) {
     hermes_telegram_bot_token = {
       owner = "flakm";
       group = "users";
@@ -147,6 +179,27 @@ in
       restartUnits = [ "hermes-agent.service" ];
     };
     hermes_telegram_chat_id = {
+      owner = "flakm";
+      group = "users";
+      mode = "0400";
+      restartUnits = [ "hermes-agent.service" ];
+    };
+  } // lib.optionalAttrs hasControlBotToken {
+    hermes_control_slack_bot_token = {
+      owner = "flakm";
+      group = "users";
+      mode = "0400";
+      restartUnits = [ "hermes-agent.service" ];
+    };
+  } // lib.optionalAttrs hasControlAppToken {
+    hermes_control_slack_app_token = {
+      owner = "flakm";
+      group = "users";
+      mode = "0400";
+      restartUnits = [ "hermes-agent.service" ];
+    };
+  } // lib.optionalAttrs hasControlUserId {
+    hermes_control_slack_user_id = {
       owner = "flakm";
       group = "users";
       mode = "0400";
