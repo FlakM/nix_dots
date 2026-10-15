@@ -166,7 +166,13 @@
 
   # Enable container runtime
   virtualisation.oci-containers.backend = "podman";
-  virtualisation.podman.enable = true;
+  virtualisation.podman = {
+    enable = true;
+    # docker CLI alias + /run/docker.sock so non-root users in the podman group
+    # can drive the system containers.
+    dockerCompat = true;
+    dockerSocket.enable = true;
+  };
 
   # Nginx reverse proxy configuration
   services.nginx.virtualHosts."paperless.house.flakm.com" = {

@@ -114,6 +114,13 @@ in
     username = "flakm";
     homeDirectory = "/home/flakm";
     stateVersion = "23.05";
+    # podman's docker-compat ignores DOCKER_HOST but honours CONTAINER_HOST;
+    # point both at the system socket so `docker`/`podman` manage the rootful
+    # oci-containers without sudo (flakm is in the `podman` group).
+    sessionVariables = {
+      CONTAINER_HOST = "unix:///run/podman/podman.sock";
+      DOCKER_HOST = "unix:///run/docker.sock";
+    };
   };
 
   systemd.user.services.ccusage-push = {
