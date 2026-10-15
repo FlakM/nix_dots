@@ -85,6 +85,35 @@ journalctl -u hermes-agent -f
 - No DM arrives → make sure you DM'd the app so `conversations.open`
   succeeds, or set `escalation.slackControl.channel` to a channel id.
 
+### ⚠ autoUpgrade cannot advance `coralogix-private` on its own
+
+`system.autoUpgrade.flags` in `hosts/odroid/configuration.nix` bakes
+`path:${inputs.coralogix-private.outPath}` into the upgrade unit. The odroid has
+no read access to the private module repo, so that store path is the **only**
+source it can use — and because it is baked when the *current* system is built,
+every upgrade re-uses the *previous* module. New module versions therefore never
+arrive via the 03:00 timer.
+
+To deploy a new module version, stage it and rebuild with an explicit override:
+
+```bash
+# from the machine that has the checkout:
+git -C ~/programming/flakm/nix-coralogix-private archive main \
+  | ssh flakm@odroid 'rm -rf ~/hermes-module && mkdir -p ~/hermes-module && tar -x -C ~/hermes-module'
+
+ssh flakm@odroid "sudo bash -lc '
+  export PATH=/run/current-system/sw/bin:/run/wrappers/bin
+  nixos-rebuild switch --flake github:FlakM/nix_dots#odroid -L \
+    --override-input coralogix-private path:/home/flakm/hermes-module \
+    --override-input cx-cli path:/home/flakm/programming/coralogix/cx-cli \
+    --override-input eink-bridge path:/home/flakm/programming/flakm/eink-bridge'"
+```
+
+Run it in a login shell with a real `PATH` (a plain `systemd-run` unit fails
+activation with `[Errno 2] ... 'test'`). The lasting fix is to give the odroid
+read access to the module repo (a GitHub token in `nix.settings.access-tokens`
+or an SSH key) and drop the `coralogix-private` override so the lock drives it.
+
 ## What you can send
 
 Reply in any alert thread (or DM Hermes):
