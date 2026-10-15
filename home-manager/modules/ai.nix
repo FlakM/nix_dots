@@ -43,6 +43,16 @@ let
     (name: _: lib.nameValuePair ".claude/skills/${name}" { force = true; source = "${cxSkills}/${name}"; })
     (lib.filterAttrs (_: t: t == "directory") (builtins.readDir cxSkills));
 
+  # llm-agents installs the OpenCode V2 binary as `opencode2` so it can
+  # coexist with V1's `opencode`. herdr starts and resumes agents by their
+  # canonical executable name and replays the original launch argv on reboot,
+  # so it still invokes `opencode`. Expose that name as an alias for the V2
+  # binary (V1 is no longer installed) so herdr keeps starting OpenCode.
+  opencodeAlias = pkgs.runCommand "opencode-alias" { } ''
+    mkdir -p $out/bin
+    ln -s ${llm-agents-pkgs.opencode2}/bin/opencode2 $out/bin/opencode
+  '';
+
   # coralogix-private only ships linux packages; skip on darwin (work/air).
   hasCxPrivate =
     inputs ? coralogix-private
@@ -72,10 +82,11 @@ in
     claude-code
     codex
     ccusage
-    opencode
+    opencode2
     amp
     catchup
     inputs.cx-cli.packages.${pkgs.stdenv.hostPlatform.system}.default
+    opencodeAlias
   ] ++ lib.optionals hasCxPrivate (with inputs.coralogix-private.packages.${pkgs.stdenv.hostPlatform.system}; [
     cxdb
   ] ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
