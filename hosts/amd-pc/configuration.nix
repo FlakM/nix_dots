@@ -441,7 +441,17 @@ in
     enable = true;
     package = pkgs-unstable.tailscale;
     openFirewall = true;
-    extraSetFlags = [ "--ssh=true" ];
+    extraSetFlags = [
+      "--ssh=true"
+      # MagicDNS injects the search domain `tailecbd4.ts.net` into
+      # systemd-resolved, which makes single-label LAN names resolve to
+      # Tailscale IPs (odroid -> 100.103.25.143) instead of the AdGuard
+      # rewrites (odroid -> 192.168.0.102). That sends `ssh odroid` to
+      # odroid's Tailscale SSH instead of the plain LAN sshd. Disabling
+      # accept-dns keeps this host on AdGuard only; the tailnet is still
+      # reachable by IP. See hosts/odroid/adguard.nix for the rewrites.
+      "--accept-dns=false"
+    ];
   };
 
   boot.kernelModules = [ "i2c-dev" ];
@@ -733,6 +743,7 @@ in
   # Add user to i2c group
   users.users.flakm.extraGroups = lib.mkAfter [
     "wheel"
+    "docker"
     "audio"
     "input"
     "video"
