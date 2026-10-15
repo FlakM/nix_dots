@@ -12,6 +12,7 @@ let
   hasControlBotToken = lib.hasInfix "hermes_control_slack_bot_token:" secretsFile;
   hasControlAppToken = lib.hasInfix "hermes_control_slack_app_token:" secretsFile;
   hasControlUserId = lib.hasInfix "hermes_control_slack_user_id:" secretsFile;
+  hasGithubToken = lib.hasInfix "github_token:" secretsFile;
 in
 {
   services.hermes-agent = {
@@ -35,6 +36,8 @@ in
       CONTROL_SLACK_APP_TOKEN_FILE = config.sops.secrets.hermes_control_slack_app_token.path;
     } // lib.optionalAttrs hasControlUserId {
       CONTROL_SLACK_USER_ID_FILE = config.sops.secrets.hermes_control_slack_user_id.path;
+    } // lib.optionalAttrs hasGithubToken {
+      GITHUB_TOKEN_FILE = config.sops.secrets.github_token.path;
     } // lib.optionalAttrs (hasTelegramBotToken && hasTelegramChatId) {
       # Kept for a quick fallback; the Telegram client stays disabled below.
       TELEGRAM_BOT_TOKEN_FILE = config.sops.secrets.hermes_telegram_bot_token.path;
@@ -194,6 +197,10 @@ in
         includeCollectedContext = false;
       };
     };
+    healthcheck = {
+      enable = true;
+      onCalendar = "*-*-* 08:00:00";
+    };
   };
 
   sops.secrets = lib.optionalAttrs hasHermesSlackSecret
@@ -244,6 +251,12 @@ in
       group = "users";
       mode = "0400";
       restartUnits = [ "hermes-agent.service" ];
+    };
+  } // lib.optionalAttrs hasGithubToken {
+    github_token = {
+      owner = "flakm";
+      group = "users";
+      mode = "0400";
     };
   };
 }
