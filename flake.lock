@@ -94,11 +94,11 @@
         "protofetch-nix": "protofetch-nix"
       },
       "locked": {
-        "lastModified": 1792057557,
-        "narHash": "sha256-w4++JrcyTm5GzLgCXeYn18YKnbc6zrbu4KNRgiWeJNU=",
+        "lastModified": 1792061775,
+        "narHash": "sha256-F+L/zT6f3lgFK3x8AXWNOcEYWwbGxp4Aeog8WrRS2/4=",
         "ref": "refs/heads/main",
-        "rev": "a651ccca1983a10ef3adc2f6cb6f96dd02211f14",
-        "revCount": 23,
+        "rev": "0c33f92bb7f4b240097d0538085b42923fdee71e",
+        "revCount": 24,
         "type": "git",
         "url": "ssh://git@github.com/FlakM/nix-coralogix-private"
       },
