@@ -60,7 +60,7 @@
     llm-agents.url = "github:numtide/llm-agents.nix";
 
     eink-bridge = {
-      url = "path:/home/flakm/programming/flakm/eink-bridge";
+      url = "github:FlakM/eink-bridge";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

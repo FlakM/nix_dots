@@ -203,14 +203,17 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1791961908,
-        "narHash": "sha256-XokFB95HVHIB2GBxZGdFWW9mrWuzq2KIYg1e0c98hbg=",
-        "path": "/home/flakm/programming/flakm/eink-bridge",
-        "type": "path"
+        "lastModified": 1792089415,
+        "narHash": "sha256-ALmNIZXlh1OwrNa4u5Jp0+hTB+N/Fyce4NMTYAZRRt4=",
+        "owner": "FlakM",
+        "repo": "eink-bridge",
+        "rev": "0f1f432346d5c65bbd71dbfb1e98406ae44da787",
+        "type": "github"
       },
       "original": {
-        "path": "/home/flakm/programming/flakm/eink-bridge",
-        "type": "path"
+        "owner": "FlakM",
+        "repo": "eink-bridge",
+        "type": "github"
       }
     },
     "fenix": {
