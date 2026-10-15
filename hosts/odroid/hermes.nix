@@ -62,7 +62,27 @@ in
           "<@U082RB1R9U4>"
           "rnd-vertex-aaa"
         ];
-        interestKeywords = [ ];
+        interestKeywords = [
+          # Maciej's area: auth, identity, permissions, sessions.
+          # These widen the cheap heuristic gate so relevant threads reach the
+          # model instead of being dropped before review.
+          "sso"
+          "saml"
+          "scim"
+          "mfa"
+          "login"
+          "authn"
+          "authz"
+          "authentication"
+          "authorization"
+          "permissions"
+          "identity"
+          "sts"
+          "session"
+          "rollback"
+          "security"
+          "customer"
+        ];
         memoryDir = "/home/flakm/.local/share/hermes-agent/memory";
         memoryMaxChars = 6000;
         followedRefreshBatchSize = 10;

@@ -37,6 +37,7 @@ in
 
 {
   imports = [
+    ./eink-ocr.nix
     ../../shared/wireguard.nix
     ../../shared/gpg.nix
     #../../shared/k3s/server.nix
@@ -103,9 +104,8 @@ in
     };
   };
 
-  # Pull OCR models on first boot. glm-ocr is the primary (2× faster than qwen2.5vl:7b
-  # for typical short annotations). qwen2.5vl:7b is the fallback for long cursive text
-  # (set EINK_OLLAMA_MODEL=qwen2.5vl:7b to use it).
+  # Qwen is used by the dedicated OCR runtime. Keep glm-ocr available for
+  # experiments, but do not use it by default: it repeated text indefinitely.
   systemd.services.ollama-pull-qwen = {
     description = "Pull OCR models for eink-bridge";
     after = [ "ollama.service" "network-online.target" ];
