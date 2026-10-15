@@ -50,6 +50,25 @@ in
         name = "hermes";
         provider = "codex";
         model = "gpt-6.1-sol";
+        # When codex credits/quota run out, fall back to a free model.
+        fallbacks = [
+          {
+            provider = "opencode";
+            model = "opencode/deepseek-v4.1-flash-free";
+          }
+        ];
+        # Strong model for review/investigate/ask (they use tools); fast free
+        # model for summaries and drafts.
+        tasks = {
+          draft = {
+            provider = "opencode";
+            model = "opencode/deepseek-v4.1-flash-free";
+          };
+          summary = {
+            provider = "opencode";
+            model = "opencode/deepseek-v4.1-flash-free";
+          };
+        };
         decisionPolicy = builtins.readFile ./hermes-interest.md;
         ignoredAuthorUserIds = [
           "self"
