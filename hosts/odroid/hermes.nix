@@ -154,6 +154,7 @@ in
       observability = {
         heartbeatFile = "/var/lib/hermes-agent/heartbeat";
         metricsFile = "/var/lib/hermes-agent/metrics.prom";
+        statusDir = "/var/www/hermes";
       };
       slack = {
         watchedChannels = [
@@ -203,6 +204,17 @@ in
       enable = true;
       onCalendar = "*-*-* 08:00:00";
     };
+  };
+
+  # Status page served from /var/www/hermes (written by the agent each cycle).
+  systemd.tmpfiles.rules = [
+    "d /var/www/hermes 0755 flakm users -"
+  ];
+
+  services.nginx.virtualHosts."hermes.house.flakm.com" = {
+    useACMEHost = "house.flakm.com";
+    forceSSL = true;
+    root = "/var/www/hermes";
   };
 
   sops.secrets = lib.optionalAttrs hasHermesSlackSecret
