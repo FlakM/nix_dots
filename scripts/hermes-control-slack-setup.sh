@@ -269,10 +269,12 @@ say "In the app: OAuth & Permissions → Scopes → Bot Token Scopes → Add an 
 step "chat:write           — post and update the cards and replies"
 step "im:history           — read your DM replies"
 step "im:read, im:write    — open and read the DM channel"
+step "channels:history     — read replies in the control channel"
+step "channels:read, channels:manage — find/create the control channel"
 step "app_mentions:read    — answer @Hermes mentions"
 step "commands             — the /hermes slash command"
-step "users:read, channels:read — show names on cards"
-step "files:write          — forward thread attachments into your DM"
+step "users:read           — show names on cards"
+step "files:write          — forward thread attachments"
 note "Scopes are case-sensitive; pick each from the dropdown."
 pause "All scopes added? Press Enter."
 
@@ -314,10 +316,11 @@ done
 stage "Turn on Socket Mode and subscribe to events"
 step "Sidebar → Socket Mode → toggle 'Enable Socket Mode' ON."
 step "Sidebar → Event Subscriptions → toggle ON."
-step "Under 'Subscribe to bot events' → 'Add Bot User Event' → message.im."
+step "Under 'Subscribe to bot events' → 'Add Bot User Event' → message.channels."
+step "Add another bot event → message.im."
 step "Add another bot event → app_mention."
 step "Click 'Save Changes'."
-note "message.im lets Hermes read your DM replies; app_mention lets you @Hermes."
+note "message.channels reads replies in #hermes; message.im reads your DMs."
 pause "Saved? Press Enter."
 
 # ── Stage 7 ───────────────────────────────────────────────────────────────

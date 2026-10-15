@@ -19,10 +19,12 @@ inert until the secrets below exist.
 3. **OAuth & Permissions → Bot Token Scopes:**
    - `chat:write` – post/update cards and replies
    - `im:history`, `im:read`, `im:write` – read DMs and open the conversation
+   - `channels:history` – read replies in the control channel
+   - `channels:read`, `channels:manage` – look up / create the control channel
    - `app_mentions:read` – answer `@Hermes` mentions
    - `commands` – the `/hermes` slash command
-   - `users:read`, `channels:read` – name resolution in cards
-   - `files:write` – forward thread attachments into the DM
+   - `users:read` – name resolution in cards
+   - `files:write` – forward thread attachments into the channel
 4. **Install App to Workspace**, then copy the **Bot User OAuth Token**
    (`xoxb-…`).
 5. **Basic Information → App-Level Tokens** → create one with scope
@@ -30,12 +32,15 @@ inert until the secrets below exist.
 6. **Socket Mode** → toggle **on** (required: this is how Hermes receives your
    replies and button presses).
 7. **Event Subscriptions → Subscribe to bot events:**
-   - `message.im`
+   - `message.channels` (replies in the control channel)
+   - `message.im` (DMs)
    - `app_mention`
 8. **Interactivity & Shortcuts** → toggle **on**.
 9. **Slash Commands** → create `/hermes` (description "Ask Hermes about a
    thread"). No request URL needed with Socket Mode.
-10. In Slack, send the app a DM (or `@Hermes`) once so the DM channel exists.
+10. Nothing else: with `channels:manage`, Hermes creates the `#hermes` channel
+    in the control workspace on first run. (Or create it yourself and
+    `/invite @Hermes`.)
 
 ## 3. Find your user id in the new workspace
 
@@ -82,8 +87,11 @@ journalctl -u hermes-agent -f
   app-level token and that Socket Mode is on.
 - `Slack control enabled but CONTROL_SLACK_BOT_TOKEN is missing` → the secret
   did not land; check `systemctl show -p Environment hermes-agent`.
-- No DM arrives → make sure you DM'd the app so `conversations.open`
-  succeeds, or set `escalation.slackControl.channel` to a channel id.
+- No messages arrive → Hermes posts to `#hermes` in the control workspace. It
+  creates that channel if `channels:manage` is granted; otherwise create it
+  yourself, `/invite @Hermes`, and set `escalation.slackControl.channelName`.
+- Bot can post but never sees your replies → add the `channels:history` scope
+  and the `message.channels` event, then reinstall the app.
 
 ### How the odroid fetches the module
 
