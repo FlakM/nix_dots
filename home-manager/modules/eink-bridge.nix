@@ -31,13 +31,22 @@ let
       value = { force = true; source = "${harness}/output-styles/${name}"; };
     }) (builtins.attrNames (builtins.readDir "${harness}/output-styles")))
   else { };
+
+  # Agents are installed per file so a hand-written agent in ~/.claude/agents
+  # (e.g. rust-code-reviewer) is left alone.
+  agentFiles = if hasHarness && builtins.pathExists "${harness}/agents" then
+    builtins.listToAttrs (map (name: {
+      name = ".claude/agents/${name}";
+      value = { force = true; source = "${harness}/agents/${name}"; };
+    }) (builtins.attrNames (builtins.readDir "${harness}/agents")))
+  else { };
 in
 {
   home.packages = [
     eink-bridge
   ] ++ lib.optional hasChannel einkChannel;
 
-  home.file = skillFiles // styleFiles;
+  home.file = skillFiles // styleFiles // agentFiles;
 
   systemd.user.services."eink-serve" = lib.mkIf stdenv.hostPlatform.isLinux {
     Unit = {
