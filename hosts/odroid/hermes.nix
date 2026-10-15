@@ -49,7 +49,7 @@ in
       agent = {
         name = "hermes";
         provider = "codex";
-        model = "gpt-5.5";
+        model = "gpt-6.1-sol";
         decisionPolicy = builtins.readFile ./hermes-interest.md;
         ignoredAuthorUserIds = [
           "self"
