@@ -55,8 +55,13 @@ in
         name = "hermes";
         provider = "codex";
         model = "gpt-6.1-sol";
-        # When codex credits/quota run out, fall back to a free model.
+        # When codex credits/quota run out, fall back: Go subscription first
+        # (reliable), then the free Zen tier as a backstop.
         fallbacks = [
+          {
+            provider = "opencode";
+            model = "opencode-go/deepseek-v4.1-flash";
+          }
           {
             provider = "opencode";
             model = "opencode/deepseek-v4.1-flash-free";
