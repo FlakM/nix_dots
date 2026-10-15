@@ -61,9 +61,10 @@
     flake = "github:FlakM/nix_dots#odroid";
     flags = [
       "-L"
-      "--override-input"
-      "coralogix-private"
-      "path:${inputs.coralogix-private.outPath}"
+      # coralogix-private is fetched from GitHub over SSH with the odroid's
+      # read-only deploy key. It is NOT overridden here: a baked
+      # `path:${inputs.coralogix-private.outPath}` made autoUpgrade always
+      # rebuild with the previous module, so new versions never arrived.
       "--override-input"
       "cx-cli"
       "path:/home/flakm/programming/coralogix/cx-cli"
@@ -98,6 +99,7 @@
     "sonarr"
     "seerr"
     "flakm"
+    "podman"
   ];
 
 

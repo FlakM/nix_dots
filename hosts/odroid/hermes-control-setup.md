@@ -22,7 +22,7 @@ inert until the secrets below exist.
    - `app_mentions:read` – answer `@Hermes` mentions
    - `commands` – the `/hermes` slash command
    - `users:read`, `channels:read` – name resolution in cards
-   - `files:read` – only if you want attachments forwarded
+   - `files:write` – forward thread attachments into the DM
 4. **Install App to Workspace**, then copy the **Bot User OAuth Token**
    (`xoxb-…`).
 5. **Basic Information → App-Level Tokens** → create one with scope
@@ -85,34 +85,42 @@ journalctl -u hermes-agent -f
 - No DM arrives → make sure you DM'd the app so `conversations.open`
   succeeds, or set `escalation.slackControl.channel` to a channel id.
 
-### ⚠ autoUpgrade cannot advance `coralogix-private` on its own
+### How the odroid fetches the module
 
-`system.autoUpgrade.flags` in `hosts/odroid/configuration.nix` bakes
-`path:${inputs.coralogix-private.outPath}` into the upgrade unit. The odroid has
-no read access to the private module repo, so that store path is the **only**
-source it can use — and because it is baked when the *current* system is built,
-every upgrade re-uses the *previous* module. New module versions therefore never
-arrive via the 03:00 timer.
-
-To deploy a new module version, stage it and rebuild with an explicit override:
+The odroid builds `github:FlakM/nix_dots#odroid`, whose lock pins
+`coralogix-private`. Because that repo is private and the odroid has no
+interactive GitHub access, it uses a **read-only SSH deploy key** on `root`:
 
 ```bash
-# from the machine that has the checkout:
+sudo ssh-keygen -t ed25519 -f /root/.ssh/github_deploy -N "" -C "odroid-nix-deploy"
+sudo tee -a /root/.ssh/config >/dev/null <<'EOF'
+Host github.com
+  IdentityFile /root/.ssh/github_deploy
+  IdentitiesOnly yes
+EOF
+sudo cat /root/.ssh/github_deploy.pub   # add as a read-only Deploy Key:
+# https://github.com/FlakM/nix-coralogix-private/settings/keys
+```
+
+Once the key is added, `sudo ssh -T git@github.com` succeeds and the 03:00
+autoUpgrade fetches new module revisions automatically. Do **not** re-add a
+`--override-input coralogix-private path:…` to `system.autoUpgrade.flags`: it is
+baked into the unit when the *current* system is built, so it would pin the
+previous module and new versions would never arrive.
+
+If you ever need to deploy a local (uncommitted) module revision without the
+key, stage it and rebuild with a temporary CLI override — run it in a login
+shell with a real `PATH` (a plain `systemd-run` unit fails activation with
+`[Errno 2] ... 'test'`):
+
+```bash
 git -C ~/programming/flakm/nix-coralogix-private archive main \
   | ssh flakm@odroid 'rm -rf ~/hermes-module && mkdir -p ~/hermes-module && tar -x -C ~/hermes-module'
-
 ssh flakm@odroid "sudo bash -lc '
   export PATH=/run/current-system/sw/bin:/run/wrappers/bin
   nixos-rebuild switch --flake github:FlakM/nix_dots#odroid -L \
-    --override-input coralogix-private path:/home/flakm/hermes-module \
-    --override-input cx-cli path:/home/flakm/programming/coralogix/cx-cli \
-    --override-input eink-bridge path:/home/flakm/programming/flakm/eink-bridge'"
+    --override-input coralogix-private path:/home/flakm/hermes-module'"
 ```
-
-Run it in a login shell with a real `PATH` (a plain `systemd-run` unit fails
-activation with `[Errno 2] ... 'test'`). The lasting fix is to give the odroid
-read access to the module repo (a GitHub token in `nix.settings.access-tokens`
-or an SSH key) and drop the `coralogix-private` override so the lock drives it.
 
 ## What you can send
 
