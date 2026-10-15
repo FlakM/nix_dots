@@ -24,11 +24,14 @@ in
     enable = true;
     listeners = [
       {
-        # Trusted local clients over loopback (no auth).
+        # Trusted local clients over loopback (no auth). The ACL must be
+        # explicit: the module attaches an acl_file plugin to every listener,
+        # and an empty one denies anonymous clients (ebusd/HA/Frigate).
         port = 1883;
         address = "127.0.0.1";
         omitPasswordAuth = true;
         settings.allow_anonymous = true;
+        acl = [ "topic readwrite #" ];
       }
       {
         # Authenticated MQTT for LAN/tailnet clients (quickshell, ESP board).
