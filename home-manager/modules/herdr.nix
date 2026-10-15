@@ -99,9 +99,13 @@ let
       [ "$apply" = 1 ] || echo "dry run; pass --apply to move these into herdr"
     '';
   };
-  # herdr's opencode plugins (session resume + lifecycle state); none touch opencode.json
+  # herdr's opencode plugins (session resume + lifecycle state); none touch opencode.json.
+  # OpenCode V2 reads TUI plugins from cli.json, so seed one before installing:
+  # the installer then also registers the V2 entrypoint (./herdr-opencode) and
+  # we get its plugin list to merge into the real cli.json at activation time.
   opencodeIntegration = pkgs.runCommand "herdr-opencode-integration" { } ''
     mkdir -p $TMPDIR/.config/opencode $out
+    echo '{}' > $TMPDIR/.config/opencode/cli.json
     HOME=$TMPDIR ${herdr}/bin/herdr integration install opencode >/dev/null
     cp -r $TMPDIR/.config/opencode $out/
   '';
@@ -173,6 +177,27 @@ in
     '';
 
     home.file.".claude/hooks/herdr-agent-state.sh".source = "${claudeHook}/hooks/herdr-agent-state.sh";
+
+    # opencode2 resolves TUI plugins from ~/.config/opencode/cli.json, which the
+    # terminal client owns and rewrites. A nix-managed symlink would break
+    # Ctrl+P settings, so merge herdr's plugin entry into the existing file
+    # instead of managing it. Only the plugin list is touched.
+    home.activation.herdrOpencodeCliConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      if [ -d "$HOME/.config/opencode" ]; then
+        cli="$HOME/.config/opencode/cli.json"
+        entry="${opencodeIntegration}/opencode/cli.json"
+        if [ -e "$cli" ]; then
+          before=$(${pkgs.jq}/bin/jq -cS . "$cli")
+          after=$(${pkgs.jq}/bin/jq -cS --slurpfile e "$entry" \
+            '.plugins = (((.plugins // []) + ($e[0].plugins // [])) | unique)' "$cli")
+          if [ "$before" != "$after" ]; then
+            printf '%s\n' "$after" > "$cli"
+          fi
+        else
+          cp "$entry" "$cli"
+        fi
+      fi
+    '';
 
     xdg.configFile."opencode/plugins/herdr-agent-state.js".source = "${opencodeIntegration}/opencode/plugins/herdr-agent-state.js";
     xdg.configFile."opencode/herdr-tui-session.js".source = "${opencodeIntegration}/opencode/herdr-tui-session.js";
