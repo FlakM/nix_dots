@@ -286,11 +286,26 @@
   '';
 
 
+  # OpenAI OCR is explicitly enabled only on this workstation. The encrypted
+  # SOPS entry is an EnvironmentFile; no API key enters the Nix store.
+  systemd.user.services.eink-serve = {
+    Unit.After = [ "sops-nix.service" ];
+    Unit.Requires = [ "sops-nix.service" ];
+    Service.EnvironmentFile = [ config.sops.secrets.eink_openai_env.path ];
+    Service.Environment = lib.mkAfter [ "EINK_OCR_OPENAI_ENABLED=true" ];
+  };
+
   sops = {
     age.keyFile = "${config.home.homeDirectory}/.config/sops/age/keys.txt";
     defaultSopsFile = ../secrets/secrets.yaml;
 
     secrets = {
+      "eink_openai_env" = {
+        key = "open_api_key";
+        path = "${config.home.homeDirectory}/.config/eink-bridge/openai.env";
+        mode = "0400";
+      };
+
       "work_npmrc" = {
         path = "${config.home.homeDirectory}/.npmrc";
       };
