@@ -38,7 +38,7 @@ inert until the secrets below exist.
 8. **Interactivity & Shortcuts** → toggle **on**.
 9. **Slash Commands** → create `/hermes` (description "Ask Hermes about a
    thread"). No request URL needed with Socket Mode.
-10. Nothing else: with `channels:manage`, Hermes creates the `#hermes` channel
+10. Nothing else: with `channels:manage`, Hermes creates the `#general` channel
     in the control workspace on first run. (Or create it yourself and
     `/invite @Hermes`.)
 
@@ -87,7 +87,7 @@ journalctl -u hermes-agent -f
   app-level token and that Socket Mode is on.
 - `Slack control enabled but CONTROL_SLACK_BOT_TOKEN is missing` → the secret
   did not land; check `systemctl show -p Environment hermes-agent`.
-- No messages arrive → Hermes posts to `#hermes` in the control workspace. It
+- No messages arrive → Hermes posts to `#general` in the control workspace. It
   creates that channel if `channels:manage` is granted; otherwise create it
   yourself, `/invite @Hermes`, and set `escalation.slackControl.channelName`.
 - Bot can post but never sees your replies → add the `channels:history` scope
