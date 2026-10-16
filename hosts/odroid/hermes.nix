@@ -79,6 +79,7 @@ in
             model = "opencode/deepseek-v4.1-flash-free";
           };
         };
+        contextCacheSeconds = 300; # cache control-thread context + searches
         decisionPolicy = builtins.readFile ./hermes-interest.md;
         ignoredAuthorUserIds = [
           "self"
