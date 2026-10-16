@@ -203,11 +203,11 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1792154707,
-        "narHash": "sha256-mjGaTF7zdrpkfj+zfdZrTstC+1HVasEOvGHF5Q1xwRQ=",
+        "lastModified": 1792155840,
+        "narHash": "sha256-3OwWaayz4WToSTWuaV9ZRHjALqBJxra1UQwjBMOXypc=",
         "owner": "FlakM",
         "repo": "eink-bridge",
-        "rev": "dd643e748bb536c89372d558d5f1a69a7e5e0924",
+        "rev": "01b9dbb691718f1ed7c53cdba14095c3b9fe3590",
         "type": "github"
       },
       "original": {
