@@ -198,7 +198,7 @@ in
           # Requires a separate Slack app (hermes-control-setup.md).
           enable = hasControlBotToken;
           channel = null; # explicit channel id, if you have one
-          channelName = "hermes"; # Hermes posts here (created/found by name)
+          channelName = "general"; # Hermes posts here (created/found by name)
           approverUserId = null; # DM fallback when the channel is unavailable
           commandsEnabled = true;
         };
