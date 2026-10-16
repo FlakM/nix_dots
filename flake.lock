@@ -816,11 +816,11 @@
         "rust-overlay": "rust-overlay_2"
       },
       "locked": {
-        "lastModified": 1792126788,
-        "narHash": "sha256-yArh4GA+EM7jOdd2CnhOBw9J5Eu8UKfIpew7UFgcPlE=",
+        "lastModified": 1792127587,
+        "narHash": "sha256-8fzeb+3tBPzwrWqbxxVrnRy6OuHGv2HjYoDbKPN9jVo=",
         "owner": "FlakM",
         "repo": "jump",
-        "rev": "c91db9001cc8a012ec7dffb9a22051560788bce3",
+        "rev": "867305cd39c6ff91e4bbabfc89b1920652b4c587",
         "type": "github"
       },
       "original": {
