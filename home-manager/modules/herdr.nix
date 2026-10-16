@@ -140,7 +140,7 @@ let
   cfg = config.herdr;
 in
 {
-  imports = [ ./herdr-nvim.nix ];
+  imports = [ ./herdr-nvim.nix ./eink-pr.nix ];
 
   options.herdr = {
     sidebarWidth = lib.mkOption { type = lib.types.int; default = 40; };
@@ -234,6 +234,14 @@ in
       navigate_workspace_down = ["j", "down"]
       navigate_pane_up = "ctrl+k"
       navigate_pane_down = "ctrl+j"
+
+      [[keys.command]]
+      key = "prefix+shift+p"
+      type = "popup"
+      command = "${config.einkPr.launch}/bin/eink-pr-launch"
+      description = "new eink PR review"
+      width = "70%"
+      height = "55%"
 
       [[keys.command]]
       key = "prefix+shift+m"
