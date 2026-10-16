@@ -36,6 +36,10 @@ REGISTRY = Path(os.environ.get("EINK_PR_REGISTRY", STATE / "pr-reviews.json"))
 SEED_DIR = STATE / "seed"
 LAST_REPO_HINT = ""
 DEFAULT_MODEL = os.environ.get("EINK_REVIEW_MODEL", "opencode-go/deepseek-v4.1-flash")
+# Coralogix work needs the internal tooling that only Claude Code carries, so reviews of
+# those repositories run in Claude Code. Everything else uses OpenCode with a cheap model.
+CLAUDE_ORGS = {o.strip() for o in os.environ.get("EINK_REVIEW_CLAUDE_ORGS", "coralogix").split(",") if o.strip()}
+CLAUDE_MODEL = os.environ.get("EINK_REVIEW_CLAUDE_MODEL", "")
 
 GH_PR = re.compile(r"github\.com/([^/\s]+)/([^/\s]+?)(?:\.git)?/pull/(\d+)")
 ANY_URL = re.compile(r"https?://\S+")
@@ -95,6 +99,19 @@ def find_repo(owner, repo):
     global LAST_REPO_HINT
     LAST_REPO_HINT = f" closest local names: {', '.join(close)}" if close else ""
     return None
+
+
+def repo_owner(repo_root):
+    """The owner from the checkout's origin, which is more trustworthy than the URL."""
+    origin = run(["git", "-C", str(repo_root), "remote", "get-url", "origin"]).stdout.strip()
+    match = re.search(r"[:/]([^/:]+)/([^/]+?)(?:\.git)?$", origin)
+    return match.group(1) if match else ""
+
+
+def choose_agent(owner, override=None):
+    if override:
+        return override
+    return "claude" if owner.lower() in {o.lower() for o in CLAUDE_ORGS} else "opencode"
 
 
 def worktree_path(repo_root, number):
@@ -201,7 +218,8 @@ def main(argv=None):
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--link", help="skip reading stdin and use this link")
     parser.add_argument("--context", default="", help="review request text")
-    parser.add_argument("--model", default=DEFAULT_MODEL)
+    parser.add_argument("--model", help="override the model for the chosen agent")
+    parser.add_argument("--agent", choices=["claude", "opencode"], help="force the agent kind")
     parser.add_argument("--no-launch", action="store_true", help="prepare worktree and workspace, do not start the agent")
     args = parser.parse_args(argv)
 
@@ -226,6 +244,15 @@ def main(argv=None):
     title, base = pr_title(url, slug)
     label = f"PR {slug['number']}: {title}" if title else f"PR {slug['number']}"
 
+    owner = repo_owner(repo_root) or slug["owner"]
+    agent_kind = choose_agent(owner, args.agent)
+    if args.model:
+        model = args.model
+    elif agent_kind == "claude":
+        model = CLAUDE_MODEL
+    else:
+        model = DEFAULT_MODEL
+
     seed_path = SEED_DIR / f"pr-{slug['number']}.md"
     seed = seed_prompt(url, slug, worktree, context, repo_root, title)
 
@@ -233,7 +260,9 @@ def main(argv=None):
     print(f"repo      : {repo_root}")
     print(f"worktree  : {worktree}  ({note})")
     print(f"base      : {base or 'unknown'}")
-    print(f"model     : {args.model}")
+    print(f"owner     : {owner}")
+    print(f"agent     : {agent_kind}")
+    print(f"model     : {model or '(agent default)'}")
     print(f"seed      : {seed_path}")
 
     if args.dry_run:
@@ -252,7 +281,8 @@ def main(argv=None):
     else:
         created = herdr("workspace", "create", "--cwd", str(worktree), "--label", label,
                         "--env", f"EINK_REVIEW_SEED={seed_path}",
-                        "--env", f"EINK_REVIEW_MODEL={args.model}", "--focus")
+                        "--env", f"EINK_REVIEW_AGENT={agent_kind}",
+                        "--env", f"EINK_REVIEW_MODEL={model}", "--focus")
         print(f"workspace : {created['result']['workspace']['workspace_id']}")
 
     pane = created["result"]["root_pane"]["pane_id"]
