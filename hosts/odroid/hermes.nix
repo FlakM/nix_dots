@@ -161,6 +161,9 @@ in
         heartbeatFile = "/var/lib/hermes-agent/heartbeat";
         metricsFile = "/var/lib/hermes-agent/metrics.prom";
         statusDir = "/var/www/hermes";
+        usageFile = "/var/lib/hermes-agent/usage.json";
+        # opencode keeps per-session tokens/cost here; Hermes reads it back.
+        opencodeDb = "/home/flakm/.local/share/opencode/opencode.db";
       };
       slack = {
         watchedChannels = [
