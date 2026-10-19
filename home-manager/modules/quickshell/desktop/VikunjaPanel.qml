@@ -215,13 +215,17 @@ PanelWindow {
         ensureVisible(selectedId)
     }
 
-    // ← / → hop to the neighbouring column that has tasks.
+    // ← / → hop to the neighbouring column that has tasks, keeping the row
+    // index (clamped to the shorter column).
     function moveColumn(delta) {
         const lists = columns()
         let current = -1
+        let index = 0
         for (let i = 0; i < lists.length; i++) {
-            if (lists[i].some(task => task.id === selectedId)) {
+            const at = lists[i].findIndex(task => task.id === selectedId)
+            if (at >= 0) {
                 current = i
+                index = at
                 break
             }
         }
@@ -238,7 +242,8 @@ PanelWindow {
         }
         for (let i = current + delta; i >= 0 && i < lists.length; i += delta) {
             if (lists[i].length > 0) {
-                selectedId = lists[i][0].id
+                const target = Math.min(index, lists[i].length - 1)
+                selectedId = lists[i][target].id
                 ensureVisible(selectedId)
                 return
             }

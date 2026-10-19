@@ -24,6 +24,7 @@ usage: vikunja-task <command>
   due <task-id> <today|tomorrow|week|YYYY-MM-DD|RFC3339|clear>
   title <task-id> <text>
   description <task-id> <text>                   use <br> for line breaks
+  move <task-id> <project-id>                    move it to another project
   focus <task-id>                                mark as the task being worked on
   unfocus [<task-id>]                            clear focus (one task, or all)
   focused                                        the focused task as JSON, or null
@@ -86,6 +87,10 @@ case "${1:-}" in
     if task_has_label "$2" "$lid"; then
       request DELETE "/tasks/$2/labels/$lid" >/dev/null
     fi
+    ;;
+  move)
+    [[ $# -eq 3 ]] || usage
+    task_update "$2" '.project_id = $p' --argjson p "$3"
     ;;
   focus)
     [[ $# -eq 2 ]] || usage

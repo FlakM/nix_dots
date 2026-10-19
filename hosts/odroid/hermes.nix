@@ -15,6 +15,12 @@ let
   hasGithubToken = lib.hasInfix "github_token:" secretsFile;
 in
 {
+  # The agent's unit tests + lint run as part of the system build, so a broken
+  # change fails the deploy instead of reaching the odroid.
+  system.checks = [
+    inputs."coralogix-private".checks.${pkgs.stdenv.hostPlatform.system}.hermes-agent-tests
+  ];
+
   services.hermes-agent = {
     enable = true;
     package = inputs.coralogix-private.packages.${pkgs.stdenv.hostPlatform.system}.hermes-agent;

@@ -29,6 +29,7 @@ vikunja-task priority 42 4                             # promote to important (0
 vikunja-task due 42 today                              # today|tomorrow|week|YYYY-MM-DD|clear
 vikunja-task title 42 "Zamówić router Omada"
 vikunja-task description 42 "linia 1<br>linia 2"
+vikunja-task move 42 27                                # move to another project
 vikunja-task focus 42                                  # "I'm working on this now"
 vikunja-task focused                                   # the current task, or null
 vikunja-task unfocus                                   # clear it (or unfocus 42)
