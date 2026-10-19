@@ -41,7 +41,7 @@ vikunja-task delete 42
 - Projects: `14` Inbox, `15` Dom (the shared home pool), `21` Weekend walecznej 🐞 (maciek), `26` Coralogix - pilne (work queue), `27` Dom · tydzień (Maciek) and `28` Dom · tydzień (Patrycja) — the personal "this week" plans. Re-read with `vikunja-cli projects list` — ids and owners drift.
 - Text fields need `<br>` for line breaks; plain newlines get mangled.
 - Due presets resolve to 18:00 local (Europe/Warsaw) and are sent as RFC3339 with the local offset.
-- The QuickShell dashboard (`quickshell-vikunja list`) renders three columns: the week plan (`VIKUNJA_WEEK_PROJECT`), the work queue (`VIKUNJA_WORK_PROJECT`) and the calendar week; the focused task sits above them. Tasks move into the week plan by being moved into that project. Toggle with **Alt+T**; the footer lists the keys (⏎ open, p focus, s important, t due, d done, r refresh, Esc close).
+- The QuickShell dashboard (`quickshell-vikunja list`) renders three columns: the week plan (`VIKUNJA_WEEK_PROJECT`), the work queue (`VIKUNJA_WORK_PROJECT`) and the calendar week; the focused task sits above them. Tasks move into the week plan by being moved into that project. Keys: ↑↓/jk select, ←→/hl column, ⏎ details, `e` edits the description in vim (`vikunja-edit-description`), `o` opens the task in the browser, p/s/t/d act on the selected task. Toggle with **Alt+T**; the footer lists the keys (⏎ open, p focus, s important, t due, d done, r refresh, Esc close).
 
 ## Project access
 
@@ -72,7 +72,7 @@ Under the hood (Vikunja 2.x): `GET|PUT /api/v1/projects/{id}/users`, `POST|DELET
 Everything lives in `~/programming/flakm/nix_dots`:
 
 - `home-manager/modules/vikunja.nix` — credentials, `vikunja-cli` wrapper, `vikunja-acl`, `vikunja-task`, `quickshell-vikunja`
-- `home-manager/modules/vikunja/{lib.sh,vikunja-acl.sh,vikunja-task.sh,quickshell-vikunja.sh}`
+- `home-manager/modules/vikunja/{lib.sh,vikunja-acl.sh,vikunja-task.sh,vikunja-edit-description.sh,quickshell-vikunja.sh}`
 - `home-manager/modules/quickshell/desktop/VikunjaPanel.qml`, `VikunjaTaskRow.qml`, `shell.qml` — the dashboard
 
 Deploy after a change: `sudo nixos-rebuild switch --flake ~/programming/flakm/nix_dots#amd-pc` (home-manager is wired into the host, and the QuickShell service restarts when its QML changes).
