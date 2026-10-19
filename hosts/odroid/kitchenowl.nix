@@ -7,8 +7,8 @@
 let
   domain = "kitchenowl.house.flakm.com";
   dataDir = "/var/lib/kitchenowl";
-  uid = 988;
-  gid = 988;
+  uid = 977;
+  gid = 977;
   # uwsgi in the all-in-one image listens on 8080 (nginx static + /api proxy).
   port = 8210;
 in
