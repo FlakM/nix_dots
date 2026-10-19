@@ -5,6 +5,10 @@
 let
   fenix = inputs.fenix.packages.${pkgs.stdenv.hostPlatform.system}.stable;
 
+  # Brother DCP-B7520DW. Kept constant in one place; the address is also
+  # DHCP-reserved in Omada for MAC 4C:D5:77:5E:2E:C2.
+  brotherPrinterIp = "192.168.0.170";
+
   # Workaround for upstream Hyprland regression (2026-05-06, rev 78b8ce22):
   # example/hyprland.conf was removed but CMakeLists.txt still installs it.
   # Drop this override once upstream fixes either the install rule or the file.
@@ -644,7 +648,7 @@ in
       {
         name = "brother";
         description = "Brother DCP-B7520DW series";
-        deviceUri = "ipp://192.168.0.170/ipp/print";
+        deviceUri = "ipp://${brotherPrinterIp}/ipp/print";
         model = "everywhere";
         ppdOptions = {
           PageSize = "A4";
@@ -683,7 +687,7 @@ in
       netDevices = {
         "DCP-B7520DW" = {
           model = "DCP-B7520DW";
-          ip = "192.168.0.170";
+          ip = brotherPrinterIp;
         };
       };
     };
