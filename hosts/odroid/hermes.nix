@@ -115,8 +115,12 @@ in
         ];
         memoryDir = "/home/flakm/.local/share/hermes-agent/memory";
         memoryMaxChars = 6000;
-        followedRefreshBatchSize = 10;
-        followedRefreshBudgetSeconds = 60;
+        # Freshest threads first each cycle; the rest rotate slowly.
+        # 25 slots keeps a ~140-thread queue under ~7 minutes per rotation.
+        followedRefreshBatchSize = 25;
+        followedRefreshBudgetSeconds = 90;
+        followedHotWindowSeconds = 21600; # 6h
+        followedMaxNewMessages = 200;
         discoveryBudgetSeconds = 60;
         workingDirectory = "/home/flakm/programming/coralogix/aaa-daily-reporter";
         contextPaths = [
@@ -152,9 +156,11 @@ in
       };
       maintenance = {
         enable = true;
-        notifiedDays = 30;
+        notifiedDays = 14;
         threadDays = 90;
-        subscriptionDays = 60;
+        # Matches slack.threadLookback: older threads cannot be re-discovered
+        # from channel history anyway, and they were 92% of the refresh queue.
+        subscriptionDays = 14;
         followedFailureLimit = 3;
       };
       observability = {
