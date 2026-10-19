@@ -14,6 +14,9 @@ let
     VIKUNJA_PASSWORD_FILE = config.sops.secrets.vikunja_password.path;
     VIKUNJA_TZ = "Europe/Warsaw";
     VIKUNJA_FOCUS_LABEL = "doing";
+    # week: the personal "this week" plan, work: the urgent work queue
+    VIKUNJA_WEEK_PROJECT = "27";
+    VIKUNJA_WORK_PROJECT = "26";
   };
   # Project access (who can see/edit which project). vikunja-cli 1.0.0 speaks the
   # pre-2.0 membership API, so this talks to the API directly.

@@ -29,6 +29,7 @@ ShellRoot {
     property bool cameraPrivateTarget: false
     property var calendarStatus: ({ "text": "Calendar", "title": "Calendar", "time": "", "detail": "Loading...", "tooltip": "Loading calendar...", "class": "no-events" })
     property var calendarAgenda: []
+    property var calendarWeek: []
     property bool calendarLoading: false
     property var vpnStatus: ({ "text": "VPN", "title": "VPN", "detail": "Checking...", "tooltip": "Loading VPN status...", "class": "disconnected" })
     property var tailscaleState: ({ "online": false, "name": "This device", "ip": "", "peers": [] })
@@ -37,6 +38,8 @@ ShellRoot {
     property var vikunjaImportant: []
     property var vikunjaFocused: null
     property var vikunjaPinnedProject: null
+    property var vikunjaWeekProject: null
+    property var vikunjaWorkProject: null
     property int vikunjaTaskCount: 0
     property bool vikunjaLoading: true
     property string vikunjaError: ""
@@ -108,6 +111,7 @@ ShellRoot {
         if (calendarAgendaProcess.running) return
         calendarLoading = true
         calendarAgendaProcess.running = true
+        if (!calendarWeekProcess.running) calendarWeekProcess.running = true
     }
 
     function refreshTailscale() {
@@ -350,6 +354,21 @@ ShellRoot {
     }
 
     Process {
+        id: calendarWeekProcess
+        command: ["quickshell-calendar", "week", "7"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    root.calendarWeek = JSON.parse(text)
+                } catch (error) {
+                    root.calendarWeek = []
+                    console.warn("Unable to parse calendar week:", error)
+                }
+            }
+        }
+    }
+
+    Process {
         id: vpnProcess
         command: ["vpn-waybar"]
         stdout: StdioCollector {
@@ -395,6 +414,8 @@ ShellRoot {
                     root.vikunjaFocused = data.focused || null
                     root.vikunjaTaskCount = data.count || 0
                     root.vikunjaPinnedProject = data.pinned_project || null
+                    root.vikunjaWeekProject = data.week_project || null
+                    root.vikunjaWorkProject = data.work_project || null
                     root.vikunjaError = ""
                 } catch (error) {
                     root.vikunjaError = "Unable to load tasks"
@@ -442,6 +463,14 @@ ShellRoot {
         repeat: true
         triggeredOnStart: true
         onTriggered: root.refreshVikunja()
+    }
+
+    Timer {
+        interval: 300000
+        running: true
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: if (!calendarWeekProcess.running) calendarWeekProcess.running = true
     }
 
     Variants {

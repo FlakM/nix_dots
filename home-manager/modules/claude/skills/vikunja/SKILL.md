@@ -37,10 +37,10 @@ vikunja-task reopen 42
 vikunja-task delete 42
 ```
 
-- Projects: `14` Inbox, `15` Dom (owned by `bot`), `21` Weekend walecznej 🐞 (owned by `maciek`). Re-read with `vikunja-cli projects list` — ids and owners drift.
+- Projects: `14` Inbox, `15` Dom (the shared home pool), `21` Weekend walecznej 🐞 (maciek), `26` Coralogix - pilne (work queue), `27` Dom · tydzień (Maciek) and `28` Dom · tydzień (Patrycja) — the personal "this week" plans. Re-read with `vikunja-cli projects list` — ids and owners drift.
 - Text fields need `<br>` for line breaks; plain newlines get mangled.
 - Due presets resolve to 18:00 local (Europe/Warsaw) and are sent as RFC3339 with the local offset.
-- The QuickShell dashboard (`quickshell-vikunja list`) renders the same data: the focused task, the important list, then the pinned project's open tasks. Toggle it with **Alt+T** or the bar icon; ▶ sets the current task, ⭐ toggles important, the calendar button cycles the due date, ✓ completes.
+- The QuickShell dashboard (`quickshell-vikunja list`) renders three columns: the week plan (`VIKUNJA_WEEK_PROJECT`), the work queue (`VIKUNJA_WORK_PROJECT`) and the calendar week; the focused task sits above them. Tasks move into the week plan by being moved into that project. Toggle with **Alt+T**; the footer lists the keys (⏎ open, p focus, s important, t due, d done, r refresh, Esc close).
 
 ## Project access
 

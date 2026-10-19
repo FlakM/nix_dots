@@ -25,6 +25,11 @@ PanelWindow {
         return value
     }
 
+    function shortDate(value) {
+        const date = new Date(value)
+        return isNaN(date) ? value : Qt.formatDate(date, "dd.MM.")
+    }
+
     onVisibleChanged: if (visible) keyHandler.forceActiveFocus()
 
     MouseArea { anchors.fill: parent; onClicked: shell.overlayMode = "" }
@@ -153,7 +158,7 @@ PanelWindow {
                                     Layout.fillWidth: true
                                     spacing: 2
                                     Text { text: modelData.title; color: "#edf2f9"; font.pixelSize: 15; font.bold: true; elide: Text.ElideRight; Layout.fillWidth: true }
-                                    Text { text: `${modelData.date} · ${panel.calendarName(modelData.calendar)}`; color: "#8d9bb0"; font.pixelSize: 12; elide: Text.ElideRight; Layout.fillWidth: true }
+                                    Text { text: `${panel.shortDate(modelData.date)} · ${panel.calendarName(modelData.calendar)}`; color: "#8d9bb0"; font.pixelSize: 12; elide: Text.ElideRight; Layout.fillWidth: true }
                                 }
                             }
                             MouseArea { id: eventMouse; anchors.fill: parent; hoverEnabled: true; acceptedButtons: Qt.NoButton }

@@ -7,14 +7,17 @@ Rectangle {
     property string statusText
     property string tooltip
     property bool active: false
+    property bool compact: false
     property color accent: "#72d7ff"
     signal clicked
     signal secondaryClicked
     signal wheel(real delta)
 
-    implicitWidth: statusText ? buttonContent.implicitWidth + 24 : 48
-    implicitHeight: 48
-    radius: 15
+    implicitWidth: compact
+        ? (statusText ? buttonContent.implicitWidth + 16 : 36)
+        : (statusText ? buttonContent.implicitWidth + 24 : 48)
+    implicitHeight: compact ? 36 : 48
+    radius: compact ? 11 : 15
     color: active ? Qt.alpha(accent, 0.22) : mouse.containsMouse ? "#70303b50" : "#55101520"
     border.width: 1
     border.color: active ? Qt.alpha(accent, 0.75) : mouse.containsMouse ? "#52647f" : "#304b5c76"
@@ -28,13 +31,13 @@ Rectangle {
             text: button.icon
             color: button.active ? button.accent : "#c5d0e0"
             fill: button.active ? 1 : 0
-            font.pixelSize: 25
+            font.pixelSize: button.compact ? 20 : 25
         }
         Text {
             visible: button.statusText !== ""
             text: button.statusText
             color: "#dce6f5"
-            font.pixelSize: 13
+            font.pixelSize: button.compact ? 12 : 13
             font.bold: true
         }
     }

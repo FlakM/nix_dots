@@ -199,13 +199,8 @@ let
   };
   calendarAgenda = pkgs.writeShellApplication {
     name = "quickshell-calendar";
-    runtimeInputs = [ pkgs.jq pkgs.khal ];
-    text = ''
-      khal list today 2d --day-format "" --format $'{start-date}\t{start-time}\t{end-time}\t{title}\t{calendar}' 2>/dev/null \
-        | jq -Rn '[inputs | split("\t") | select(length >= 5) | {
-            date: .[0], start: .[1], end: .[2], title: .[3], calendar: .[4]
-          }]'
-    '';
+    runtimeInputs = [ pkgs.coreutils pkgs.jq pkgs.khal ];
+    text = builtins.readFile ./quickshell/scripts/calendar.sh;
   };
   tailscaleStatus = pkgs.writeShellApplication {
     name = "quickshell-tailscale";

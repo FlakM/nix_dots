@@ -21,8 +21,8 @@ Rectangle {
         .trim()
 
     readonly property string dueLabel: {
-        if (!task.due_date || task.due_date.startsWith("0001-")) return "Bez terminu"
-        return new Date(task.due_date).toLocaleString(Qt.locale(), Locale.ShortFormat)
+        if (!task.due_date || task.due_date.startsWith("0001-")) return "bez terminu"
+        return Qt.formatDateTime(new Date(task.due_date), "dd.MM HH:mm")
     }
 
     // Where the due date sits relative to today, used for colour and for the
@@ -66,8 +66,8 @@ Rectangle {
     }
 
     width: ListView.view ? ListView.view.width : parent.width
-    implicitHeight: body.implicitHeight + 26
-    radius: 20
+    implicitHeight: body.implicitHeight + 20
+    radius: 16
     color: selected ? "#2f4249" : hover.containsMouse ? "#303b3a" : focused ? "#25333a" : "#222b2a"
     border.width: selected ? 2 : 1
     border.color: selected ? "#7fd4f0" : focused ? "#5aa7c8" : hover.containsMouse ? "#527d70" : important ? "#4d5a45" : "#344641"
@@ -77,20 +77,20 @@ Rectangle {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
-        anchors.margins: 14
-        spacing: 14
+        anchors.margins: 11
+        spacing: 11
 
         Rectangle {
-            Layout.preferredWidth: 46
-            Layout.preferredHeight: 46
-            radius: 14
+            Layout.preferredWidth: 40
+            Layout.preferredHeight: 40
+            radius: 12
             color: Qt.alpha(row.priorityColor, 0.14)
             Symbol {
                 anchors.centerIn: parent
                 text: row.priority >= 2 ? "priority_high" : "assignment"
                 color: row.priorityColor
                 fill: row.priority >= 2 ? 1 : 0
-                font.pixelSize: 24
+                font.pixelSize: 21
             }
         }
 
@@ -106,7 +106,7 @@ Rectangle {
                     Layout.fillWidth: true
                     text: row.task.title
                     color: "#eef4f2"
-                    font.pixelSize: 16
+                    font.pixelSize: 15
                     font.bold: true
                     elide: Text.ElideRight
                 }
@@ -114,8 +114,8 @@ Rectangle {
                 Rectangle {
                     visible: row.priority > 0
                     Layout.preferredWidth: priorityText.implicitWidth + 12
-                    Layout.preferredHeight: 20
-                    radius: 7
+                    Layout.preferredHeight: 18
+                    radius: 6
                     color: Qt.alpha(row.priorityColor, 0.16)
                     Text {
                         id: priorityText
@@ -153,6 +153,7 @@ Rectangle {
             icon: row.focused ? "pause" : "play_arrow"
             tooltip: row.focused ? "Przestań nad tym pracować" : "Pracuję nad tym teraz"
             accent: "#72d7ff"
+            compact: true
             active: row.focused
             onClicked: row.shell.setVikunjaFocus(row.task.id, !row.focused)
         }
@@ -161,6 +162,7 @@ Rectangle {
             icon: "star"
             tooltip: row.important ? "Zdejmij z ważnych" : "Dodaj do ważnych (⭐)"
             accent: "#f6c177"
+            compact: true
             active: row.important
             onClicked: row.shell.setVikunjaPriority(row.task.id, row.important ? 0 : 4)
         }
@@ -169,6 +171,7 @@ Rectangle {
             icon: "event"
             tooltip: row.nextDueTooltip
             accent: row.dueColor
+            compact: true
             active: row.bucket !== "none"
             onClicked: row.shell.setVikunjaDue(row.task.id, row.nextDuePreset)
         }
@@ -177,6 +180,7 @@ Rectangle {
             icon: "check"
             tooltip: "Oznacz jako zrobione"
             accent: "#72e4ae"
+            compact: true
             onClicked: row.shell.completeVikunjaTask(row.task.id)
         }
     }
