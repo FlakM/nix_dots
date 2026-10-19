@@ -13,7 +13,9 @@ let
   appriseApiUrl = "http://127.0.0.1:${toString port}/notify";
   # Topic the phone client is subscribed to. Changing it requires updating the
   # subscription on the phone as well.
-  ntfyUrl = "ntfys://ntfy.sh/audiobookshelf";
+  # Podcast descriptions come out of RSS as HTML. Treat incoming bodies as
+  # HTML so Apprise converts them for the target instead of forwarding tags.
+  ntfyUrl = "ntfys://ntfy.sh/audiobookshelf?format=markdown";
 in
 {
   # Apprise API is a notification fan-out service. Audiobookshelf posts a
@@ -50,7 +52,7 @@ in
       TZ = "Europe/Warsaw";
       APPRISE_STATEFUL_MODE = "simple";
       APPRISE_WORKER_COUNT = "1";
-      APPRISE_DEFAULT_FORMAT = "text";
+      APPRISE_DEFAULT_FORMAT = "html";
     };
     extraOptions = [
       "--user=${toString uid}:${toString gid}"
