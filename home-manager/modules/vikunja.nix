@@ -36,6 +36,13 @@ let
     excludeShellChecks = [ "SC2016" ];
     text = vikunjaLib + builtins.readFile ./vikunja/vikunja-task.sh;
   };
+  # Edit a task description in vim and write it back (the panel's `e` key).
+  vikunja-edit-description = pkgs.writeShellApplication {
+    name = "vikunja-edit-description";
+    runtimeInputs = [ pkgs.coreutils pkgs.curl pkgs.jq pkgs.kitty pkgs.vim ];
+    runtimeEnv = vikunjaEnv;
+    text = vikunjaLib + builtins.readFile ./vikunja/vikunja-edit-description.sh;
+  };
   # Backend for the QuickShell task dashboard: list + the mutations the panel
   # offers (complete, reopen, priority, due date).
   quickshell-vikunja = pkgs.writeShellApplication {
@@ -59,7 +66,7 @@ in
     vikunja_password = { };
   };
 
-  home.packages = [ vikunja vikunja-acl vikunja-task quickshell-vikunja ];
+  home.packages = [ vikunja vikunja-acl vikunja-task vikunja-edit-description quickshell-vikunja ];
 
   home.file.".claude/skills/vikunja-cli" = {
     force = true;

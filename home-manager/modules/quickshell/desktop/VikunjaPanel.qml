@@ -305,6 +305,15 @@ PanelWindow {
         shell.completeVikunjaTask(task.id)
     }
 
+    // `e` in the preview: hand the description to vim in a terminal window.
+    function editSelectedDescription() {
+        const task = selectedTask()
+        if (!task) return
+        detailTaskId = 0
+        shell.overlayMode = ""
+        Quickshell.execDetached(["vikunja-edit-description", `${task.id}`])
+    }
+
     function refreshAll() {
         shell.refreshVikunja()
         shell.refreshCalendar()
@@ -324,6 +333,9 @@ PanelWindow {
             return true
         case Qt.Key_O:
             openSelectedInBrowser()
+            return true
+        case Qt.Key_E:
+            editSelectedDescription()
             return true
         case Qt.Key_Down:
         case Qt.Key_J:
@@ -694,7 +706,7 @@ PanelWindow {
             Text {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
-                text: "↑↓ / j k — wybór   ·   ←→ / h l — kolumna   ·   ⏎ — szczegóły · o — otwórz w Vikunji   ·   p — pracuję nad tym   ·   s — ważne   ·   t — termin   ·   d — zrobione   ·   r — odśwież   ·   Esc — zamknij"
+                text: "↑↓ / j k — wybór   ·   ←→ / h l — kolumna   ·   ⏎ — szczegóły · o — otwórz w Vikunji · e — edytuj opis   ·   p — pracuję nad tym   ·   s — ważne   ·   t — termin   ·   d — zrobione   ·   r — odśwież   ·   Esc — zamknij"
                 color: "#67827a"
                 font.pixelSize: 13
             }
@@ -916,7 +928,7 @@ PanelWindow {
                     }
                     Item { Layout.fillWidth: true }
                     Text {
-                        text: "p — pracuję · s — ważne · t — termin · d — zrobione · ↑↓ — następny task · o — przeglądarka · Esc — wróć"
+                        text: "p — pracuję · s — ważne · t — termin · d — zrobione · e — edytuj opis w vimie · ↑↓ — następny task · o — przeglądarka · Esc — wróć"
                         color: "#67827a"
                         font.pixelSize: 12
                     }
