@@ -7,35 +7,41 @@ let
     export VIKUNJA_PASSWORD="$(<${config.sops.secrets.vikunja_password.path})"
     exec ${vikunja-cli}/bin/vikunja-cli "$@"
   '';
+  vikunjaLib = builtins.readFile ./vikunja/lib.sh;
+  vikunjaEnv = {
+    VIKUNJA_URL = "https://tasks.house.flakm.com";
+    VIKUNJA_USERNAME_FILE = config.sops.secrets.vikunja_username.path;
+    VIKUNJA_PASSWORD_FILE = config.sops.secrets.vikunja_password.path;
+    VIKUNJA_TZ = "Europe/Warsaw";
+    VIKUNJA_FOCUS_LABEL = "doing";
+  };
+  # Project access (who can see/edit which project). vikunja-cli 1.0.0 speaks the
+  # pre-2.0 membership API, so this talks to the API directly.
+  vikunja-acl = pkgs.writeShellApplication {
+    name = "vikunja-acl";
+    runtimeInputs = [ pkgs.coreutils pkgs.curl pkgs.jq ];
+    runtimeEnv = vikunjaEnv;
+    text = vikunjaLib + builtins.readFile ./vikunja/vikunja-acl.sh;
+  };
+  # Task mutations that survive Vikunja's full-replace update: read, patch, write
+  # the whole writable field set (vikunja-cli tasks update blanks what you omit).
+  vikunja-task = pkgs.writeShellApplication {
+    name = "vikunja-task";
+    runtimeInputs = [ pkgs.coreutils pkgs.curl pkgs.jq ];
+    runtimeEnv = vikunjaEnv;
+    # jq programs legitimately carry $vars inside single quotes
+    excludeShellChecks = [ "SC2016" ];
+    text = vikunjaLib + builtins.readFile ./vikunja/vikunja-task.sh;
+  };
+  # Backend for the QuickShell task dashboard: list + the mutations the panel
+  # offers (complete, reopen, priority, due date).
   quickshell-vikunja = pkgs.writeShellApplication {
     name = "quickshell-vikunja";
-    runtimeInputs = [ vikunja pkgs.jq ];
-    text = ''
-      case "''${1:-list}" in
-        list)
-          projects=$(vikunja-cli projects list)
-          tasks=$(vikunja-cli tasks list --filter "done = false" --sort due_date --order-by asc --per-page 50)
-          jq -n --argjson projects "$projects" --argjson tasks "$tasks" '
-            ($projects.data | map({ key: (.id | tostring), value: .title }) | from_entries) as $project_names |
-            (($projects.data | map(select(.is_favorite)) | first)
-              // ($projects.data | map(select(.title != "Inbox")) | first)
-              // ($projects.data | first)) as $pinned_project |
-            {
-              tasks: [$tasks.data[] | . + { project_title: ($project_names[(.project_id | tostring)] // "Unknown") }],
-              count: $tasks.result_count,
-              pinned_project: $pinned_project
-            }
-          '
-          ;;
-        done)
-          vikunja-cli tasks update --id "''${2:?missing task id}" --done
-          ;;
-        *)
-          printf 'usage: quickshell-vikunja list|done TASK_ID\n' >&2
-          exit 2
-          ;;
-      esac
-    '';
+    runtimeInputs = [ vikunja vikunja-task pkgs.coreutils pkgs.jq ];
+    runtimeEnv = vikunjaEnv;
+    # jq programs legitimately carry $vars inside single quotes
+    excludeShellChecks = [ "SC2016" ];
+    text = builtins.readFile ./vikunja/quickshell-vikunja.sh;
   };
   skillSource = pkgs.fetchFromGitHub {
     owner = "jo-nike";
@@ -50,7 +56,7 @@ in
     vikunja_password = { };
   };
 
-  home.packages = [ vikunja quickshell-vikunja ];
+  home.packages = [ vikunja vikunja-acl vikunja-task quickshell-vikunja ];
 
   home.file.".claude/skills/vikunja-cli" = {
     force = true;

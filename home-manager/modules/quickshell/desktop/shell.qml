@@ -34,6 +34,8 @@ ShellRoot {
     property var tailscaleState: ({ "online": false, "name": "This device", "ip": "", "peers": [] })
     property bool tailscaleLoading: false
     property var vikunjaTasks: []
+    property var vikunjaImportant: []
+    property var vikunjaFocused: null
     property var vikunjaPinnedProject: null
     property int vikunjaTaskCount: 0
     property bool vikunjaLoading: true
@@ -163,6 +165,24 @@ ShellRoot {
     function completeVikunjaTask(taskId) {
         if (vikunjaAction.running) return
         vikunjaAction.command = ["quickshell-vikunja", "done", `${taskId}`]
+        vikunjaAction.running = true
+    }
+
+    function setVikunjaPriority(taskId, priority) {
+        if (vikunjaAction.running) return
+        vikunjaAction.command = ["quickshell-vikunja", "priority", `${taskId}`, `${priority}`]
+        vikunjaAction.running = true
+    }
+
+    function setVikunjaDue(taskId, preset) {
+        if (vikunjaAction.running) return
+        vikunjaAction.command = ["quickshell-vikunja", "due", `${taskId}`, preset]
+        vikunjaAction.running = true
+    }
+
+    function setVikunjaFocus(taskId, focused) {
+        if (vikunjaAction.running) return
+        vikunjaAction.command = ["quickshell-vikunja", focused ? "focus" : "unfocus", `${taskId}`]
         vikunjaAction.running = true
     }
 
@@ -371,6 +391,8 @@ ShellRoot {
                 try {
                     const data = JSON.parse(text)
                     root.vikunjaTasks = data.tasks || []
+                    root.vikunjaImportant = data.important || []
+                    root.vikunjaFocused = data.focused || null
                     root.vikunjaTaskCount = data.count || 0
                     root.vikunjaPinnedProject = data.pinned_project || null
                     root.vikunjaError = ""

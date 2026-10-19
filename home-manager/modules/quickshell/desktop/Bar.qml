@@ -289,11 +289,12 @@ PanelWindow {
             }
 
             IconButton {
-                icon: "task_alt"
+                icon: bar.shell.vikunjaFocused ? "play_circle" : "task_alt"
                 statusText: `${bar.shell.vikunjaTasks.filter(task => task.project_id === bar.shell.vikunjaPinnedProject?.id).length}`
-                tooltip: bar.shell.vikunjaError || `${bar.shell.vikunjaPinnedProject?.title || "Vikunja"} tasks`
+                tooltip: bar.shell.vikunjaError
+                    || (bar.shell.vikunjaFocused ? `W toku: ${bar.shell.vikunjaFocused.title}` : `${bar.shell.vikunjaPinnedProject?.title || "Vikunja"} tasks · Alt+T`)
                 active: bar.shell.overlayMode === "tasks"
-                accent: "#72e4ae"
+                accent: bar.shell.vikunjaFocused ? "#72d7ff" : "#72e4ae"
                 onClicked: bar.shell.toggle("tasks")
                 onSecondaryClicked: Qt.openUrlExternally("https://tasks.house.flakm.com/")
             }

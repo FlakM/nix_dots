@@ -48,6 +48,7 @@ in
     ./performance.nix
     ./vpn.nix
     ./cxdb-dns.nix
+    ./opencode-server.nix
     #./clickhouse.nix
   ];
 
@@ -206,6 +207,11 @@ in
   sops.secrets = {
     coralogix_blog_send_key = {
       path = "/var/secrets/coralogix_send_key";
+      mode = "0400";
+      owner = "flakm";
+    };
+    # Fakturownik reads the raw token at runtime; no plaintext enters the Nix store.
+    ksef_opencode_token = {
       mode = "0400";
       owner = "flakm";
     };

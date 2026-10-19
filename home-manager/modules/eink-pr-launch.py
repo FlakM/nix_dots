@@ -41,7 +41,7 @@ DEFAULT_MODEL = os.environ.get("EINK_REVIEW_MODEL", "opencode-go/deepseek-v4.1-f
 CLAUDE_ORGS = {o.strip() for o in os.environ.get("EINK_REVIEW_CLAUDE_ORGS", "coralogix").split(",") if o.strip()}
 CLAUDE_MODEL = os.environ.get("EINK_REVIEW_CLAUDE_MODEL", "")
 
-GH_PR = re.compile(r"github\.com/([^/\s]+)/([^/\s]+?)(?:\.git)?/pull/(\d+)")
+GH_PR = re.compile(r"(?:https?://)?github\.com/([^/\s]+)/([^/\s]+?)(?:\.git)?/pull/(\d+)")
 ANY_URL = re.compile(r"https?://\S+")
 
 
@@ -59,6 +59,74 @@ def read_request():
     if sys.stdin.isatty():
         print("Paste the review request (message + link), then press Ctrl-D:\n")
     return sys.stdin.read()
+
+
+def pull_requests(text):
+    """Every GitHub pull request in the pasted message, in the order written.
+
+    A message often carries several: "asking for your review for:" followed by two links.
+    Each one is a review of its own, and the prose around them is the brief that applies
+    to all of them (or to whichever one the message names).
+    """
+    seen = set()
+    found = []
+    for match in GH_PR.finditer(text):
+        owner, repo, number = match.group(1), match.group(2), match.group(3)
+        key = (owner, repo, number)
+        if key in seen:
+            continue
+        seen.add(key)
+        found.append({
+            "url": match.group(0),
+            "owner": owner,
+            "repo": repo,
+            "number": number,
+        })
+    return found
+
+
+def prose_of(text, prs):
+    """The message with the links taken out: the part a person wrote."""
+    prose = text
+    for pr in prs:
+        prose = prose.replace(pr["url"], " ")
+    return "\n".join(line.rstrip() for line in prose.splitlines()).strip()
+
+
+def batch_prompt(prs, prose, entries):
+    """The brief for the one agent that watches a batch of pull requests.
+
+    One agent, several reviews: it has to know where each checkout is, and it has to see
+    the message the reviewer pasted -- including any instruction in it about which
+    repository to keep an eye on.
+    """
+    lines = [
+        f"Review {len(prs)} pull requests on the e-ink tablet, following the eink-pr skill.",
+        "One agent runs the batch; each pull request has its own workspace already open in Neovim.",
+        "",
+    ]
+    for pr, entry in zip(prs, entries):
+        lines += [
+            f"- {pr['owner']}/{pr['repo']}#{pr['number']}: {entry['title'] or 'unknown title'}",
+            f"    worktree: {entry['worktree']}",
+            f"    workspace: {entry['label']}",
+            f"    url: {pr['url']}",
+        ]
+    lines += [
+        "",
+        "For each one: read the diff in its workspace, run the lens reviewers in parallel,",
+        "filter to the actionable findings, pass them through ihaveadhd, deliver the brief to",
+        "eink, and set the marks. Work through the list in order, and keep going back to the",
+        "later ones as answers arrive -- a batch is one review session, not N sequential ones.",
+    ]
+    if prose:
+        lines += [
+            "",
+            "The reviewer's message (quoted, and the only statement of intent):",
+            "",
+            prose,
+        ]
+    return "\n".join(lines) + "\n"
 
 
 def repo_slug(url):
@@ -213,6 +281,99 @@ def existing_workspace(label):
     return None
 
 
+def launch_batch(prs, prose, args):
+    """One paste, several pull requests: a workspace with Neovim for each, one agent.
+
+    The agent lives in its own workspace and supervises the batch -- it opens on the first
+    checkout so its cwd is a real tree, and its brief names every worktree. The per-review
+    workspaces are for reading: each one has the checkout and Neovim, so the agent (and the
+    reviewer) can go into any of them without the worktree being created twice.
+    """
+    entries = []
+    for pr in prs:
+        repo_root = find_repo(pr["owner"], pr["repo"])
+        if not repo_root:
+            return die(f"no local checkout of {pr['owner']}/{pr['repo']} under {PROGRAMMING}.{LAST_REPO_HINT}")
+        worktree, note = prepare_worktree(repo_root, pr["number"], dry=args.dry_run)
+        title, base = pr_title(pr["url"], pr)
+        label = f"PR {pr['number']}: {title}" if title else f"PR {pr['number']}"
+        entries.append({
+            "pr": pr, "repo_root": repo_root, "worktree": worktree, "note": note,
+            "title": title, "base": base, "label": label,
+        })
+
+    owner = repo_owner(entries[0]["repo_root"]) or prs[0]["owner"]
+    agent_kind = choose_agent(owner, args.agent)
+    model = args.model or (CLAUDE_MODEL if agent_kind == "claude" else DEFAULT_MODEL)
+
+    batch_label = f"Review batch: {len(prs)} PRs"
+    seed_path = SEED_DIR / f"batch-{'-'.join(pr['number'] for pr in prs)}.md"
+    seed = batch_prompt(prs, prose, entries)
+
+    print(f"batch     : {len(prs)} pull requests, one agent ({agent_kind})")
+    for entry in entries:
+        print(f"  workspace: {entry['label']}")
+        print(f"    worktree: {entry['worktree']}  ({entry['note']})")
+        print(f"    base    : {entry['base'] or 'unknown'}   repo: {entry['repo_root']}")
+    print(f"agent ws  : {batch_label}")
+    print(f"seed      : {seed_path}")
+
+    if args.dry_run:
+        print("\n-- batch seed prompt --")
+        print(seed)
+        print("dry run: nothing created")
+        return 0
+
+    SEED_DIR.mkdir(parents=True, exist_ok=True)
+    seed_path.write_text(seed)
+
+    if not os.environ.get("HERDR_ENV"):
+        return die("not running inside a herdr pane")
+
+    # One workspace per pull request, each opening Neovim in its own checkout.
+    for entry in entries:
+        workspace = existing_workspace(entry["label"])
+        if workspace:
+            created = herdr("workspace", "get", workspace["workspace_id"])
+            print(f"workspace : reusing {workspace['workspace_id']} for {entry['label']}")
+        else:
+            created = herdr("workspace", "create", "--cwd", str(entry["worktree"]),
+                            "--label", entry["label"], "--focus",
+                            "--env", f"EINK_REVIEW_PR={entry['pr']['url']}")
+            print(f"workspace : {created['result']['workspace']['workspace_id']} for {entry['label']}")
+        pane = created["result"]["root_pane"]["pane_id"]
+        registry_entry(entry["pr"]["number"], entry["pr"], entry["worktree"])
+        if not args.no_launch:
+            # Neovim, not the agent: the batch has one agent, and this workspace is for reading.
+            herdr("pane", "run", pane, "nvim")
+
+    # The one agent, in a workspace of its own.
+    workspace = existing_workspace(batch_label)
+    if workspace:
+        created = herdr("workspace", "get", workspace["workspace_id"])
+        print(f"agent ws  : reusing {workspace['workspace_id']}")
+    else:
+        created = herdr("workspace", "create", "--cwd", str(entries[0]["worktree"]),
+                        "--label", batch_label, "--focus",
+                        "--env", f"EINK_REVIEW_SEED={seed_path}",
+                        "--env", f"EINK_REVIEW_AGENT={agent_kind}",
+                        "--env", f"EINK_REVIEW_MODEL={model}")
+        print(f"agent ws  : {created['result']['workspace']['workspace_id']}")
+
+    pane = created["result"]["root_pane"]["pane_id"]
+    if args.no_launch:
+        print("prepared only (--no-launch); start the agent manually with:")
+        print(f"  herdr pane run {pane} eink-review-agent")
+        return 0
+
+    herdr("pane", "run", pane, "eink-review-agent")
+    status = wait_for_agent(pane, timeout=15)
+    if status != "ready":
+        return die(f"the agent did not come up in {pane} (status: {status})")
+    print(f"agent     : running in {pane}")
+    return 0
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--dry-run", action="store_true")
@@ -224,15 +385,20 @@ def main(argv=None):
     args = parser.parse_args(argv)
 
     text = args.context or read_request()
-    url_match = ANY_URL.search(args.link or text)
-    if not url_match:
-        return die("no link found in the request; paste the message with its URL")
-    url = url_match.group(0).rstrip(").,")
-    slug = repo_slug(url)
+    pasted = args.link or text
+    prs = pull_requests(pasted)
+    if not prs:
+        if not ANY_URL.search(pasted):
+            return die("no link found in the request; paste the message with its URL")
+        return die(f"{ANY_URL.search(pasted).group(0)} is not a GitHub pull request link")
 
-    if not slug:
-        return die(f"{url} is not a GitHub pull request link")
-    context = text.replace(url, "").strip()
+    # Several links in one paste is a batch: a workspace each, and one agent to run them.
+    if len(prs) > 1:
+        return launch_batch(prs, prose_of(text, prs), args)
+
+    url = prs[0]["url"]
+    slug = prs[0]
+    context = prose_of(text, prs)
 
     repo_root = find_repo(slug["owner"], slug["repo"])
     if not repo_root:

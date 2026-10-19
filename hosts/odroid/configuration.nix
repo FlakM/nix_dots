@@ -52,6 +52,8 @@
     ./monitoring.nix
     ./hermes.nix
 
+    ./opencode-proxy.nix
+
     inputs.nixos-hardware.nixosModules.hardkernel-odroid-h3
   ];
 
