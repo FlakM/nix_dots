@@ -52,6 +52,7 @@
 
     ./monitoring.nix
     ./hermes.nix
+    ./kitchenowl.nix
 
     ./opencode-proxy.nix
 
