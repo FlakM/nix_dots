@@ -51,7 +51,10 @@ let
   });
 in
 {
-  imports = [ (import ./camera-notifications.nix { inherit phoneNotificationActions; }) ];
+  imports = [
+    (import ./camera-notifications.nix { inherit phoneNotificationActions; })
+    ./smart-plugs.nix
+  ];
   sops.secrets = {
     omada_ha_username = {
       sopsFile = ../../secrets/secrets.yaml;
