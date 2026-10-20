@@ -8,6 +8,10 @@ it only rewrites the row when one of the managed fields drifted.
 ABS requires every notification to carry at least one Apprise URL, so the
 ntfy destination stays in the notification itself; the Apprise API acts as
 the delivery/formatting backend (proper ntfy title/body instead of raw JSON).
+
+ABS does not template `urls`, so the per-episode Storii play link is added by
+abs-notify-relay.py. The episode body carries a hidden marker with the item and
+episode IDs; the relay strips it and turns it into ntfy click/actions.
 """
 
 import json
@@ -22,8 +26,12 @@ DB = os.environ.get(
 )
 
 TITLE_TEMPLATE = "New episode: {{episodeTitle}}"
+# The HTML comment is consumed by abs-notify-relay.py and never reaches the
+# phone; it is how the per-episode "Play" deep link survives ABS' lack of URL
+# templating.
 BODY_TEMPLATE = (
-    "From {{podcastTitle}} ({{libraryName}})\n\n{{episodeDescription}}"
+    "From {{podcastTitle}} ({{libraryName}})\n\n{{episodeDescription}}\n\n"
+    "<!--storii:{{libraryItemId}}:{{episodeId}}-->"
 )
 
 
@@ -34,9 +42,14 @@ def utcnow() -> str:
 
 def main() -> int:
     if len(sys.argv) != 3:
-        print("usage: audiobookshelf-notify.py <apprise-api-url> <ntfy-url>", file=sys.stderr)
+        print(
+            "usage: audiobookshelf-notify.py <relay-url> <ntfy-url>",
+            file=sys.stderr,
+        )
         return 2
-    apprise_api_url, ntfy_url = sys.argv[1:3]
+    # ABS posts here instead of straight to Apprise: the relay adds the Storii
+    # play button. See abs-notify-relay.py.
+    relay_url, ntfy_url = sys.argv[1:3]
 
     # A fresh install has no database until ABS has started once; nothing to
     # migrate in that case.
@@ -59,7 +72,7 @@ def main() -> int:
         settings = {
             "id": "notification-settings",
             "appriseType": "api",
-            "appriseApiUrl": apprise_api_url,
+            "appriseApiUrl": relay_url,
             "notifications": [],
             "maxFailedAttempts": 5,
             "maxNotificationQueue": 20,
@@ -71,7 +84,7 @@ def main() -> int:
     before = json.dumps(settings, sort_keys=True)
 
     settings["appriseType"] = "api"
-    settings["appriseApiUrl"] = apprise_api_url
+    settings["appriseApiUrl"] = relay_url
 
     notifications = settings.setdefault("notifications", [])
     episodes = [
@@ -118,7 +131,7 @@ def main() -> int:
                 "UPDATE settings SET value = ?, updatedAt = ? WHERE key = 'notification-settings'",
                 (json.dumps(settings), now),
             )
-    print(f"audiobookshelf-notify: notifications -> {apprise_api_url} -> {ntfy_url}")
+    print(f"audiobookshelf-notify: notifications -> {relay_url} -> {ntfy_url}")
     return 0
 
 

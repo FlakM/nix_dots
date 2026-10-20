@@ -39,6 +39,9 @@ in
       folders = {
         "${registry.folders.family-vault.id}" = {
           path = "/home/flakm/obsidian/family";
+          # Peers match folders by ID only, but the label is what other devices
+          # show when offering the folder - keep it recognisable.
+          label = registry.folders.family-vault.label;
           devices = trustedDevices ++ [
             { name = "odroid"; encryptionPasswordFile = config.sops.secrets.syncthing_family_vault_password.path; }
           ];
@@ -63,6 +66,7 @@ in
 
         "${registry.folders.work-vault.id}" = {
           path = "/home/flakm/obsidian/work";
+          label = registry.folders.work-vault.label;
           devices = trustedDevices ++ [
             { name = "odroid"; encryptionPasswordFile = config.sops.secrets.syncthing_work_vault_password.path; }
           ];
@@ -94,6 +98,14 @@ in
 
       gui.address = "127.0.0.1:8384";
     };
+  };
+
+  # Syncthing defaults to 22000 for TCP/QUIC transfers and 21027 for local
+  # discovery. Without these, other devices on the LAN cannot dial amd-pc and
+  # have to fall back to a relay (slow) or wait for amd-pc to dial them.
+  networking.firewall = {
+    allowedTCPPorts = [ 22000 ];
+    allowedUDPPorts = [ 22000 21027 ];
   };
 
   environment.systemPackages = [

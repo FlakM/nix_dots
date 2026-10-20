@@ -11,6 +11,10 @@ let
   port = 8100;
 
   appriseApiUrl = "http://127.0.0.1:${toString port}/notify";
+  # ABS only ever sends static Apprise URLs, so the per-episode Storii play
+  # button is added by a relay in front of Apprise (see abs-notify-relay.py).
+  relayPort = 8101;
+  relayUrl = "http://127.0.0.1:${toString relayPort}/notify";
   # Topic the phone client is subscribed to. Changing it requires updating the
   # subscription on the phone as well.
   # Podcast descriptions come out of RSS as HTML. Treat incoming bodies as
@@ -22,6 +26,8 @@ in
   # title/body here once, and Apprise delivers it to any configured backend
   # (ntfy, Discord, mail, ...). There is no nixpkgs package or NixOS module
   # for the API server, so run the upstream image under podman.
+  # Episode notifications pass through abs-notify-relay.service first, which
+  # adds the Storii "Play" button to the ntfy destination.
   users.users.apprise = {
     isSystemUser = true;
     uid = uid;
@@ -72,11 +78,42 @@ in
   # ABS keeps notification settings in SQLite and only reads them at startup,
   # so apply them from the service's preStart hook. This runs as the
   # audiobookshelf user and before ExecStart, which also means changing this
-  # module restarts ABS and re-applies the settings.
+  # module restarts ABS and re-applies the settings. ABS posts to the relay,
+  # not straight to Apprise.
   systemd.services.audiobookshelf.preStart = lib.mkAfter ''
     ${pkgs.python3}/bin/python3 ${./audiobookshelf-notify.py} \
-      '${appriseApiUrl}' '${ntfyUrl}'
+      '${relayUrl}' '${ntfyUrl}'
   '';
+
+  # Adds the per-episode `storii://play?id=...&episodeId=...` button to episode
+  # notifications: ABS sends Apprise URLs verbatim (no template variables), so
+  # the IDs travel in a hidden body marker that this relay strips before
+  # forwarding to the Apprise API.
+  systemd.services.abs-notify-relay = {
+    description = "Audiobookshelf -> Apprise relay (Storii play button)";
+    wantedBy = [ "multi-user.target" ];
+    wants = [ "podman-apprise.service" ];
+    after = [ "podman-apprise.service" ];
+    unitConfig.StartLimitIntervalSec = 0;
+    serviceConfig = {
+      ExecStart = "${pkgs.python3}/bin/python3 ${./abs-notify-relay.py} ${toString relayPort} '${appriseApiUrl}'";
+      DynamicUser = true;
+      Restart = "always";
+      RestartSec = "2s";
+      NoNewPrivileges = true;
+      PrivateTmp = true;
+      ProtectSystem = "strict";
+      ProtectHome = true;
+      RestrictAddressFamilies = [
+        "AF_INET"
+        "AF_INET6"
+        "AF_UNIX"
+      ];
+    };
+  };
+
+  systemd.services.audiobookshelf.wants = [ "abs-notify-relay.service" ];
+  systemd.services.audiobookshelf.after = [ "abs-notify-relay.service" ];
 
   services.nginx.virtualHosts."${domain}" = {
     useACMEHost = "house.flakm.com";

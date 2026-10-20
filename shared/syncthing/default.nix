@@ -68,6 +68,25 @@
 #   4. Rebuild NixOS on amd-pc and odroid
 #   5. Accept folder shares on new device
 #
+# Troubleshooting:
+# ===============
+#
+#   - Connection loop with "different encryption passwords used": the
+#     receiveencrypted replica on odroid stores no password of its own, only a
+#     token it adopts from the sending device, at
+#     <folder>/.stfolder/syncthing-encryption_password_token. If the password
+#     in SOPS ever changed, that token goes stale and every handshake fails.
+#     Delete the token file and restart syncthing to re-adopt the current one.
+#
+#   - odroid reports localDeleted > 0 / localBytes far below globalBytes: its
+#     index believes the files were deleted locally, so it never re-fetches
+#     them and stops being a usable relay. Stop syncthing, delete
+#     index-v2/*.db*, empty the folder (keep .stfolder), start syncthing.
+#
+#   - amd-pc must accept inbound 22000/tcp and 22000/udp (see amd-pc.nix);
+#     otherwise peers silently fall back to a relay or wait for amd-pc to
+#     dial out, which makes a fresh device look "not synced".
+#
 
 {
   devices = {
@@ -80,7 +99,7 @@
       name = "odroid";
     };
     pixel = {
-      id = "5F7XKJT-22DE2FJ-IZDSRT6-46NYTNK-2VLLHLC-EAFAV4C-BKJYTNC-FCF3DAL";
+      id = "5ERDR7I-ENSPM3Q-YDEVZQL-PDGGMXM-2WMW3IH-FC5GHLI-R5HMGEG-KVAYBA6";
       name = "pixel";
     };
     air = {
