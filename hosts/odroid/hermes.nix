@@ -70,26 +70,24 @@ in
         model = "gpt-6.1-sol";
         # When codex credits/quota run out, fall back: Go subscription first
         # (reliable), then the free Zen tier as a backstop.
+        # OpenCode's free Zen tier answers 403 FreeTierError from this network
+        # ("abusive traffic from this IP"), so it is not in the chain at all.
         fallbacks = [
           {
             provider = "opencode";
             model = "opencode-go/deepseek-v4.1-flash";
           }
-          {
-            provider = "opencode";
-            model = "opencode/deepseek-v4.1-flash-free";
-          }
         ];
-        # Strong model for review/investigate/ask (they use tools); fast free
-        # model for summaries and drafts.
+        # Fast model for summaries and drafts (flat-rate Go subscription);
+        # the free tier is unavailable here.
         tasks = {
           draft = {
             provider = "opencode";
-            model = "opencode/deepseek-v4.1-flash-free";
+            model = "opencode-go/deepseek-v4.1-flash";
           };
           summary = {
             provider = "opencode";
-            model = "opencode/deepseek-v4.1-flash-free";
+            model = "opencode-go/deepseek-v4.1-flash";
           };
         };
         contextCacheSeconds = 300; # cache control-thread context + searches
