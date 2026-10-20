@@ -496,7 +496,33 @@ def herdr(*args, announce=False):
     return json.loads(result.stdout or "{}")
 
 
-def registry_entry(number, slug, worktree, session=""):
+def socket_path(number, repo):
+    """One socket per pull request, not per repository.
+
+    Two PRs of the same repository are reviewed side by side; `jump-<repo>.sock` made the
+    second editor unreachable (and would let marks land in the first one's buffer).
+    """
+    return f"/run/user/{os.getuid()}/jump-pr-{number}-{repo}.sock"
+
+
+def diff_range(worktree, base):
+    """`merge-base(base, HEAD)..HEAD`, so unrelated upstream commits stay out."""
+    for ref in [f"origin/{base}" if base else None, "origin/HEAD", "HEAD^"]:
+        if not ref:
+            continue
+        merged = run(["git", "-C", str(worktree), "merge-base", ref, "HEAD"]).stdout.strip()
+        if merged:
+            return f"{merged}..HEAD"
+    return "HEAD"
+
+
+def nvim_command(socket, range_):
+    # One shell string: herdr sends a command to the pane's shell, and the single quotes
+    # keep `DiffviewOpen <a>..<b>` one argument.
+    return f"nvim --listen {socket} -c 'DiffviewOpen {range_}'"
+
+
+def registry_entry(number, slug, worktree, session="", socket="", pane="", title="", sha=""):
     try:
         payload = json.loads(REGISTRY.read_text())
     except (FileNotFoundError, json.JSONDecodeError):
@@ -506,14 +532,14 @@ def registry_entry(number, slug, worktree, session=""):
     rows.append({
         "key": key,
         "pr": key,
-        "sha": "",
+        "sha": sha,
         "worktree": str(worktree),
-        "socket": f"/run/user/{os.getuid()}/jump-{worktree.name}.sock",
+        "socket": socket or socket_path(number, worktree.name),
         "tab_label": f"PR {number}",
-        "title": "",
+        "title": title,
         "session": session,
         "tab_id": "",
-        "pane_id": "",
+        "pane_id": pane,
     })
     REGISTRY.parent.mkdir(parents=True, exist_ok=True)
     REGISTRY.write_text(json.dumps({"reviews": rows}, indent=2) + "\n")
@@ -601,16 +627,17 @@ def build_plan(prs, args):
 
 # ── launch ───────────────────────────────────────────────────────────────────
 
-def launch(prs, prose, ars):
-    entries = build_plan(prs, ars)
+def launch(prs, prose, args):
+    """Plan, confirm, then create. The editor opens on the diff, not on a shell command."""
+    entries = build_plan(prs, args)
     if entries is None:
         return die("cancelled; nothing was created")
     if not entries:
         return die("nothing left to review after skipping")
 
     owner = repo_owner(entries[0]["repo_root"]) or prs[0]["owner"]
-    agent_kind = choose_agent(owner, ars.agent)
-    model = ars.model or (CLAUDE_MODEL if agent_kind == "claude" else DEFAULT_MODEL)
+    agent_kind = choose_agent(owner, args.agent)
+    model = args.model or (CLAUDE_MODEL if agent_kind == "claude" else DEFAULT_MODEL)
 
     if len(entries) == 1:
         entry = entries[0]
@@ -619,17 +646,15 @@ def launch(prs, prose, ars):
             entry["pr"]["url"], entry["pr"], entry["worktree"], prose,
             entry["repo_root"], entry["title"],
         )
+        agent_label = f"Review: PR {entry['pr']['number']}"
     else:
         seed_path = SEED_DIR / f"batch-{'-'.join(entry['pr']['number'] for entry in entries)}.md"
-        seed = batch_prompt(
-            [entry["pr"] for entry in entries], prose,
-            entries,
-        )
+        seed = batch_prompt([entry["pr"] for entry in entries], prose, entries)
+        agent_label = f"Review batch: {len(entries)} PRs"
     for entry in entries:
         entry["seed_path"] = seed_path
 
-    print()
-    action = confirm_plan(entries, agent_kind, model, ars)
+    action = confirm_plan(entries, agent_kind, model, args)
     if action == "quit":
         print("cancelled; nothing was created")
         return 0
@@ -643,66 +668,80 @@ def launch(prs, prose, ars):
             "not running inside a herdr pane; the plan is ready but workspaces need herdr"
         )
 
-    # The plan is approved. Now fetch and create, one step at a time.
+    # The plan is approved. Fetch, check out, and work out what each editor should show.
     for entry in entries:
         entry["worktree"], note = prepare_worktree(
-            entry["repo_root"], entry["pr"]["number"], dry=ars.dry_run
+            entry["repo_root"], entry["pr"]["number"], dry=args.dry_run
         )
-        detail(f"{entry['label']}: {note}")
+        entry["sha"] = run(
+            ["git", "-C", str(entry["worktree"]), "rev-parse", "HEAD"]
+        ).stdout.strip()
+        entry["socket"] = socket_path(entry["pr"]["number"], entry["worktree"].name)
+        entry["range"] = diff_range(entry["worktree"], entry["base"])
+        detail(f"{entry['label']}: {note}; diff {entry['range']}")
 
     SEED_DIR.mkdir(parents=True, exist_ok=True)
     seed_path.write_text(seed)
     detail(f"seed: {seed_path}")
 
-    batch_label = f"Review batch: {len(entries)} PRs"
-
-    if len(entries) == 1:
-        entry = entries[0]
-        workspace = existing_workspace(entry["label"])
-        if workspace:
-            created = herdr("workspace", "get", workspace["workspace_id"])
-            detail(f"workspace: reusing {workspace['workspace_id']}")
-        else:
-            created = herdr(
-                "workspace", "create", "--cwd", str(entry["worktree"]),
-                "--label", entry["label"],
-                "--env", f"EINK_REVIEW_SEED={seed_path}",
-                "--env", f"EINK_REVIEW_AGENT={agent_kind}",
-                "--env", f"EINK_REVIEW_MODEL={model}",
-                "--focus",
-                announce=True,
-            )
-            detail(f"workspace: {created['result']['workspace']['workspace_id']}")
-        pane = created["result"]["root_pane"]["pane_id"]
-        registry_entry(entry["pr"]["number"], entry["pr"], entry["worktree"])
-        return start_agent(pane, ars, label=entry["label"])
-
-    # A batch: a reading workspace per PR, then one agent workspace of its own.
+    # One reading workspace per pull request. Neovim is started *with* the diff and the
+    # socket, so nothing has to be typed into it later.
     for entry in entries:
         workspace = existing_workspace(entry["label"])
+        socket = entry["socket"]
+        # A workspace from an older launcher has an editor without --listen and a buffer
+        # full of the command that was typed into it. Offer to start clean.
+        if (
+            workspace
+            and not Path(socket).exists()
+            and not args.no_launch
+            and sys.stdin.isatty()
+        ):
+            print()
+            print(f"{entry['label']} exists, but its editor has no review socket.")
+            print("   [Enter] close it and open the diff   [k] keep it   [q] cancel")
+            raw = input("   > ").strip().lower()
+            if raw in ("q", "quit", "cancel"):
+                return 0
+            if raw not in ("k", "keep"):
+                herdr("workspace", "close", workspace["workspace_id"])
+                workspace = None
         if workspace:
             created = herdr("workspace", "get", workspace["workspace_id"])
+            pane = created["result"]["root_pane"]["pane_id"]
             detail(f"workspace: reusing {workspace['workspace_id']} for {entry['label']}")
+            if not Path(socket).exists():
+                detail(
+                    "no review socket in this workspace; open the diff manually with "
+                    ":DiffviewOpen, or close the workspace and relaunch"
+                )
         else:
             created = herdr(
                 "workspace", "create", "--cwd", str(entry["worktree"]),
                 "--label", entry["label"], "--focus",
                 "--env", f"EINK_REVIEW_PR={entry['pr']['url']}",
+                "--env", f"EINK_PR_SOCKET={socket}",
                 announce=True,
             )
+            pane = created["result"]["root_pane"]["pane_id"]
             detail(f"workspace: {created['result']['workspace']['workspace_id']} for {entry['label']}")
-        registry_entry(entry["pr"]["number"], entry["pr"], entry["worktree"])
-        if not ars.no_launch:
-            herdr("pane", "run", created["result"]["root_pane"]["pane_id"], "nvim")
+            if not args.no_launch:
+                step(f"opening the diff in {entry['label']}")
+                herdr("pane", "run", pane, nvim_command(socket, entry["range"]))
+        registry_entry(
+            entry["pr"]["number"], entry["pr"], entry["worktree"],
+            socket=socket, pane=pane, title=entry["title"], sha=entry["sha"],
+        )
 
-    workspace = existing_workspace(batch_label)
+    # One agent, in a workspace of its own.
+    workspace = existing_workspace(agent_label)
     if workspace:
         created = herdr("workspace", "get", workspace["workspace_id"])
         detail(f"agent workspace: reusing {workspace['workspace_id']}")
     else:
         created = herdr(
             "workspace", "create", "--cwd", str(entries[0]["worktree"]),
-            "--label", batch_label, "--focus",
+            "--label", agent_label, "--focus",
             "--env", f"EINK_REVIEW_SEED={seed_path}",
             "--env", f"EINK_REVIEW_AGENT={agent_kind}",
             "--env", f"EINK_REVIEW_MODEL={model}",
@@ -710,7 +749,7 @@ def launch(prs, prose, ars):
         )
         detail(f"agent workspace: {created['result']['workspace']['workspace_id']}")
 
-    return start_agent(created["result"]["root_pane"]["pane_id"], ars, label=batch_label)
+    return start_agent(created["result"]["root_pane"]["pane_id"], args, label=agent_label)
 
 
 def start_agent(pane, args, label):

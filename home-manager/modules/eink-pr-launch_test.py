@@ -9,8 +9,10 @@ that agent -- they are the only statement of intent the reviewer gives, and they
 "keep an eye on identity-service" lives (as in the real message below).
 """
 import importlib.util
+import json
 import pathlib
 import sys
+import tempfile
 
 HERE = pathlib.Path(__file__).resolve().parent
 spec = importlib.util.spec_from_file_location("eink_pr_launch", HERE / "eink-pr-launch.py")
@@ -93,6 +95,34 @@ def test_choice_interpretation_is_explicit():
     check(launch.interpret_choice("maybe") is None, "an unknown answer asks again")
 
 
+def test_the_socket_and_editor_command_are_per_pull_request():
+    one = launch.socket_path(485, "security-token-service")
+    two = launch.socket_path(486, "security-token-service")
+    check(one != two, "two PRs of one repository cannot share an editor socket")
+    check("jump-pr-485-security-token-service.sock" in one, "the socket names the PR")
+    command = launch.nvim_command(one, "abc123..HEAD")
+    check(command.startswith(f"nvim --listen {one} "), "the editor listens on that socket")
+    check("-c 'DiffviewOpen abc123..HEAD'" in command, "and opens the merge-base range")
+
+
+def test_the_registry_records_where_the_editor_is():
+    with tempfile.TemporaryDirectory() as directory:
+        saved = launch.REGISTRY
+        try:
+            launch.REGISTRY = pathlib.Path(directory) / "pr-reviews.json"
+            launch.registry_entry(
+                485, {}, pathlib.Path("/w/pr-485/security-token-service"),
+                socket="/run/user/1000/jump-pr-485-security-token-service.sock",
+                pane="w1:p2", title="A title", sha="abc123",
+            )
+            row = json.loads(launch.REGISTRY.read_text())["reviews"][0]
+            check(row["pane_id"] == "w1:p2", "the pane is recorded for the skill to reuse")
+            check(row["socket"].endswith("jump-pr-485-security-token-service.sock"), "the socket is recorded")
+            check(row["sha"] == "abc123" and row["title"] == "A title", "the reviewed commit is recorded")
+        finally:
+            launch.REGISTRY = saved
+
+
 def test_the_plan_names_every_review_and_marks_reuse():
     entries = [
         {"label": "PR 1: One", "repo_root": "/p/one", "worktree": "/p/worktrees/pr-1/one",
@@ -116,6 +146,9 @@ test_the_prose_survives_without_the_links()
 test_the_batch_brief_names_every_review_and_quotes_the_message()
 test_choice_interpretation_is_explicit()
 test_the_plan_names_every_review_and_marks_reuse()
+
+test_the_socket_and_editor_command_are_per_pull_request()
+test_the_registry_records_where_the_editor_is()
 
 print()
 if failures:
