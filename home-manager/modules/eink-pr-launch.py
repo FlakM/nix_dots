@@ -691,12 +691,8 @@ def launch(prs, prose, args):
         socket = entry["socket"]
         # A workspace from an older launcher has an editor without --listen and a buffer
         # full of the command that was typed into it. Offer to start clean.
-        if (
-            workspace
-            and not Path(socket).exists()
-            and not args.no_launch
-            and sys.stdin.isatty()
-        ):
+        needs_recreate = workspace and not Path(socket).exists() and not args.no_launch and sys.stdin.isatty()
+        if needs_recreate:
             print()
             print(f"{entry['label']} exists, but its editor has no review socket.")
             print("   [Enter] close it and open the diff   [k] keep it   [q] cancel")
@@ -720,7 +716,9 @@ def launch(prs, prose, args):
                 "workspace", "create", "--cwd", str(entry["worktree"]),
                 "--label", entry["label"], "--focus",
                 "--env", f"EINK_REVIEW_PR={entry['pr']['url']}",
+                "--env", f"EINK_PR_NUMBER={entry['pr']['number']}",
                 "--env", f"EINK_PR_SOCKET={socket}",
+                "--env", f"EINK_PR_STATE={STATE}",
                 announce=True,
             )
             pane = created["result"]["root_pane"]["pane_id"]

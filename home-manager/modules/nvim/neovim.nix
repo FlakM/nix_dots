@@ -241,6 +241,8 @@ in
         (builtins.readFile ./config/python.lua)
         (builtins.readFile ./config/html.lua)
         # do-block: the file ends with `return M`, which must be last in its chunk
+        "do\n${builtins.readFile ./config/pr-comments.lua}\nend"
+        # do-block: the file ends with `return M`, which must be last in its chunk
         "do\n${builtins.readFile ./config/eink-bridge.lua}\nend"
       ];
 
