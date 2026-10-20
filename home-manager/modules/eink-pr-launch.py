@@ -38,6 +38,7 @@ import json
 import os
 import re
 import shutil
+import socket as socket_lib
 import subprocess
 import sys
 import threading
@@ -664,6 +665,174 @@ def existing_workspace(label):
     return None
 
 
+def load_registry():
+    try:
+        return json.loads(REGISTRY.read_text()).get("reviews", [])
+    except (FileNotFoundError, json.JSONDecodeError):
+        return []
+
+
+def save_registry(rows):
+    REGISTRY.parent.mkdir(parents=True, exist_ok=True)
+    REGISTRY.write_text(json.dumps({"reviews": rows}, indent=2) + "\n")
+
+
+def prune_registry(numbers):
+    """Forget registry rows for workspaces/PRs that no longer exist."""
+    wanted = {str(number) for number in numbers}
+    rows = load_registry()
+    kept = [row for row in rows if str(row.get("pr")) not in wanted]
+    if len(kept) != len(rows):
+        save_registry(kept)
+
+
+def reading_label(label):
+    """The launcher's reading workspaces are `PR <n>[: title]`; agents are `Review…`."""
+    return bool(re.match(r"^PR \d+", label or ""))
+
+
+def label_pr(label):
+    match = re.match(r"^PR (\d+)", label or "")
+    return int(match.group(1)) if match else None
+
+
+def socket_alive(path):
+    """A socket file can outlive the editor; a successful connect cannot."""
+    if not path:
+        return False
+    try:
+        with socket_lib.socket(socket_lib.AF_UNIX, socket_lib.SOCK_STREAM) as probe:
+            probe.settimeout(0.2)
+            probe.connect(path)
+        return True
+    except OSError:
+        return False
+
+
+def select_stale(workspaces, current_sockets, registry_rows, socket_exists):
+    """Reading workspaces with no live editor socket.
+
+    A live socket means someone is working there, even if it is from an earlier review.
+    A missing one means the editor is gone (or was started before `--listen` existed), and
+    the workspace is only taking up room in the workspace list.
+    """
+    stale = []
+    for workspace in workspaces:
+        label = workspace.get("label", "")
+        if not reading_label(label):
+            continue
+        number = label_pr(label)
+        row = next(
+            (row for row in registry_rows if str(row.get("pr")) == str(number)),
+            None,
+        )
+        # A current workspace may still be running an editor from the old launcher, on
+        # the old socket name. Either listener means someone is working there; never
+        # close a live editor because its socket does not match this run's expectation.
+        candidates = [current_sockets.get(label), (row or {}).get("socket", "")]
+        if any(socket and socket_exists(socket) for socket in candidates):
+            continue
+        socket = current_sockets.get(label) or (row or {}).get("socket", "")
+        stale.append({
+            "label": label,
+            "workspace_id": workspace.get("workspace_id"),
+            "socket": socket,
+            "current": label in current_sockets,
+        })
+    return stale
+
+
+def worktree_for_label(label):
+    number = label_pr(label)
+    for row in load_registry():
+        if str(row.get("pr")) == str(number):
+            return row.get("worktree")
+    return None
+
+
+def remove_worktree(path):
+    """Remove a linked worktree only when it has nothing to lose."""
+    dirty = run(["git", "-C", path, "status", "--porcelain"]).stdout.strip()
+    if dirty:
+        return False, "uncommitted changes"
+    common = run(
+        ["git", "-C", path, "rev-parse", "--path-format=absolute", "--git-common-dir"]
+    ).stdout.strip()
+    if not common:
+        return False, "not a worktree"
+    main = str(Path(common).parent)
+    removed = run(["git", "-C", main, "worktree", "remove", path])
+    if removed.returncode != 0:
+        return False, (removed.stderr or removed.stdout).strip().splitlines()[0]
+    return True, "removed"
+
+
+def offer_cleanup(stale):
+    """One question before anything is created: close the room left by old reviews."""
+    if not stale:
+        return True
+    noun = "workspace" if len(stale) == 1 else "workspaces"
+    section("Cleanup", f"{len(stale)} review {noun} with no live editor")
+    for item in stale:
+        note = "this batch — reopens on the diff" if item["current"] else "earlier review"
+        print(f"    {item['label']}  {dim(note)}")
+    print()
+    if not sys.stdin.isatty():
+        print(f"    {dim('keeping them (no terminal to ask)')}")
+        return True
+
+    print(f"    {cyan('Enter')} close them (files are kept)")
+    print(f"    {cyan('w')}     close them and remove the earlier worktrees")
+    print(f"    {cyan('k')}     keep them")
+    print(f"    {cyan('q')}     cancel")
+    mode = None
+    while mode is None:
+        try:
+            raw = input(f"  {yellow('›')} ").strip().lower()
+        except EOFError:
+            return True
+        if raw in ("", "c", "close"):
+            mode = "close"
+        elif raw in ("w", "worktree", "remove"):
+            mode = "remove"
+        elif raw in ("k", "keep"):
+            return True
+        elif raw in ("q", "quit", "cancel"):
+            return False
+        else:
+            print(f"    {red('?')} Enter, w, k, or q")
+
+    with working(f"closing {len(stale)} old {noun}"):
+        for item in stale:
+            try:
+                herdr("workspace", "close", item["workspace_id"])
+            except (RuntimeError, json.JSONDecodeError, KeyError) as error:
+                print(f"    {yellow('!')} {item['label']}: {error}")
+
+    earlier = [item for item in stale if not item["current"]]
+    prune_registry(label_pr(item["label"]) for item in earlier)
+
+    if mode == "remove":
+        removed, kept = 0, []
+        with working("removing earlier worktrees"):
+            for item in earlier:
+                path = worktree_for_label(item["label"])
+                if not path:
+                    continue
+                if not Path(path).exists():
+                    continue
+                ok, reason = remove_worktree(path)
+                if ok:
+                    removed += 1
+                else:
+                    kept.append(f"{item['label']} ({reason})")
+        if removed:
+            print(f"    {green('✓')} removed {removed} worktree(s)")
+        for note in kept:
+            print(f"    {yellow('!')} kept {note}")
+    return True
+
+
 def pr_table(entries, width=None):
     """One aligned row per review; long titles and repositories are elided."""
     width = width or columns()
@@ -774,6 +943,7 @@ def build_plan(prs, args):
             "title": title,
             "base": base,
             "label": label,
+            "socket": socket_path(pr["number"], worktree.name),
             "seed_path": None,
         })
         kv("repo", short_path(repo_root))
@@ -824,6 +994,17 @@ def launch(prs, prose, args):
             "not running inside a herdr pane; the plan is ready but workspaces need herdr"
         )
 
+    current_sockets = {entry["label"]: entry["socket"] for entry in entries}
+    stale = select_stale(
+        herdr("workspace", "list").get("result", {}).get("workspaces", []),
+        current_sockets,
+        load_registry(),
+        socket_alive,
+    )
+    if not offer_cleanup(stale):
+        print(f"\n  {yellow('·')} cancelled; nothing was created")
+        return 0
+
     # The plan is approved. Fetch, check out, and work out what each editor should show.
     for entry in entries:
         entry["worktree"], note = prepare_worktree(
@@ -832,7 +1013,6 @@ def launch(prs, prose, args):
         entry["sha"] = run(
             ["git", "-C", str(entry["worktree"]), "rev-parse", "HEAD"]
         ).stdout.strip()
-        entry["socket"] = socket_path(entry["pr"]["number"], entry["worktree"].name)
         entry["range"] = diff_range(entry["worktree"], entry["base"])
         kv("worktree", short_path(entry["worktree"]), note)
         kv("diff", entry["range"])
@@ -846,30 +1026,19 @@ def launch(prs, prose, args):
     for entry in entries:
         workspace = existing_workspace(entry["label"])
         socket = entry["socket"]
-        # A workspace from an older launcher has an editor without --listen and a buffer
-        # full of the command that was typed into it. Offer to start clean.
-        needs_recreate = workspace and not Path(socket).exists() and not args.no_launch and sys.stdin.isatty()
-        if needs_recreate:
-            print()
-            print(f"  {yellow('!')} {bold(entry['label'])} exists without a review socket.")
-            print(f"    {cyan('Enter')} close it and open the diff")
-            print(f"    {cyan('k')}     keep it")
-            print(f"    {cyan('q')}     cancel")
-            try:
-                raw = input(f"  {yellow('›')} ").strip().lower()
-            except EOFError:
-                return 0
-            if raw in ("q", "quit", "cancel"):
-                return 0
-            if raw not in ("k", "keep"):
-                with working("closing the old workspace"):
-                    herdr("workspace", "close", workspace["workspace_id"])
-                workspace = None
         if workspace:
             created = herdr("workspace", "get", workspace["workspace_id"])
             pane = created["result"]["root_pane"]["pane_id"]
             print(f"    {green('✓')} workspace {dim('reused')}  {entry['label']}")
-            if not Path(socket).exists():
+            previous = next(
+                (row.get("socket", "") for row in load_registry()
+                 if str(row.get("pr")) == str(entry["pr"]["number"])),
+                "",
+            )
+            if not socket_alive(socket) and socket_alive(previous):
+                print(f"    {yellow('!')} this editor is on an older socket; "
+                      f"restart it to use {socket}")
+            elif not socket_alive(socket):
                 print(f"    {yellow('!')} no review socket; open :DiffviewOpen yourself, "
                       f"or close and relaunch")
         else:

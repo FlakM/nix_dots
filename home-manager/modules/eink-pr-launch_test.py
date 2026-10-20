@@ -123,6 +123,44 @@ def test_the_plan_table_stays_aligned_and_elides_long_names():
           "paths are shortened to ~")
 
 
+def test_stale_workspaces_are_reading_workspaces_without_a_live_editor():
+    workspaces = [
+        {"label": "PR 1: old", "workspace_id": "w1"},
+        {"label": "PR 2: live", "workspace_id": "w2"},
+        {"label": "PR 3: mine", "workspace_id": "w3"},
+        {"label": "Review batch: 2 PRs", "workspace_id": "w4"},
+        {"label": "Nixos tasks", "workspace_id": "w5"},
+    ]
+    current = {"PR 3: mine": "/run/jump-pr-3.sock"}
+    registry = [
+        {"pr": "1", "socket": "/run/jump-pr-1.sock"},
+        {"pr": "2", "socket": "/run/jump-pr-2.sock"},
+    ]
+    stale = launch.select_stale(
+        workspaces, current, registry,
+        lambda path: path == "/run/jump-pr-2.sock",
+    )
+    check([item["label"] for item in stale] == ["PR 1: old", "PR 3: mine"],
+          "only workspaces without a live editor are offered")
+    check(stale[0]["current"] is False, "an earlier review is marked as such")
+    check(stale[1]["current"] is True, "a stale workspace of this batch is marked")
+    check(not launch.reading_label("Review batch: 2 PRs"),
+          "the agent workspace is not a reading workspace")
+
+
+def test_pruning_the_registry_forgets_only_the_closed_reviews():
+    with tempfile.TemporaryDirectory() as directory:
+        saved = launch.REGISTRY
+        try:
+            launch.REGISTRY = pathlib.Path(directory) / "pr-reviews.json"
+            launch.save_registry([{"pr": "1"}, {"pr": "2"}, {"pr": "3"}])
+            launch.prune_registry([1, 3])
+            check([row["pr"] for row in launch.load_registry()] == ["2"],
+                  "closed reviews leave no registry rows behind")
+        finally:
+            launch.REGISTRY = saved
+
+
 def test_the_registry_records_where_the_editor_is():
     with tempfile.TemporaryDirectory() as directory:
         saved = launch.REGISTRY
@@ -165,6 +203,8 @@ test_the_batch_brief_names_every_review_and_quotes_the_message()
 test_choice_interpretation_is_explicit()
 test_the_plan_names_every_review_and_marks_reuse()
 
+test_stale_workspaces_are_reading_workspaces_without_a_live_editor()
+test_pruning_the_registry_forgets_only_the_closed_reviews()
 test_the_socket_and_editor_command_are_per_pull_request()
 test_the_registry_records_where_the_editor_is()
 
