@@ -31,6 +31,30 @@ PanelWindow {
         return isNaN(date) ? value : Qt.formatDate(date, "dd.MM.")
     }
 
+    // Open homework from the "Librus — Emilka" Vikunja project (fed by
+    // czujka-librus on odroid). Deadlines span weeks with usually none on the
+    // exact day, so the panel shows them in their own section instead of the
+    // two-day agenda.
+    function taskDue(value) {
+        return value && !value.startsWith("0001") ? value : null
+    }
+    function taskOverdue(task) {
+        const due = taskDue(task.due_date)
+        return due && new Date(due) < new Date()
+    }
+    readonly property var librusTasks: {
+        const list = shell.vikunjaTasks
+            .filter(task => (task.project_title || "").includes("Librus") && !task.done)
+        list.sort((a, b) => {
+            const ad = taskDue(a.due_date), bd = taskDue(b.due_date)
+            const ao = taskOverdue(a), bo = taskOverdue(b)
+            if (ao !== bo) return ao ? -1 : 1
+            if (ad && bd) return ad.localeCompare(bd)
+            return a.title.localeCompare(b.title)
+        })
+        return list
+    }
+
     onVisibleChanged: if (visible) keyHandler.forceActiveFocus()
 
     MouseArea { anchors.fill: parent; onClicked: shell.overlayMode = "" }
@@ -124,13 +148,18 @@ PanelWindow {
                 Layout.fillWidth: true
                 Text { text: "TODAY & TOMORROW"; color: "#8392a8"; font.pixelSize: 12; font.bold: true; font.letterSpacing: 1.4 }
                 Item { Layout.fillWidth: true }
-                Text { text: `${shell.calendarAgenda.length} items`; color: "#69788e"; font.pixelSize: 12 }
+                Text { text: `${shell.calendarAgenda.length} events`; color: "#69788e"; font.pixelSize: 12 }
             }
 
             Controls.ScrollView {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 clip: true
+                // Pin the content to the viewport width. Otherwise the
+                // contentItem keeps the implicit width it had at startup
+                // (briefly just the section headers, before khal loads) and
+                // every row stays squeezed at that width forever.
+                contentWidth: width
                 ColumnLayout {
                     width: parent.width
                     spacing: 10
@@ -138,16 +167,12 @@ PanelWindow {
                         model: shell.calendarAgenda
                         delegate: Rectangle {
                             required property var modelData
-                            readonly property bool isTask: modelData.kind === "task"
-                            readonly property bool isOverdue: isTask && modelData.overdue
-                            // Tasks (Librus homework) get violet; overdue ones go red.
-                            readonly property color accent: isOverdue ? "#ff8d98" : isTask ? "#c58fff" : "#72d7ff"
                             Layout.fillWidth: true
                             Layout.preferredHeight: 82
                             radius: 19
                             color: eventMouse.containsMouse ? "#384456" : "#28313f"
                             border.width: 1
-                            border.color: isOverdue ? "#80ff7b86" : "#3b4a60"
+                            border.color: "#3b4a60"
                             RowLayout {
                                 anchors.fill: parent
                                 anchors.margins: 16
@@ -155,21 +180,10 @@ PanelWindow {
                                 ColumnLayout {
                                     Layout.preferredWidth: 100
                                     spacing: 1
-                                    Text {
-                                        text: isTask ? (modelData.start || "Due") : (modelData.start || "All day")
-                                        color: accent
-                                        font.pixelSize: 16
-                                        font.bold: true
-                                    }
-                                    Text {
-                                        text: isTask
-                                            ? (isOverdue ? `due ${panel.shortDate(modelData.due_date)}` : `${panel.shortDate(modelData.date)}`)
-                                            : (modelData.end ? `until ${modelData.end}` : modelData.date)
-                                        color: "#73839a"
-                                        font.pixelSize: 11
-                                    }
+                                    Text { text: modelData.start || "All day"; color: "#72d7ff"; font.pixelSize: 16; font.bold: true }
+                                    Text { text: modelData.end ? `until ${modelData.end}` : modelData.date; color: "#73839a"; font.pixelSize: 11 }
                                 }
-                                Rectangle { Layout.preferredWidth: 3; Layout.fillHeight: true; radius: 2; color: accent }
+                                Rectangle { Layout.preferredWidth: 3; Layout.fillHeight: true; radius: 2; color: "#72d7ff" }
                                 ColumnLayout {
                                     Layout.fillWidth: true
                                     spacing: 2
@@ -189,6 +203,67 @@ PanelWindow {
                             spacing: 10
                             Symbol { anchors.horizontalCenter: parent.horizontalCenter; text: "event_available"; color: "#66758b"; font.pixelSize: 42 }
                             Text { text: "Nothing scheduled"; color: "#9aa8bb"; font.pixelSize: 15 }
+                        }
+                    }
+
+                    // Open homework from the "Librus — Emilka" Vikunja project
+                    // (fed by czujka-librus on odroid). Kept directly in this
+                    // ColumnLayout (no nested layout — nested ones collapse to
+                    // implicit width inside a ScrollView).
+                    RowLayout {
+                        visible: panel.librusTasks.length > 0
+                        Layout.fillWidth: true
+                        Text { text: "LIBRUS — EMILKA"; color: "#8392a8"; font.pixelSize: 12; font.bold: true; font.letterSpacing: 1.4 }
+                        Item { Layout.fillWidth: true }
+                        Text { text: `${panel.librusTasks.length} tasks`; color: "#69788e"; font.pixelSize: 12 }
+                    }
+
+                    Repeater {
+                        model: panel.librusTasks
+                        delegate: Rectangle {
+                            required property var modelData
+                            readonly property bool overdue: panel.taskOverdue(modelData)
+                            readonly property color accent: overdue ? "#ff8d98" : "#c58fff"
+                            visible: panel.librusTasks.length > 0
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 64
+                            radius: 19
+                            color: "#28313f"
+                            border.width: 1
+                            border.color: overdue ? "#80ff7b86" : "#3b4a60"
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.margins: 14
+                                spacing: 15
+                                ColumnLayout {
+                                    Layout.preferredWidth: 86
+                                    spacing: 1
+                                    Text {
+                                        text: {
+                                            const due = panel.taskDue(modelData.due_date)
+                                            return due ? panel.shortDate(due) : "bez terminu"
+                                        }
+                                        color: accent
+                                        font.pixelSize: 15
+                                        font.bold: true
+                                    }
+                                    Text {
+                                        text: overdue ? "overdue" : "homework"
+                                        color: "#73839a"
+                                        font.pixelSize: 10
+                                    }
+                                }
+                                Rectangle { Layout.preferredWidth: 3; Layout.fillHeight: true; radius: 2; color: accent }
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: modelData.title
+                                    color: "#edf2f9"
+                                    font.pixelSize: 14
+                                    elide: Text.ElideRight
+                                    maximumLineCount: 2
+                                    wrapMode: Text.Wrap
+                                }
+                            }
                         }
                     }
                 }
