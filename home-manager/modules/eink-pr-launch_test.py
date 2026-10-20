@@ -107,6 +107,22 @@ def test_the_socket_and_editor_command_are_per_pull_request():
     check("-c 'DiffviewOpen abc123..HEAD'" in command, "and opens the merge-base range")
 
 
+def test_the_plan_table_stays_aligned_and_elides_long_names():
+    entries = [
+        {"pr": {"number": "19", "owner": "coralogix", "repo": "cx-api-security-token-service"},
+         "title": "CX-64699 Login access: a client can be closed to a whole team"},
+        {"pr": {"number": "485", "owner": "coralogix", "repo": "security-token-service"},
+         "title": "CX-64699 oauth client disallow all option"},
+    ]
+    lines = launch.pr_table(entries, width=80)
+    check(len(lines) == 3, "a header and one row per review")
+    check("REPOSITORY" in lines[0] and "TITLE" in lines[0], "the columns are labelled")
+    check(all(len(line) <= 80 for line in lines), "the table fits the terminal")
+    check("…" in lines[1], "a long repository or title is elided, not wrapped")
+    check(launch.short_path(str(launch.HOME / "programming/x")).startswith("~"),
+          "paths are shortened to ~")
+
+
 def test_the_registry_records_where_the_editor_is():
     with tempfile.TemporaryDirectory() as directory:
         saved = launch.REGISTRY
@@ -151,6 +167,8 @@ test_the_plan_names_every_review_and_marks_reuse()
 
 test_the_socket_and_editor_command_are_per_pull_request()
 test_the_registry_records_where_the_editor_is()
+
+test_the_plan_table_stays_aligned_and_elides_long_names()
 
 print()
 if failures:

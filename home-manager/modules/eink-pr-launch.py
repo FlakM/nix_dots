@@ -69,6 +69,86 @@ if hasattr(sys.stdout, "reconfigure"):
 
 # ── output ───────────────────────────────────────────────────────────────────
 
+RESET, BOLD, DIM = "\033[0m", "\033[1m", "\033[2m"
+CYAN, GREEN, YELLOW, RED = "\033[36m", "\033[32m", "\033[33m", "\033[31m"
+
+
+def colors_enabled():
+    if os.environ.get("NO_COLOR"):
+        return False
+    if os.environ.get("CLICOLOR_FORCE") == "1":
+        return True
+    return sys.stdout.isatty() and os.environ.get("TERM") != "dumb"
+
+
+COLOR = colors_enabled()
+
+
+def paint(text, code):
+    return f"{code}{text}{RESET}" if COLOR else text
+
+
+def bold(text):
+    return paint(text, BOLD)
+
+
+def dim(text):
+    return paint(text, DIM)
+
+
+def cyan(text):
+    return paint(text, CYAN)
+
+
+def green(text):
+    return paint(text, GREEN)
+
+
+def yellow(text):
+    return paint(text, YELLOW)
+
+
+def red(text):
+    return paint(text, RED)
+
+
+def columns():
+    return shutil.get_terminal_size((100, 24)).columns
+
+
+def indent(text, prefix="  "):
+    return "\n".join(prefix + line if line.strip() else "" for line in text.splitlines())
+
+
+def shorten(text, width):
+    text = str(text)
+    return text if len(text) <= width else text[: max(1, width - 1)] + "…"
+
+
+def short_path(path):
+    text = str(path)
+    home = str(HOME)
+    return "~" + text[len(home):] if text.startswith(home + "/") else text
+
+
+def banner():
+    print()
+    print(f"  {bold('eink-pr')}  {dim('review launcher')}")
+    print(f"  {dim('─' * min(columns() - 4, 52))}")
+
+
+def section(title, note=""):
+    suffix = f"  {dim(note)}" if note else ""
+    print()
+    print(f"  {bold(title)}{suffix}")
+    print(f"  {dim('─' * min(columns() - 4, 52))}")
+
+
+def kv(key, value, note=""):
+    suffix = f"  {dim(note)}" if note else ""
+    print(f"    {dim(f'{key:<9}')} {value}{suffix}")
+
+
 def run(cmd, **kwargs):
     try:
         return subprocess.run(cmd, capture_output=True, text=True, **kwargs)
@@ -78,46 +158,53 @@ def run(cmd, **kwargs):
 
 
 def step(message):
-    print(f"-> {message}", flush=True)
+    print(f"\n  {cyan('▸')} {bold(message)}", flush=True)
 
 
 def detail(message):
-    print(f"   {message}", flush=True)
+    print(f"    {message}", flush=True)
 
 
 @contextmanager
 def working(label):
-    """Print a step, tick while it runs, and report how long it took."""
+    """One line that starts as work and ends as a result."""
     started = time.time()
-    if not sys.stdout.isatty():
-        print(f"   {label} ...", flush=True)
+    if not COLOR:
+        print(f"    {dim('…')} {label}", flush=True)
         try:
             yield
         finally:
-            print(f"   {label} ({time.time() - started:.1f}s)", flush=True)
+            elapsed = time.time() - started
+            print(f"    {green('✓')} {label}  {dim(f'{elapsed:.1f}s')}", flush=True)
         return
 
-    print(f"   {label} ...", end="", flush=True)
+    frames = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
     done = threading.Event()
+    tick = {"frame": 0}
 
-    def tick():
-        while not done.wait(0.5):
-            sys.stdout.write(f"\r   {label} ... {time.time() - started:.0f}s")
+    def spin():
+        while not done.wait(0.08):
+            frame = frames[tick["frame"] % len(frames)]
+            tick["frame"] += 1
+            sys.stdout.write(f"\r    {cyan(frame)} {label} …")
             sys.stdout.flush()
 
-    ticker = threading.Thread(target=tick, daemon=True)
-    ticker.start()
+    sys.stdout.write(f"\r    {cyan(frames[0])} {label} …")
+    sys.stdout.flush()
+    spinner = threading.Thread(target=spin, daemon=True)
+    spinner.start()
     try:
         yield
     finally:
         done.set()
-        ticker.join(timeout=0.2)
-        sys.stdout.write(f"\r   {label} ({time.time() - started:.1f}s)\n")
+        spinner.join(timeout=0.2)
+        elapsed = time.time() - started
+        sys.stdout.write(f"\r    {green('✓')} {label}  {dim(f'{elapsed:.1f}s')}\033[K\n")
         sys.stdout.flush()
 
 
 def die(message, code=1):
-    print(f"error: {message}", file=sys.stderr)
+    print(f"\n  {red('✗')} {message}", file=sys.stderr)
     return code
 
 
@@ -126,8 +213,9 @@ def die(message, code=1):
 def read_request():
     """Take the pasted request from stdin. A tty gets an explanation first."""
     if sys.stdin.isatty():
-        print("Paste the review request (the message and its GitHub pull-request link).")
-        print("Finish with Ctrl-D on an empty line.\n")
+        print("  Paste the review request: the message and its GitHub pull-request link.")
+        print(f"  {dim('Finish with Ctrl-D on an empty line.')}")
+        print()
     return sys.stdin.read()
 
 
@@ -145,14 +233,20 @@ def interpret_choice(raw):
 
 def ask(prompt, choices, default=None):
     """Ask until the answer is one of `choices` (a list of (key, label))."""
+    for key, label in choices:
+        print(f"    {cyan(f'{key:<3}')} {label}")
     while True:
-        raw = input(prompt).strip().lower()
+        try:
+            raw = input(prompt).strip().lower()
+        except EOFError:
+            return None
         if not raw and default:
             return default
         for key, _ in choices:
             if raw == key:
                 return key
-        print("   choose " + ", ".join(f"[{key}] {label}" for key, label in choices))
+        options = ", ".join(f"[{key}]" for key, _ in choices)
+        print(f"    {red('?')} choose one of {options}")
 
 
 # ── parsing (unchanged: this is the part with tests) ─────────────────────────
@@ -306,34 +400,44 @@ def pick_from(paths, owner, repo):
     """Numbered choice, with the origin shown so the wrong pick is visible."""
     if not paths:
         return None
-    print(f"   checkouts found for {owner}/{repo}:")
+    print()
+    print(f"  {bold('Choose a checkout')}  {dim(f'for {owner}/{repo}')}")
     for index, path in enumerate(paths, 1):
-        print(f"     {index}. {path}  ({origin_of(path) or 'no origin'})")
+        print(f"    {cyan(str(index).rjust(2))}  {short_path(path)}")
+        print(f"        {dim(origin_of(path) or 'no origin')}")
     while True:
-        raw = input(f"   pick 1-{len(paths)}, or Enter to cancel: ").strip()
+        try:
+            raw = input(f"  {yellow('›')} 1-{len(paths)}, Enter to cancel: ").strip()
+        except EOFError:
+            return None
         if not raw:
             return None
         if raw.isdigit() and 1 <= int(raw) <= len(paths):
             return paths[int(raw) - 1]
-        print(f"   enter a number between 1 and {len(paths)}")
+        print(f"    {red('?')} enter a number between 1 and {len(paths)}")
 
 
 def pick_any_checkout(owner, repo):
     """Pick from every local checkout, optionally filtered by substring."""
     checkouts = local_checkouts()
-    raw = input("   filter by name (Enter for all): ").strip().lower()
+    try:
+        raw = input(f"  {yellow('›')} filter by name (Enter for all): ").strip().lower()
+    except EOFError:
+        return None
     if raw:
         checkouts = [path for path in checkouts if raw in str(path).lower()]
     if not checkouts:
-        print("   nothing matched")
+        print(f"    {yellow('!')} nothing matched")
         return None
     shown = checkouts[:40]
     if len(checkouts) > len(shown):
-        print(f"   showing the first {len(shown)} of {len(checkouts)}")
+        print(f"    {dim(f'showing the first {len(shown)} of {len(checkouts)}')}")
     chosen = pick_from(shown, owner, repo)
     if chosen and f"{owner}/{repo}".lower() not in origin_of(chosen).lower():
-        print(f"   {chosen} does not name {owner}/{repo} in its origin.")
-        if ask("   [Enter] use it anyway  [q] cancel > ", [("q", "cancel")], default="start") == "quit":
+        print(f"    {yellow('!')} {short_path(chosen)} does not name "
+              f"{owner}/{repo} in its origin.")
+        if ask(f"  {yellow('›')} Enter) use it anyway   q) cancel: ",
+               [("q", "cancel")], default="start") == "quit":
             return None
     return chosen
 
@@ -347,9 +451,10 @@ def clone_checkout(owner, repo):
         detail(f"cloned into {target}")
         _REPO_CACHE.pop((owner.lower(), repo.lower()), None)
         return target
-    print(f"   clone failed: {(cloned.stderr or cloned.stdout).strip()[:400]}")
+    print(f"    {red('✗')} clone failed: {(cloned.stderr or cloned.stdout).strip()[:400]}")
     if target.exists() and any(target.iterdir()):
-        print(f"   {target} is not empty; move it aside or pick an existing checkout")
+        print(f"    {yellow('!')} {short_path(target)} is not empty; move it aside "
+              f"or pick an existing checkout")
     return None
 
 
@@ -376,33 +481,39 @@ def resolve_checkout(owner, repo, dry=False):
     # is the truth; offer it rather than using it silently.
     named = named_repos(repo)
     print()
-    print(f"No checkout of {owner}/{repo} under {PROGRAMMING}.")
+    print(f"  {yellow('!')} {bold(f'No checkout of {owner}/{repo}')}")
+    print(f"    under {short_path(PROGRAMMING)}")
     if dry:
         target = PROGRAMMING / owner / repo
-        detail(f"dry run: would clone it into {target}")
+        print(f"    {dim('dry run would clone it into')} {short_path(target)}")
         return target
     if not sys.stdin.isatty():
-        print(f"   clone it with: gh repo clone {owner}/{repo} {PROGRAMMING / owner / repo}")
+        print(f"    clone it with: gh repo clone {owner}/{repo} {short_path(PROGRAMMING / owner / repo)}")
         return None
     if named:
-        print(f"   a directory named {repo!r} exists: {named[0]}")
-        print(f"   its origin: {origin_of(named[0]) or '(none)'}")
+        print(f"    {dim('a directory with that name:')} {short_path(named[0])}")
+        print(f"    {dim('origin:')} {origin_of(named[0]) or '(none)'}")
     close = close_names(repo)
     if close:
-        print(f"   closest local names: {', '.join(close)}")
-    hint = "   [u] use that directory" if named else ""
-    print(f"   [Enter] clone it   [p] pick an existing checkout{hint}   [s] skip this PR   [q] cancel")
+        print(f"    {dim('closest names:')} {', '.join(close)}")
 
+    target = PROGRAMMING / owner / repo
     while True:
+        print()
+        print(f"    {cyan('Enter')} clone it to {short_path(target)}")
+        print(f"    {cyan('p')}     pick an existing checkout")
+        if named:
+            print(f"    {cyan('u')}     use {short_path(named[0])}")
+        print(f"    {cyan('s')}     skip this PR")
+        print(f"    {cyan('q')}     cancel")
         try:
-            raw = input("   > ").strip().lower()
+            raw = input(f"  {yellow('›')} ").strip().lower()
         except EOFError:
             return None
-        if raw == "":
+        if raw in ("", "c", "clone"):
             cloned = clone_checkout(owner, repo)
             if cloned:
                 return cloned
-            print("   [Enter] retry   [p] pick an existing checkout   [s] skip   [q] cancel")
         elif raw in ("p", "pick"):
             chosen = pick_any_checkout(owner, repo)
             if chosen:
@@ -413,9 +524,12 @@ def resolve_checkout(owner, repo, dry=False):
             return None
         elif named and raw in ("u", "use", "y", "yes"):
             chosen = named[0]
-            print(f"   {chosen} has origin {origin_of(chosen) or '(none)'}.")
-            if ask("   [Enter] use it  [q] cancel > ", [("q", "cancel")], default="start") == "start":
+            print(f"    {dim('origin:')} {origin_of(chosen) or '(none)'}")
+            if ask(f"  {yellow('›')} Enter) use it   q) cancel: ",
+                   [("q", "cancel")], default="start") == "start":
                 return chosen
+        else:
+            print(f"    {red('?')} choose Enter, p, s, or q")
 
 
 # ── plan and side effects ────────────────────────────────────────────────────
@@ -487,13 +601,8 @@ def prepare_worktree(repo_root, number, dry=False):
     return target, f"created worktree ({source})"
 
 
-def herdr(*args, announce=False):
-    """Call herdr. `announce` is for the calls that create something and can be slow."""
-    if announce:
-        with working(f"herdr {' '.join(args[:2])}"):
-            result = run(["herdr", *args])
-    else:
-        result = run(["herdr", *args])
+def herdr(*args):
+    result = run(["herdr", *args])
     if result.returncode != 0:
         raise RuntimeError(f"herdr {' '.join(args)} failed: {result.stderr.strip()}")
     return json.loads(result.stdout or "{}")
@@ -555,6 +664,48 @@ def existing_workspace(label):
     return None
 
 
+def pr_table(entries, width=None):
+    """One aligned row per review; long titles and repositories are elided."""
+    width = width or columns()
+    number_w = max(1, len(str(len(entries))))
+    pr_w = max(2, max(len(str(entry["pr"]["number"])) for entry in entries))
+    repo_w = min(
+        max(len(f"{entry['pr']['owner']}/{entry['pr']['repo']}") for entry in entries),
+        max(24, width // 2),
+    )
+    title_w = max(12, width - number_w - pr_w - repo_w - 10)
+    lines = [
+        f"  {dim('#'.rjust(number_w))}  {dim('PR'.rjust(pr_w))}  "
+        f"{dim('REPOSITORY'.ljust(repo_w))}  {dim('TITLE')}"
+    ]
+    for index, entry in enumerate(entries, 1):
+        repository = shorten(f"{entry['pr']['owner']}/{entry['pr']['repo']}", repo_w)
+        title = shorten(entry["title"] or "unknown title", title_w)
+        lines.append(
+            f"  {cyan(str(index).rjust(number_w))}  "
+            f"{str(entry['pr']['number']).rjust(pr_w)}  "
+            f"{repository.ljust(repo_w)}  {title}"
+        )
+    return lines
+
+
+def print_plan(entries, agent_kind, model):
+    section("Plan", f"{len(entries)} review(s)  ·  one tablet note")
+    for line in pr_table(entries):
+        print(line)
+    print()
+    print(f"    {dim('worktrees')}")
+    for entry in entries:
+        note = "reuse" if entry["exists"] else "new"
+        print(f"      {str(entry['pr']['number']).rjust(4)}  "
+              f"{short_path(entry['worktree'])}  {dim(note)}")
+    print()
+    kv("agent", agent_kind + (f"  ·  {model}" if model else ""))
+    kv("tablet", "one brief" + (f" for all {len(entries)}" if len(entries) > 1 else ""))
+    seed = entries[0].get("seed_path") if entries else None
+    kv("seed", short_path(seed) if seed else "(written after you confirm)")
+
+
 def describe_plan(entries, agent_kind, model):
     lines = []
     for entry in entries:
@@ -572,14 +723,12 @@ def describe_plan(entries, agent_kind, model):
 
 def confirm_plan(entries, agent_kind, model, args):
     """Show the plan, then ask. Nothing has been created at this point."""
-    print()
-    for line in describe_plan(entries, agent_kind, model):
-        print(line)
+    print_plan(entries, agent_kind, model)
     print()
     if args.dry_run:
         return "dry"
     if args.yes:
-        print("starting (--yes)")
+        print(f"  {dim('starting (--yes)')}")
         return "start"
     if not sys.stdin.isatty():
         # A piped paste has no way to answer, and silently creating workspaces from a
@@ -590,22 +739,27 @@ def confirm_plan(entries, agent_kind, model, args):
             file=sys.stderr,
         )
         return "quit"
-    print("   [Enter] start   [d] dry run (print the plan and seed)   [q] cancel")
+    print(f"  {dim('Enter')} start   {dim('d')} dry run   {dim('q')} cancel")
     while True:
-        choice = interpret_choice(input("   > "))
+        try:
+            raw = input(f"  {yellow('›')} ")
+        except EOFError:
+            return "quit"
+        choice = interpret_choice(raw)
         if choice:
             return choice
-        print("   press Enter, d, or q")
+        print(f"  {red('?')} Enter, d, or q")
 
 
 def build_plan(prs, args):
     """Resolve every checkout and title before touching anything."""
     entries = []
     for index, pr in enumerate(prs, 1):
-        step(f"[{index}/{len(prs)}] {pr['owner']}/{pr['repo']}#{pr['number']}")
+        print(f"\n  {dim(f'{index}/{len(prs)}')}  "
+              f"{bold(f'{pr['owner']}/{pr['repo']}#{pr['number']}')}")
         repo_root = resolve_checkout(pr["owner"], pr["repo"], dry=args.dry_run)
         if repo_root == "skip":
-            detail("skipped at the reviewer's request")
+            print(f"    {yellow('skipped')} at the reviewer's request")
             continue
         if repo_root is None:
             return None
@@ -622,9 +776,8 @@ def build_plan(prs, args):
             "label": label,
             "seed_path": None,
         })
-        detail(f"repo    : {repo_root}")
-        detail(f"worktree: {worktree} ({'reuse' if entries[-1]['exists'] else 'new'})")
-        detail(f"pr      : {title or 'unknown title'} (base {base or '?'})")
+        kv("repo", short_path(repo_root))
+        kv("title", title or "unknown title", f"base {base or '?'}")
     return entries
 
 
@@ -659,12 +812,12 @@ def launch(prs, prose, args):
 
     action = confirm_plan(entries, agent_kind, model, args)
     if action == "quit":
-        print("cancelled; nothing was created")
+        print(f"\n  {yellow('·')} cancelled; nothing was created")
         return 0
     if action == "dry":
-        print("\n-- seed prompt --")
-        print(seed)
-        print("dry run: nothing created")
+        section("Seed prompt")
+        print(indent(seed))
+        print(f"\n  {dim('dry run: nothing created')}")
         return 0
     if not os.environ.get("HERDR_ENV"):
         return die(
@@ -681,11 +834,12 @@ def launch(prs, prose, args):
         ).stdout.strip()
         entry["socket"] = socket_path(entry["pr"]["number"], entry["worktree"].name)
         entry["range"] = diff_range(entry["worktree"], entry["base"])
-        detail(f"{entry['label']}: {note}; diff {entry['range']}")
+        kv("worktree", short_path(entry["worktree"]), note)
+        kv("diff", entry["range"])
 
     SEED_DIR.mkdir(parents=True, exist_ok=True)
     seed_path.write_text(seed)
-    detail(f"seed: {seed_path}")
+    kv("seed", short_path(seed_path))
 
     # One reading workspace per pull request. Neovim is started *with* the diff and the
     # socket, so nothing has to be typed into it later.
@@ -697,38 +851,41 @@ def launch(prs, prose, args):
         needs_recreate = workspace and not Path(socket).exists() and not args.no_launch and sys.stdin.isatty()
         if needs_recreate:
             print()
-            print(f"{entry['label']} exists, but its editor has no review socket.")
-            print("   [Enter] close it and open the diff   [k] keep it   [q] cancel")
-            raw = input("   > ").strip().lower()
+            print(f"  {yellow('!')} {bold(entry['label'])} exists without a review socket.")
+            print(f"    {cyan('Enter')} close it and open the diff")
+            print(f"    {cyan('k')}     keep it")
+            print(f"    {cyan('q')}     cancel")
+            try:
+                raw = input(f"  {yellow('›')} ").strip().lower()
+            except EOFError:
+                return 0
             if raw in ("q", "quit", "cancel"):
                 return 0
             if raw not in ("k", "keep"):
-                herdr("workspace", "close", workspace["workspace_id"])
+                with working("closing the old workspace"):
+                    herdr("workspace", "close", workspace["workspace_id"])
                 workspace = None
         if workspace:
             created = herdr("workspace", "get", workspace["workspace_id"])
             pane = created["result"]["root_pane"]["pane_id"]
-            detail(f"workspace: reusing {workspace['workspace_id']} for {entry['label']}")
+            print(f"    {green('✓')} workspace {dim('reused')}  {entry['label']}")
             if not Path(socket).exists():
-                detail(
-                    "no review socket in this workspace; open the diff manually with "
-                    ":DiffviewOpen, or close the workspace and relaunch"
-                )
+                print(f"    {yellow('!')} no review socket; open :DiffviewOpen yourself, "
+                      f"or close and relaunch")
         else:
-            created = herdr(
-                "workspace", "create", "--cwd", str(entry["worktree"]),
-                "--label", entry["label"], "--focus",
-                "--env", f"EINK_REVIEW_PR={entry['pr']['url']}",
-                "--env", f"EINK_PR_NUMBER={entry['pr']['number']}",
-                "--env", f"EINK_PR_SOCKET={socket}",
-                "--env", f"EINK_PR_STATE={STATE}",
-                announce=True,
-            )
+            with working(f'workspace · {entry["label"]}'):
+                created = herdr(
+                    "workspace", "create", "--cwd", str(entry["worktree"]),
+                    "--label", entry["label"], "--focus",
+                    "--env", f"EINK_REVIEW_PR={entry['pr']['url']}",
+                    "--env", f"EINK_PR_NUMBER={entry['pr']['number']}",
+                    "--env", f"EINK_PR_SOCKET={socket}",
+                    "--env", f"EINK_PR_STATE={STATE}",
+                )
             pane = created["result"]["root_pane"]["pane_id"]
-            detail(f"workspace: {created['result']['workspace']['workspace_id']} for {entry['label']}")
             if not args.no_launch:
-                step(f"opening the diff in {entry['label']}")
-                herdr("pane", "run", pane, nvim_command(socket, entry["range"]))
+                with working(f'editor · {entry["label"]}'):
+                    herdr("pane", "run", pane, nvim_command(socket, entry["range"]))
         registry_entry(
             entry["pr"]["number"], entry["pr"], entry["worktree"],
             socket=socket, pane=pane, title=entry["title"], sha=entry["sha"],
@@ -738,29 +895,31 @@ def launch(prs, prose, args):
     workspace = existing_workspace(agent_label)
     if workspace:
         created = herdr("workspace", "get", workspace["workspace_id"])
-        detail(f"agent workspace: reusing {workspace['workspace_id']}")
+        print(f"    {green('✓')} agent workspace {dim('reused')}  {agent_label}")
     else:
-        created = herdr(
-            "workspace", "create", "--cwd", str(entries[0]["worktree"]),
-            "--label", agent_label, "--focus",
-            "--env", f"EINK_REVIEW_SEED={seed_path}",
-            "--env", f"EINK_REVIEW_AGENT={agent_kind}",
-            "--env", f"EINK_REVIEW_MODEL={model}",
-            announce=True,
-        )
-        detail(f"agent workspace: {created['result']['workspace']['workspace_id']}")
+        with working(f"agent workspace · {agent_label}"):
+            created = herdr(
+                "workspace", "create", "--cwd", str(entries[0]["worktree"]),
+                "--label", agent_label, "--focus",
+                "--env", f"EINK_REVIEW_SEED={seed_path}",
+                "--env", f"EINK_REVIEW_AGENT={agent_kind}",
+                "--env", f"EINK_REVIEW_MODEL={model}",
+            )
 
-    return start_agent(created["result"]["root_pane"]["pane_id"], args, label=agent_label)
+    return start_agent(
+        created["result"]["root_pane"]["pane_id"], args,
+        label=agent_label, batch=len(entries) > 1,
+    )
 
 
-def start_agent(pane, args, label):
+def start_agent(pane, args, label, batch=False):
     if args.no_launch:
-        print("prepared only (--no-launch); start the agent manually with:")
-        print(f"  herdr pane run {pane} eink-review-agent")
+        print(f"\n  {yellow('·')} prepared only; start the agent with:")
+        print(f"    herdr pane run {pane} eink-review-agent")
         return 0
 
-    step(f"starting the agent for {label}")
-    herdr("pane", "run", pane, "eink-review-agent")
+    with working(f"agent · {label}"):
+        herdr("pane", "run", pane, "eink-review-agent")
 
     # Report what actually happened: a missing binary or a crashed agent must not be
     # announced as a started review.
@@ -768,17 +927,20 @@ def start_agent(pane, args, label):
         status = wait_for_agent(pane, timeout=15)
     if status == "agent":
         print()
-        print(f"done: {label} is ready in pane {pane}.")
-        print("The agent will open the diff, review, and put the brief on the tablet.")
+        print(f"  {green('✓')} {bold('Ready')}   {label}")
+        if batch:
+            print(f"    {dim('The agent writes one aggregated brief for the tablet.')}")
+        else:
+            print(f"    {dim('The agent writes the brief for the tablet.')}")
         return 0
 
     output = run(["herdr", "pane", "read", pane, "--source", "visible", "--lines", "6"]).stdout
-    print(f"agent: NOT started ({status})", file=sys.stderr)
-    print("pane output:", file=sys.stderr)
-    print("  " + output.strip().replace("\n", "\n  "), file=sys.stderr)
+    print(f"\n  {red('✗')} the agent did not start ({status})", file=sys.stderr)
+    print(f"    {dim('pane output:')}", file=sys.stderr)
+    print("    " + output.strip().replace("\n", "\n    "), file=sys.stderr)
     print(
-        f"\nThe workspace and worktree are ready; retry with:\n"
-        f"  herdr pane run {pane} eink-review-agent",
+        f"\n    The workspace and worktree are ready; retry with:\n"
+        f"      herdr pane run {pane} eink-review-agent",
         file=sys.stderr,
     )
     return 1
@@ -803,7 +965,14 @@ def wait_for_agent(pane, timeout=15):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(
-        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+        description="Launch one e-ink review, or one aggregated review for a pasted batch.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=(
+            "examples:\n"
+            "  eink-pr-launch                 paste the request, then Ctrl-D\n"
+            "  eink-pr-launch --dry-run       print the plan and the seed, create nothing\n"
+            "  eink-pr-launch --link URL      skip stdin (add --context for the message)\n"
+        ),
     )
     parser.add_argument("--dry-run", action="store_true", help="print the plan and seed; create nothing")
     parser.add_argument("--link", help="skip reading stdin and use this link")
@@ -813,6 +982,8 @@ def main(argv=None):
     parser.add_argument("--no-launch", action="store_true", help="prepare the workspace, do not start the agent")
     parser.add_argument("--yes", "-y", action="store_true", help="skip the final confirmation")
     args = parser.parse_args(argv)
+    if sys.stdin.isatty():
+        banner()
 
     # `--link` means the request is the link: reading stdin as well would make a script
     # (or a test with a pty) wait for a Ctrl-D that is never coming.
@@ -833,7 +1004,7 @@ def finish(code):
     """Hold a failure on screen long enough to read it in a popup."""
     if code != 0 and sys.stdin.isatty() and not os.environ.get("EINK_PR_NO_PAUSE"):
         try:
-            input("\nPress Enter to close ...")
+            input(f"\n  {dim('Press Enter to close …')}")
         except (EOFError, KeyboardInterrupt):
             pass
     return code
