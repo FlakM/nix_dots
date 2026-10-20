@@ -32,6 +32,7 @@ in
       CODEX_HOME = "/home/flakm/.codex";
       CX_READ_ONLY = "1";
       HOME = "/home/flakm";
+      XDG_CACHE_HOME = "/tmp/hermes-nix-cache";
     } // lib.optionalAttrs hasHermesSlackSecret {
       SLACK_BOT_TOKEN_FILE = config.sops.secrets.hermes_slack_bot_token.path;
     } // lib.optionalAttrs hasHermesSlackAppToken {
@@ -55,6 +56,10 @@ in
       inputs.cx-cli.packages.${pkgs.stdenv.hostPlatform.system}.default
       pkgs.sqlite
       pkgs.gh
+      # `nix run` for tools that are not worth pinning into PATH. The codex
+      # sandbox keeps the home directory read-only, so the cache lives in /tmp
+      # (XDG_CACHE_HOME below) or nix cannot write its flake registry.
+      pkgs.nix
     ];
     settings = {
       agent = {
