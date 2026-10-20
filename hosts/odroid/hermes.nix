@@ -32,7 +32,9 @@ in
       CODEX_HOME = "/home/flakm/.codex";
       CX_READ_ONLY = "1";
       HOME = "/home/flakm";
-      XDG_CACHE_HOME = "/tmp/hermes-nix-cache";
+      # Share the machine's nix cache (codex gets it as a writable root, see
+      # codex_base_cmd) so `nix run` reuses what is already fetched.
+      XDG_CACHE_HOME = "/home/flakm/.cache";
     } // lib.optionalAttrs hasHermesSlackSecret {
       SLACK_BOT_TOKEN_FILE = config.sops.secrets.hermes_slack_bot_token.path;
     } // lib.optionalAttrs hasHermesSlackAppToken {
