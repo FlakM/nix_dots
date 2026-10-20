@@ -199,6 +199,8 @@ def batch_prompt(prs, prose, entries):
     lines = [
         f"Review {len(prs)} pull requests on the e-ink tablet, following the eink-pr skill.",
         "One agent runs the batch; each pull request has its own workspace already open in Neovim.",
+        "Open ONE tablet note for the whole batch: one brief with a section per PR and one",
+        "Interfaces section covering every contract change. Never open one note per PR.",
         "",
     ]
     for pr, entry in zip(prs, entries):
@@ -211,9 +213,10 @@ def batch_prompt(prs, prose, entries):
     lines += [
         "",
         "For each one: read the diff in its workspace, run the lens reviewers in parallel,",
-        "filter to the actionable findings, pass them through ihaveadhd, deliver the brief to",
-        "eink, and set the marks. Work through the list in order, and keep going back to the",
-        "later ones as answers arrive -- a batch is one review session, not N sequential ones.",
+        "filter to the actionable findings, pass them through ihaveadhd, and set the marks.",
+        "Then write the aggregated brief and deliver it to eink ONCE, for the batch. Work",
+        "through the list in order, and keep going back to the later ones as answers arrive --",
+        "a batch is one review session, not N sequential ones.",
         "",
         "If the request is ambiguous -- which repository matters for the interface change, what",
         "depth the reviewer wants, which PR to start with -- ask one short question in chat",

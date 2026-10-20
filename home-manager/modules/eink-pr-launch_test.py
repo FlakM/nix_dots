@@ -81,6 +81,8 @@ def test_the_batch_brief_names_every_review_and_quotes_the_message():
     brief = launch.batch_prompt(prs, launch.prose_of(REAL_MESSAGE, prs), entries)
     check("Review 2 pull requests" in brief, "the brief says how many")
     check("One agent runs the batch" in brief, "and that one agent runs them")
+    check("Open ONE tablet note" in brief, "the batch is one tablet note")
+    check("Never open one note per PR" in brief, "not one note per pull request")
     for entry in entries:
         check(entry["worktree"] in brief, f"the brief names {entry['worktree']}")
     check("as we spoke on sync" in brief, "the reviewer's message is quoted verbatim")
