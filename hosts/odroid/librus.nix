@@ -46,7 +46,9 @@ in
     enable = true;
     package = librusPackage;
     environmentFile = config.sops.secrets.librus-env.path;
-    calendarId = "iq7mg01s5t9m9u0tcm48d36718@group.calendar.google.com";
+    # "Szkoła Emilka" — separate from the Rodzinny calendar; Librus terminarz
+    # events land here instead of cluttering the family calendar.
+    calendarId = "6091d51aae8860fa8c37511966de1626a34a90917659653bae96a704f6d43115@group.calendar.google.com";
     calendarCredentialsFile = config.sops.secrets.librus-google-calendar.path;
     schedule = [ "*:0/10" ];
     persistent = true;

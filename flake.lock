@@ -837,11 +837,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1791205151,
-        "narHash": "sha256-dHpNMHd2sCkCXD+Dk2KV1+tWPKIOaNx9BuxphDT26c0=",
+        "lastModified": 1792499279,
+        "narHash": "sha256-xFSWPHEGc7whYJEC71bq3KP4zEOgpAoobJymE/HhXwc=",
         "owner": "FlakM",
         "repo": "czujka-librus",
-        "rev": "b33f01320c565c199b06d07783765331c2420721",
+        "rev": "f82737a4f05504c9d5803d8141ba5feffe2a7293",
         "type": "github"
       },
       "original": {
