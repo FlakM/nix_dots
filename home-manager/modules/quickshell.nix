@@ -199,6 +199,8 @@ let
   };
   calendarAgenda = pkgs.writeShellApplication {
     name = "quickshell-calendar";
+    # quickshell-vikunja is resolved from PATH: it comes from the vikunja
+    # module's home.packages, same as the Vikunja panel's own Process lookups.
     runtimeInputs = [ pkgs.coreutils pkgs.jq pkgs.khal ];
     text = builtins.readFile ./quickshell/scripts/calendar.sh;
   };

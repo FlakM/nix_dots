@@ -83,7 +83,11 @@
     };
     Service = {
       Type = "oneshot";
-      ExecStart = "${pkgs.vdirsyncer}/bin/vdirsyncer sync";
+      # Discover before sync so calendars created on the Google side (e.g. by
+      # the librus service) are picked up without a manual step. `yes` answers
+      # the "create missing collections?" prompt; it is a no-op when all
+      # collections already exist locally.
+      ExecStart = "${pkgs.bash}/bin/bash -c 'yes | ${pkgs.vdirsyncer}/bin/vdirsyncer discover || true; ${pkgs.vdirsyncer}/bin/vdirsyncer sync'";
     };
   };
 

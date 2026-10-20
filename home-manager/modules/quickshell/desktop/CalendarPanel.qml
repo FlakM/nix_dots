@@ -22,6 +22,7 @@ PanelWindow {
     function calendarName(value) {
         if (value.includes("coralogix")) return "Work"
         if (value.includes("group.calendar.google.com")) return "Personal"
+        if (value.includes("Librus")) return "Emilka"
         return value
     }
 
@@ -123,7 +124,7 @@ PanelWindow {
                 Layout.fillWidth: true
                 Text { text: "TODAY & TOMORROW"; color: "#8392a8"; font.pixelSize: 12; font.bold: true; font.letterSpacing: 1.4 }
                 Item { Layout.fillWidth: true }
-                Text { text: `${shell.calendarAgenda.length} events`; color: "#69788e"; font.pixelSize: 12 }
+                Text { text: `${shell.calendarAgenda.length} items`; color: "#69788e"; font.pixelSize: 12 }
             }
 
             Controls.ScrollView {
@@ -137,12 +138,16 @@ PanelWindow {
                         model: shell.calendarAgenda
                         delegate: Rectangle {
                             required property var modelData
+                            readonly property bool isTask: modelData.kind === "task"
+                            readonly property bool isOverdue: isTask && modelData.overdue
+                            // Tasks (Librus homework) get violet; overdue ones go red.
+                            readonly property color accent: isOverdue ? "#ff8d98" : isTask ? "#c58fff" : "#72d7ff"
                             Layout.fillWidth: true
                             Layout.preferredHeight: 82
                             radius: 19
                             color: eventMouse.containsMouse ? "#384456" : "#28313f"
                             border.width: 1
-                            border.color: "#3b4a60"
+                            border.color: isOverdue ? "#80ff7b86" : "#3b4a60"
                             RowLayout {
                                 anchors.fill: parent
                                 anchors.margins: 16
@@ -150,10 +155,21 @@ PanelWindow {
                                 ColumnLayout {
                                     Layout.preferredWidth: 100
                                     spacing: 1
-                                    Text { text: modelData.start || "All day"; color: "#72d7ff"; font.pixelSize: 16; font.bold: true }
-                                    Text { text: modelData.end ? `until ${modelData.end}` : modelData.date; color: "#73839a"; font.pixelSize: 11 }
+                                    Text {
+                                        text: isTask ? (modelData.start || "Due") : (modelData.start || "All day")
+                                        color: accent
+                                        font.pixelSize: 16
+                                        font.bold: true
+                                    }
+                                    Text {
+                                        text: isTask
+                                            ? (isOverdue ? `due ${panel.shortDate(modelData.due_date)}` : `${panel.shortDate(modelData.date)}`)
+                                            : (modelData.end ? `until ${modelData.end}` : modelData.date)
+                                        color: "#73839a"
+                                        font.pixelSize: 11
+                                    }
                                 }
-                                Rectangle { Layout.preferredWidth: 3; Layout.fillHeight: true; radius: 2; color: "#72d7ff" }
+                                Rectangle { Layout.preferredWidth: 3; Layout.fillHeight: true; radius: 2; color: accent }
                                 ColumnLayout {
                                     Layout.fillWidth: true
                                     spacing: 2
