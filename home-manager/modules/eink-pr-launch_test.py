@@ -86,6 +86,27 @@ def test_the_batch_brief_names_every_review_and_quotes_the_message():
           "the reviews are listed in the order pasted")
 
 
+def test_choice_interpretation_is_explicit():
+    check(launch.interpret_choice("") == "start", "Enter starts")
+    check(launch.interpret_choice("d") == "dry", "d shows the plan")
+    check(launch.interpret_choice("q") == "quit", "q cancels")
+    check(launch.interpret_choice("maybe") is None, "an unknown answer asks again")
+
+
+def test_the_plan_names_every_review_and_marks_reuse():
+    entries = [
+        {"label": "PR 1: One", "repo_root": "/p/one", "worktree": "/p/worktrees/pr-1/one",
+         "exists": True, "base": "main", "seed_path": "/s/pr-1.md"},
+        {"label": "PR 2: Two", "repo_root": "/p/two", "worktree": "/p/worktrees/pr-2/two",
+         "exists": False, "base": "release", "seed_path": "/s/batch.md"},
+    ]
+    text = "\n".join(launch.describe_plan(entries, "claude", "sonnet"))
+    check("PR 1: One" in text and "PR 2: Two" in text, "every review is named")
+    check("reuse" in text and "new" in text, "an existing worktree is marked as reused")
+    check("claude" in text and "sonnet" in text, "the agent and model are shown")
+    check("release" in text, "the base branch is shown")
+
+
 print("paste parsing:")
 test_parses_every_pull_request_in_the_order_written()
 test_one_link_is_not_a_batch()
@@ -93,6 +114,8 @@ test_a_repeated_link_is_not_two_reviews()
 test_non_pull_request_links_are_ignored()
 test_the_prose_survives_without_the_links()
 test_the_batch_brief_names_every_review_and_quotes_the_message()
+test_choice_interpretation_is_explicit()
+test_the_plan_names_every_review_and_marks_reuse()
 
 print()
 if failures:
