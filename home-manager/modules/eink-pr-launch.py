@@ -574,31 +574,73 @@ def pr_title(url, slug):
 
 
 def prepare_worktree(repo_root, number, dry=False):
-    """Check the PR head out into a worktree, reusing one that already exists."""
+    """Check the PR head out into a worktree, reusing one that already exists.
+
+    The fetched commit is resolved to a SHA in the *main* checkout and passed by SHA.
+    `FETCH_HEAD` inside a linked worktree is a different file, often left over from when
+    the worktree was created: checking that out silently reused an older PR (the reader saw
+    a brief about code the checkout did not contain). Every step is checked, and a failure
+    stops the launch instead of leaving a stale tree looking ready.
+    """
     head = f"refs/pull/{number}/head"
     target = worktree_path(repo_root, number)
     if dry:
         return target, "would fetch and check out"
-    source = "origin"
+
     with working(f"fetching PR #{number} head"):
         fetched = run(["git", "-C", str(repo_root), "fetch", "origin", head])
-    if fetched.returncode != 0:
+    if fetched.returncode == 0:
+        source = "origin"
+        expected = run(
+            ["git", "-C", str(repo_root), "rev-parse", "FETCH_HEAD"]
+        ).stdout.strip()
+    else:
         # Offline or a synthetic PR: fall back to a local ref of the same name so the
         # flow stays testable without touching a server.
-        local = run(["git", "-C", str(repo_root), "rev-parse", "--verify", f"{head}^{{commit}}"])
+        local = run(
+            ["git", "-C", str(repo_root), "rev-parse", "--verify", f"{head}^{{commit}}"]
+        )
         if local.returncode != 0:
-            return target, f"fetch failed: {fetched.stderr.strip()}"
+            raise RuntimeError(
+                f"cannot fetch PR #{number}: {(fetched.stderr or fetched.stdout).strip()}"
+            )
         source = "local ref"
-    ref = "FETCH_HEAD" if source == "origin" else f"refs/pull/{number}/head"
+        expected = local.stdout.strip()
+    if not expected:
+        raise RuntimeError(f"PR #{number}: the fetched head has no commit")
+
     if (target / ".git").exists():
         with working(f"updating the existing worktree for PR #{number}"):
-            run(["git", "-C", str(target), "checkout", "--detach", ref])
+            checked_out = run(
+                ["git", "-C", str(target), "checkout", "--detach", expected]
+            )
+        if checked_out.returncode != 0:
+            raise RuntimeError(
+                f"PR #{number}: cannot check out {expected[:12]} in {target}: "
+                f"{(checked_out.stderr or checked_out.stdout).strip()}"
+            )
+        actual = run(["git", "-C", str(target), "rev-parse", "HEAD"]).stdout.strip()
+        if actual != expected:
+            raise RuntimeError(
+                f"PR #{number}: the worktree is at {actual[:12]}, expected {expected[:12]}"
+            )
         return target, f"reused existing worktree ({source})"
+
     target.parent.mkdir(parents=True, exist_ok=True)
     with working(f"creating the worktree for PR #{number}"):
-        created = run(["git", "-C", str(repo_root), "worktree", "add", "--detach", str(target), ref])
+        created = run(
+            ["git", "-C", str(repo_root), "worktree", "add", "--detach", str(target), expected]
+        )
     if created.returncode != 0:
-        return target, f"worktree add failed: {created.stderr.strip()}"
+        raise RuntimeError(
+            f"PR #{number}: cannot create the worktree: "
+            f"{(created.stderr or created.stdout).strip()}"
+        )
+    actual = run(["git", "-C", str(target), "rev-parse", "HEAD"]).stdout.strip()
+    if actual != expected:
+        raise RuntimeError(
+            f"PR #{number}: the worktree is at {actual[:12]}, expected {expected[:12]}"
+        )
     return target, f"created worktree ({source})"
 
 

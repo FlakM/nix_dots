@@ -123,6 +123,48 @@ def test_the_plan_table_stays_aligned_and_elides_long_names():
           "paths are shortened to ~")
 
 
+def test_reusing_a_worktree_checks_out_the_fetched_pull_request_head():
+    import subprocess
+
+    def git(cwd, *args):
+        result = subprocess.run(["git", "-C", str(cwd), *args],
+                                capture_output=True, text=True)
+        assert result.returncode == 0, result.stderr
+        return result.stdout.strip()
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        remote = root / "remote.git"
+        main = root / "repo"
+        subprocess.run(["git", "init", "--bare", str(remote)], check=True,
+                       capture_output=True)
+        subprocess.run(["git", "init", str(main)], check=True, capture_output=True)
+        git(main, "config", "user.email", "test@example.com")
+        git(main, "config", "user.name", "Test")
+        (main / "a.txt").write_text("a")
+        git(main, "add", ".")
+        git(main, "commit", "-m", "A")
+        git(main, "remote", "add", "origin", str(remote))
+        git(main, "push", "origin", "HEAD:master")
+        first = git(main, "rev-parse", "HEAD")
+
+        # An earlier launcher left the worktree at the first commit.
+        target = launch.worktree_path(main, 7)
+        target.parent.mkdir(parents=True)
+        git(main, "worktree", "add", "--detach", str(target), first)
+
+        # The PR head moves on and is pushed where `prepare_worktree` fetches it.
+        (main / "a.txt").write_text("b")
+        git(main, "commit", "-am", "B")
+        second = git(main, "rev-parse", "HEAD")
+        git(main, "push", "origin", "HEAD:refs/pull/7/head")
+
+        path, note = launch.prepare_worktree(main, 7)
+        head = git(path, "rev-parse", "HEAD")
+        check(head == second, "a reused worktree is moved to the fetched PR head")
+        check("reused" in note, "and is reported as reused")
+
+
 def test_stale_workspaces_are_reading_workspaces_without_a_live_editor():
     workspaces = [
         {"label": "PR 1: old", "workspace_id": "w1"},
@@ -203,6 +245,7 @@ test_the_batch_brief_names_every_review_and_quotes_the_message()
 test_choice_interpretation_is_explicit()
 test_the_plan_names_every_review_and_marks_reuse()
 
+test_reusing_a_worktree_checks_out_the_fetched_pull_request_head()
 test_stale_workspaces_are_reading_workspaces_without_a_live_editor()
 test_pruning_the_registry_forgets_only_the_closed_reviews()
 test_the_socket_and_editor_command_are_per_pull_request()
