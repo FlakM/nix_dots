@@ -132,6 +132,16 @@ in
         followedRefreshBudgetSeconds = 90;
         followedHotWindowSeconds = 21600; # 6h
         followedMaxNewMessages = 200;
+        # Background PR summaries: someone asks for a review -> fetch the PR
+        # with gh, summarise the change, reply in the card's thread.
+        prSummary = {
+          enable = true;
+          orgs = [ "coralogix" ];
+          maxDiffChars = 12000;
+          cooldownSeconds = 21600; # re-summarise the same PR at most every 6h
+          timeoutSeconds = 180;
+          pollSeconds = 20;
+        };
         discoveryBudgetSeconds = 60;
         workingDirectory = "/home/flakm/programming/coralogix/aaa-daily-reporter";
         contextPaths = [
