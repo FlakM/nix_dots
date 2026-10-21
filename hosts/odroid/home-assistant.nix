@@ -68,6 +68,7 @@ in
 
   services.home-assistant = {
     enable = true;
+    openFirewall = true;
     package = homeAssistantPackage;
     lovelaceConfig = {
       title = "Camera controls";
@@ -168,7 +169,7 @@ in
         temperature_unit = "C";
         time_zone = "Europe/Warsaw";
         country = "PL";
-        internal_url = "https://homeassistant.house.flakm.com";
+        internal_url = "http://192.168.0.102:8123";
         external_url = "https://homeassistant.house.flakm.com";
       };
       mobile_app = { };
