@@ -61,6 +61,11 @@ GH_PR = re.compile(r"(?:https?://)?github\.com/([^/\s]+)/([^/\s]+?)(?:\.git)?/pu
 ANY_URL = re.compile(r"https?://\S+")
 
 _REPO_CACHE: dict[tuple[str, str], list[Path]] = {}
+CLAUDE_CONFIG = (
+    Path(os.environ["CLAUDE_CONFIG_DIR"]) / ".claude.json"
+    if os.environ.get("CLAUDE_CONFIG_DIR")
+    else HOME / ".claude.json"
+)
 
 # The output is read in a popup and often piped; line buffering keeps "what happened"
 # in the order it happened instead of flushing stdout after stderr at exit.
@@ -707,6 +712,37 @@ def existing_workspace(label):
     return None
 
 
+def ensure_claude_trust(path, config=None):
+    """Mark a review worktree as trusted for Claude Code.
+
+    A new worktree is an unknown path, so Claude stops at the folder-trust dialog before
+    it reads the seed; `--dangerously-skip-permissions` does not skip that dialog. The
+    launcher created this worktree for this review, so it is exactly the folder the agent
+    is meant to work in. The write is atomic and preserves every other project.
+    """
+    target = config or CLAUDE_CONFIG
+    try:
+        data = json.loads(target.read_text()) if target.exists() else {}
+    except (OSError, json.JSONDecodeError) as error:
+        print(f"    {yellow('!')} cannot read {target}: {error}; "
+              f"the agent may stop at the folder-trust prompt")
+        return False
+    projects = data.setdefault("projects", {})
+    entry = projects.setdefault(str(path), {})
+    if entry.get("hasTrustDialogAccepted"):
+        return True
+    entry["hasTrustDialogAccepted"] = True
+    temporary = target.with_name(target.name + ".eink-tmp")
+    try:
+        temporary.write_text(json.dumps(data, indent=2) + "\n")
+        temporary.chmod(0o600)
+        temporary.replace(target)
+    except OSError as error:
+        print(f"    {yellow('!')} cannot update {target}: {error}")
+        return False
+    return True
+
+
 def load_registry():
     try:
         return json.loads(REGISTRY.read_text()).get("reviews", [])
@@ -1103,6 +1139,9 @@ def launch(prs, prose, args):
         )
 
     # One agent, in a workspace of its own.
+    if agent_kind == "claude" and not args.no_launch:
+        ensure_claude_trust(entries[0]["worktree"])
+
     workspace = existing_workspace(agent_label)
     if workspace:
         created = herdr("workspace", "get", workspace["workspace_id"])

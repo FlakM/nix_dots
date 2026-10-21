@@ -97,6 +97,29 @@ def test_choice_interpretation_is_explicit():
     check(launch.interpret_choice("maybe") is None, "an unknown answer asks again")
 
 
+def test_a_new_worktree_is_trusted_for_claude_without_losing_the_others():
+    with tempfile.TemporaryDirectory() as directory:
+        config = pathlib.Path(directory) / ".claude.json"
+        config.write_text('{"projects": {"/old": {"hasTrustDialogAccepted": true}}, "other": 1}')
+        check(launch.ensure_claude_trust("/w/pr-1/repo", config=config),
+              "the new worktree is accepted")
+        data = json.loads(config.read_text())
+        check(data["projects"]["/w/pr-1/repo"]["hasTrustDialogAccepted"] is True,
+              "the worktree is marked trusted")
+        check(data["projects"]["/old"]["hasTrustDialogAccepted"] is True,
+              "existing projects are preserved")
+        check(data["other"] == 1, "unrelated config is preserved")
+        check(launch.ensure_claude_trust("/w/pr-1/repo", config=config),
+              "trusting twice is harmless")
+
+    with tempfile.TemporaryDirectory() as directory:
+        broken = pathlib.Path(directory) / ".claude.json"
+        broken.write_text("not json")
+        check(launch.ensure_claude_trust("/w/x", config=broken) is False,
+              "a corrupt config is reported, not overwritten")
+        check(broken.read_text() == "not json", "and is left untouched")
+
+
 def test_the_socket_and_editor_command_are_per_pull_request():
     one = launch.socket_path(485, "security-token-service")
     two = launch.socket_path(486, "security-token-service")
@@ -248,6 +271,7 @@ test_the_plan_names_every_review_and_marks_reuse()
 test_reusing_a_worktree_checks_out_the_fetched_pull_request_head()
 test_stale_workspaces_are_reading_workspaces_without_a_live_editor()
 test_pruning_the_registry_forgets_only_the_closed_reviews()
+test_a_new_worktree_is_trusted_for_claude_without_losing_the_others()
 test_the_socket_and_editor_command_are_per_pull_request()
 test_the_registry_records_where_the_editor_is()
 
