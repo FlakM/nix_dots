@@ -42,6 +42,7 @@
     ./librus.nix
 
     ./home-assistant.nix
+    ./matter-server.nix
     ./mosquitto.nix
     ./ebusd.nix
     ./heating-monitoring.nix

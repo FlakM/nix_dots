@@ -204,7 +204,7 @@ let
 in
 {
   services.home-assistant = {
-    extraComponents = [ "shelly" "utility_meter" ];
+    extraComponents = [ "shelly" "utility_meter" "matter" ];
 
     config = {
       input_boolean.sypialnia_dzieci_harmonogram_wstrzymany = {
