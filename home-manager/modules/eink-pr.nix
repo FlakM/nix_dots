@@ -21,16 +21,23 @@ let
         exit 1
       fi
       kind="''${EINK_REVIEW_AGENT:-opencode}"
-      model="''${EINK_REVIEW_MODEL:-opencode-go/deepseek-v4.1-flash}"
+      # OpenCode needs a model; Claude's default is the account's model unless one is named.
+      default_model=""
+      if [ "$kind" = "opencode" ]; then
+        default_model="opencode-go/deepseek-v4.1-flash"
+      fi
+      model="''${EINK_REVIEW_MODEL:-$default_model}"
       prompt="$(cat "$seed")"
 
       case "$kind" in
         claude)
-          # Inside herdr, `claude` is already wrapped to skip permission prompts.
+          # A new worktree is an untrusted path: without this, Claude stops at the
+          # folder-trust dialog before it ever reads the seed. This is a dedicated review
+          # workspace, so the bypass is bounded to it.
           if [ -n "$model" ]; then
-            exec claude --model "$model" "$prompt"
+            exec claude --dangerously-skip-permissions --model "$model" "$prompt"
           fi
-          exec claude "$prompt"
+          exec claude --dangerously-skip-permissions "$prompt"
           ;;
         opencode)
           exec opencode mini --model "$model" --prompt "$prompt"

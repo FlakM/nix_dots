@@ -1168,6 +1168,8 @@ def wait_for_agent(pane, timeout=15):
         if any(agent.get("pane_id") == pane for agent in agents):
             return "agent"
         output = run(["herdr", "pane", "read", pane, "--source", "visible", "--lines", "8"]).stdout
+        if "Is this a project you created" in output or "trust this folder" in output:
+            return "waiting for folder trust"
         if "command not found" in output or "not found" in output:
             return "command not found"
         time.sleep(0.5)
