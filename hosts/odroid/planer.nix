@@ -11,12 +11,15 @@
     environmentFile = config.sops.secrets.planer_env.path;
     acmeHost = "house.flakm.com";
     createDatabase = true;
+    # The OpenCode CLI needs the login user's credentials.
+    runAsUser = "flakm";
+    runAsGroup = "users";
   };
 
   sops.secrets.planer_env = {
-    owner = "root";
-    group = "planer";
-    mode = "0440";
+    owner = "flakm";
+    group = "users";
+    mode = "0400";
     restartUnits = [ "planer.service" ];
   };
 }

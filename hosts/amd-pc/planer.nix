@@ -12,14 +12,17 @@
     port = 8330;
     environmentFile = config.sops.secrets.planer_pc_env.path;
     createDatabase = true;
+    # The OpenCode CLI needs the login user's credentials.
+    runAsUser = "flakm";
+    runAsGroup = "users";
     # Workstation: no TLS/domain, localhost only.
     nginx.enable = false;
   };
 
   sops.secrets.planer_pc_env = {
-    owner = "root";
-    group = "planer";
-    mode = "0440";
+    owner = "flakm";
+    group = "users";
+    mode = "0400";
     restartUnits = [ "planer.service" ];
   };
 }
