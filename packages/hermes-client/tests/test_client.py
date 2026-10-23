@@ -158,7 +158,8 @@ class FakeApi:
         self.calls.append(("post", "/api/reminders", {"cadence": label}))
         return {}
 
-    def ask(self, question, thread_key=None):
+    def ask(self, question, thread_key=None, mode="ask"):
+        self.calls.append(("ask", question, thread_key, mode))
         return {"job_id": "j1"}
 
     def job_id(self, data):
@@ -206,8 +207,22 @@ class CommandTest(unittest.TestCase):
         self.assertIn("unknown command", result.output)
 
     def test_ask_returns_job(self) -> None:
-        result = run_command(FakeApi(), "ask what broke?", current_key="C1:1")
+        api = FakeApi()
+        result = run_command(api, "ask what broke?", current_key="C1:1")
         self.assertEqual(result.job_id, "j1")
+        self.assertEqual(api.calls[-1], ("ask", "what broke?", "C1:1", "ask"))
+
+    def test_investigate_uses_the_selected_thread_and_mode(self) -> None:
+        api = FakeApi()
+        result = run_command(api, "investigate", current_key="C1:1")
+        self.assertFalse(result.error, result.output)
+        self.assertEqual(result.job_id, "j1")
+        self.assertEqual(api.calls[-1], ("ask", "", "C1:1", "investigate"))
+
+    def test_investigate_without_a_thread_is_rejected(self) -> None:
+        result = run_command(FakeApi(), "investigate")
+        self.assertTrue(result.error)
+        self.assertIn("selected thread", result.output)
 
     def test_global_reminders(self) -> None:
         api = FakeApi()
