@@ -48,6 +48,7 @@ in
     ../../shared/syncthing/amd-pc.nix
     ./zfs_replication.nix
     ./postgres.nix
+    ./planer.nix
     ./grafana.nix
     ./performance.nix
     ./vpn.nix
