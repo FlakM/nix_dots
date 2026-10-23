@@ -59,7 +59,7 @@ class TuiTest(unittest.IsolatedAsyncioTestCase):
             await pilot.pause()
             rows = list(self.app.query(tui.ThreadRow))
             self.assertEqual(2, len(rows))
-            self.assertIn("dLocal SAML", rows[0].view["summary"])
+            self.assertIn("dLocal SAML", rows[0].entry["view"]["summary"])
             detail = self.app.query_one("#detail", Static).render()
             self.assertIn("WAITING ON YOU", str(detail))
             self.assertIn("dLocal SAML", str(detail))
@@ -96,7 +96,7 @@ class TuiTest(unittest.IsolatedAsyncioTestCase):
             await pilot.pause()
             rows = list(self.app.query(tui.ThreadRow))
             self.assertEqual(1, len(rows))
-            self.assertIn("auditor-v2", rows[0].view["summary"])
+            self.assertIn("auditor-v2", rows[0].entry["view"]["summary"])
             self.assertIn("filter: tracked", str(self.app.query_one("#topbar", Static).render()))
 
     async def test_command_output_lands_in_the_live_log(self):
@@ -144,3 +144,92 @@ class TuiTest(unittest.IsolatedAsyncioTestCase):
             await pilot.press("escape")
             await pilot.pause()
             self.assertNotIsInstance(self.app.screen, tui.HelpScreen)
+
+
+class GroupingTest(unittest.IsolatedAsyncioTestCase):
+    def setUp(self):
+        self.api = FakeApi()
+        threads = self._build_threads()
+        self.api.data["tracked"] = threads
+        self.threads = threads
+        self.app = tui.HermesTUI(client=self.api, auto_stream=False)
+
+    def _build_threads(self):
+        threads = [
+            make_thread(
+                "C1:1.0",
+                "No alert: dLocal SAML login failure for cdryden@dlocal.com",
+                headline="dLocal SAML login fails — customer answer needed",
+                topic="dlocal-saml-login",
+                urgency=92,
+                relevance=88,
+                waiting_on_you=True,
+            ),
+            make_thread(
+                "C1:2.0",
+                "dLocal SAML retry: still failing for the same tenant",
+                headline="dLocal SAML still failing after the config change",
+                topic="dlocal-saml-login",
+                urgency=74,
+                relevance=85,
+            ),
+            make_thread(
+                "C1:3.0",
+                "Unrelated calendar question",
+                headline="Calendar question from Marco",
+                topic="calendar",
+                urgency=20,
+                relevance=10,
+            ),
+        ]
+        return threads
+
+    async def test_repeated_topics_collapse_into_one_group_row(self):
+        async with self.app.run_test(size=(130, 40)) as pilot:
+            await pilot.pause(0.15)
+            self.app.apply_threads(self.threads)
+            await pilot.pause()
+            rows = list(self.app.query(tui.ThreadRow))
+            self.assertEqual(2, len(rows), "two topics -> two rows")
+            group = rows[0].entry
+            self.assertEqual("group", group["kind"])
+            self.assertEqual(2, group["count"])
+            self.assertEqual("dlocal-saml-login", group["topic"])
+            # the group shows its most urgent member's headline
+            self.assertIn("customer answer needed", group["view"]["headline"])
+
+    async def test_space_expands_and_collapses_a_group(self):
+        async with self.app.run_test(size=(130, 40)) as pilot:
+            await pilot.pause(0.15)
+            self.app.apply_threads(self.threads)
+            await pilot.pause()
+            await pilot.press("space")
+            await pilot.pause(0.1)
+            rows = list(self.app.query(tui.ThreadRow))
+            self.assertEqual(4, len(rows), "group + 2 children + other thread")
+            self.assertTrue(rows[1].entry.get("indent"))
+            await pilot.press("space")
+            await pilot.pause(0.1)
+            self.assertEqual(2, len(list(self.app.query(tui.ThreadRow))))
+
+    async def test_threads_are_sorted_by_urgency(self):
+        async with self.app.run_test(size=(130, 40)) as pilot:
+            await pilot.pause(0.15)
+            self.app.apply_threads(self.threads)
+            await pilot.pause()
+            rows = list(self.app.query(tui.ThreadRow))
+            self.assertGreaterEqual(
+                rows[0].entry["view"].get("urgency") or 0,
+                rows[-1].entry["view"].get("urgency") or 0,
+            )
+
+    async def test_detail_shows_scores_and_group_count(self):
+        async with self.app.run_test(size=(130, 40)) as pilot:
+            await pilot.pause(0.15)
+            self.app.apply_threads(self.threads)
+            await pilot.pause()
+            detail = str(self.app.query_one("#detail", Static).render())
+            self.assertIn("urgency", detail)
+            self.assertIn("relevance", detail)
+            self.assertIn("2 threads · topic dlocal-saml-login", detail)
+            self.assertIn("█", detail)

@@ -116,12 +116,15 @@ ListItem {{
     height: 2;
     padding: 0 1;
     background: #090d11;
+    border-left: thick #090d11;
 }}
 ListItem.-highlight {{
-    background: #14221c;
+    background: #1b3527;
+    border-left: thick #4f8f6f;
 }}
 ListView:focus ListItem.-highlight {{
-    background: #182b22;
+    background: #22452f;
+    border-left: thick #8ef0c0;
 }}
 #empty {{
     padding: 2 3;
@@ -206,22 +209,48 @@ def _fit(line: Text, width: int) -> Text:
     return line
 
 
+def _score_style(value: Any) -> str:
+    if not isinstance(value, (int, float)):
+        return FAINT
+    if value >= 85:
+        return f"bold {RED}"
+    if value >= 70:
+        return f"bold {AMBER}"
+    if value >= 50:
+        return BLUE
+    return FAINT
+
+
+def _bar(value: Any, width: int = 10) -> str:
+    score = max(0.0, min(100.0, float(value or 0)))
+    filled = int(round(score / 100 * width))
+    return "█" * filled + "░" * (width - filled)
+
+
 class ThreadRow(Static):
-    """Two-line row: priority/title, then channel · kind · age · cadence."""
+    """Two-line row: priority/score/title, then channel · kind · age · cadence.
 
-    def __init__(self, view: dict[str, Any]) -> None:
+    Rows are *entries*: a single thread, a collapsed topic group or a child of
+    an expanded group.
+    """
+
+    def __init__(self, entry: dict[str, Any]) -> None:
         super().__init__()
-        self.view = view
+        self.entry = entry
 
-    def set_view(self, view: dict[str, Any]) -> None:
-        self.view = view
+    def set_entry(self, entry: dict[str, Any]) -> None:
+        self.entry = entry
         self.refresh(layout=True)
 
     def render(self) -> Text:
-        view = self.view
+        entry = self.entry
+        view = entry.get("view") or {}
+        grouped = entry.get("kind") == "group"
+        count = int(entry.get("count") or 1)
         width = max(20, (self.size.width or 80) - 1)
         priority_colour = _colour_for_priority(view)
         waiting = bool(view.get("waiting"))
+        urgency = view.get("urgency")
 
         head = Text()
         head.append("▌ ", style=AMBER if waiting else "#182b22")
@@ -230,16 +259,26 @@ class ThreadRow(Static):
             head.append(" · ", style=FAINT)
         else:
             head.append(f"{label:>2} ", style=f"bold {priority_colour}")
-        if view.get("importance"):
-            head.append("★ ", style=f"bold {AMBER}")
+        if isinstance(urgency, (int, float)):
+            head.append(f"{int(urgency):>3} ", style=_score_style(urgency))
         else:
-            head.append("  ")
+            head.append("    ")
+        head.append("★ " if view.get("importance") else "  ", style=f"bold {AMBER}")
         if waiting:
             head.append("⏳ ", style=f"bold {AMBER}")
-        head.append(str(view.get("summary") or ""), style=INK)
+        if grouped:
+            head.append("▾ " if entry.get("expanded") else "▸ ", style=f"bold {BLUE}")
+        elif entry.get("indent"):
+            head.append("· ", style=FAINT)
+        head.append(str(view.get("headline") or view.get("summary") or ""), style=INK)
+        if grouped and count > 1:
+            head.append(f"  ×{count}", style=f"bold {BLUE}")
 
         meta = Text()
-        meta.append("     ")
+        meta.append("       ")
+        if grouped:
+            meta.append(f"{count} threads", style=BLUE)
+            meta.append("  ·  ", style=FAINT)
         channel = str(view.get("channel_name") or "")
         if channel:
             meta.append(channel, style=BLUE)
@@ -257,6 +296,9 @@ class ThreadRow(Static):
         else:
             cadence_text = "every " + str(cadence)
         meta.append(cadence_text, style=MUTED)
+        if view.get("topic") and not grouped:
+            meta.append("  ·  ", style=FAINT)
+            meta.append(str(view["topic"]), style=FAINT)
         if view.get("snoozed"):
             meta.append("  ·  ", style=FAINT)
             meta.append("snoozed", style=FAINT)
@@ -265,17 +307,17 @@ class ThreadRow(Static):
 
 
 class ThreadItem(ListItem):
-    def __init__(self, view: dict[str, Any]) -> None:
-        super().__init__(ThreadRow(view))
-        self.key = str(view.get("key") or "")
+    def __init__(self, entry: dict[str, Any]) -> None:
+        super().__init__(ThreadRow(entry))
+        self.key = str(entry.get("key") or "")
 
     @property
     def row(self) -> ThreadRow:
         return self.query_one(ThreadRow)
 
-    def set_view(self, view: dict[str, Any]) -> None:
-        self.key = str(view.get("key") or "")
-        self.row.set_view(view)
+    def set_entry(self, entry: dict[str, Any]) -> None:
+        self.key = str(entry.get("key") or "")
+        self.row.set_entry(entry)
 
 
 TUI_HELP = (
@@ -391,6 +433,7 @@ class HermesTUI(App):
         Binding("t", "track", "Track"),
         Binding("a", "ask", "Ask"),
         Binding("y", "copy_link", "Copy link", show=False),
+        Binding("space", "toggle_group", "Expand", show=False),
         Binding("escape", "escape", "", show=False),
     ]
 
@@ -412,6 +455,8 @@ class HermesTUI(App):
         self.current_key: str | None = None
         self.search_query = ""
         self.filter_mode = "tracked"
+        self.grouping = True
+        self.expanded_topics: set[str] = set()
         self.active_job: str | None = None
         self.jobs: dict[str, dict[str, Any]] = {}
         self.config_error = ""
@@ -659,6 +704,8 @@ class HermesTUI(App):
                 in " ".join(
                     [
                         str(view["summary"]),
+                        str(view.get("headline") or ""),
+                        str(view.get("topic") or ""),
                         str(view["key"]),
                         str(view["kind"]),
                         str(view["note"]),
@@ -669,33 +716,92 @@ class HermesTUI(App):
         views.sort(
             key=lambda view: (
                 not view["waiting"],
+                -(view.get("urgency") or 0),
                 -int(view.get("priority") or 0),
                 view["age_seconds"] if view["age_seconds"] is not None else 1e12,
             )
         )
         return views
 
+    def _entries(self) -> list[dict[str, Any]]:
+        """Rows to render: plain threads plus collapsed topic groups."""
+        views = self.views
+        if not self.grouping:
+            return [
+                {"kind": "thread", "key": str(view["key"]), "view": view}
+                for view in views
+            ]
+        order: list[tuple[str, str, list[dict[str, Any]]]] = []
+        groups: dict[str, list[dict[str, Any]]] = {}
+        for view in views:
+            topic = str(view.get("topic") or "").strip()
+            if not topic:
+                order.append(("thread", str(view["key"]), [view]))
+                continue
+            if topic not in groups:
+                groups[topic] = []
+                order.append(("group", topic, groups[topic]))
+            groups[topic].append(view)
+
+        entries: list[dict[str, Any]] = []
+        for kind, key, members in order:
+            if kind == "thread" or len(members) < 2:
+                view = members[0]
+                entries.append({"kind": "thread", "key": str(view["key"]), "view": view})
+                continue
+            members = sorted(
+                members,
+                key=lambda view: (
+                    -(view.get("urgency") or 0),
+                    view["age_seconds"] if view["age_seconds"] is not None else 1e12,
+                ),
+            )
+            expanded = key in self.expanded_topics
+            entries.append(
+                {
+                    "kind": "group",
+                    "key": f"topic:{key}",
+                    "topic": key,
+                    "views": members,
+                    "view": members[0],
+                    "count": len(members),
+                    "expanded": expanded,
+                }
+            )
+            if expanded:
+                for view in members:
+                    entries.append(
+                        {
+                            "kind": "thread",
+                            "key": str(view["key"]),
+                            "view": view,
+                            "indent": True,
+                        }
+                    )
+        return entries
+
     def apply_threads(self, threads: list[dict[str, Any]]) -> None:
         self.threads = threads
         views = self._visible_views()
         self.views = views
-        keys = [str(view["key"]) for view in views]
+        entries = self._entries()
+        keys = [str(entry["key"]) for entry in entries]
         list_view = self.query_one("#threads", ListView)
 
         if keys != self.row_keys:
             previous = self.current_key
             self.row_keys = keys
             list_view.clear()
-            for view in views:
-                list_view.append(ThreadItem(view))
+            for entry in entries:
+                list_view.append(ThreadItem(entry))
             if previous in keys:
                 list_view.index = keys.index(previous)
             elif keys:
                 list_view.index = 0
         else:
-            for item, view in zip(list_view.children, views):
+            for item, entry in zip(list_view.children, entries):
                 if isinstance(item, ThreadItem):
-                    item.set_view(view)
+                    item.set_entry(entry)
 
         empty = self.query_one("#empty", Static)
         if views:
@@ -740,11 +846,20 @@ class HermesTUI(App):
             text.append("Switch with tab; press t to track a link.", style=MUTED)
         return text
 
+    def _entry(self, key: str | None) -> dict[str, Any] | None:
+        if not key:
+            return None
+        for entry in self._entries():
+            if str(entry.get("key")) == key:
+                return entry
+        return None
+
     def show_detail(self, key: str | None) -> None:
         detail = self.query_one("#detail", Static)
         actions = self.query_one("#actions", Static)
-        view = next((item for item in self.views if item["key"] == key), None)
-        if view is None:
+        entry = self._entry(key)
+        view = (entry or {}).get("view")
+        if not isinstance(view, dict):
             detail.update(
                 Text(
                     "Select a thread to see its detail, or press ? for the key map.",
@@ -764,7 +879,15 @@ class HermesTUI(App):
         text.append(str(view.get("status") or "open"), style=MUTED)
         text.append("\n\n")
         pane_width = max(40, (self.query_one("#detail", Static).size.width or 90) - 4)
-        summary = " ".join(str(view.get("summary") or "").split())
+        if entry and entry.get("kind") == "group":
+            text.append(
+                f"{entry.get('count')} threads · topic {entry.get('topic')}",
+                style=f"bold {BLUE}",
+            )
+            text.append("\n", style=MUTED)
+        summary = " ".join(
+            str(view.get("headline") or view.get("summary") or "").split()
+        )
         if len(summary) > pane_width * 3:
             summary = summary[: pane_width * 3 - 1] + "…"
         text.append(summary, style=f"bold {INK}")
@@ -795,6 +918,19 @@ class HermesTUI(App):
                     value = value[:11] + "…"
                 text.append(f"{value:<12}", style=colour)
             text.append("\n")
+        if isinstance(view.get("urgency"), (int, float)) or isinstance(
+            view.get("relevance"), (int, float)
+        ):
+            for label, value in (
+                ("urgency", view.get("urgency")),
+                ("relevance", view.get("relevance")),
+            ):
+                if not isinstance(value, (int, float)):
+                    continue
+                colour = _score_style(value) if label == "urgency" else BLUE
+                text.append(f"{label:<9}", style=FAINT)
+                text.append(_bar(value), style=colour)
+                text.append(f" {int(value):>3}\n", style=colour)
         if view.get("note"):
             text.append(f"{'note':<9}", style=FAINT)
             text.append(_short(str(view["note"]), pane_width - 9), style=INK)
@@ -834,7 +970,23 @@ class HermesTUI(App):
             self.show_detail(item.key)
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
+        entry = self._selected_entry()
+        if entry and entry.get("kind") == "group":
+            self.action_toggle_group()
+            return
         self.action_open_link()
+
+    def action_toggle_group(self) -> None:
+        entry = self._selected_entry()
+        if not entry or entry.get("kind") != "group":
+            return
+        topic = str(entry.get("topic"))
+        if topic in self.expanded_topics:
+            self.expanded_topics.discard(topic)
+        else:
+            self.expanded_topics.add(topic)
+        self.row_keys = []
+        self.apply_threads(self.threads)
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
         line = event.value.strip()
@@ -993,10 +1145,12 @@ class HermesTUI(App):
     def _list_view(self) -> ListView:
         return self.query_one("#threads", ListView)
 
+    def _selected_entry(self) -> dict[str, Any] | None:
+        return self._entry(self.current_key)
+
     def _selected_view(self) -> dict[str, Any] | None:
-        return next(
-            (item for item in self.views if item["key"] == self.current_key), None
-        )
+        entry = self._selected_entry()
+        return entry.get("view") if entry else None
 
     def action_quit_app(self) -> None:
         self.exit()

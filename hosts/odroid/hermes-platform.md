@@ -96,7 +96,9 @@ hermes watch                  # raw event stream (scripting)
 hermes-tui                    # full interactive client
 ```
 
-`hermes-tui` (ALT+H): two-line rows with priority badges and a waiting marker;
+`hermes-tui` (ALT+H): two-line rows with priority badges, AI headline, urgency
+score and a waiting marker; repeated topics collapse into one row (`space`
+expands);
 `tab` switches tracked → followed → all; `j/k` move, `g/G` jump; `o` open,
 `y` copy the link; `d` done, `i` important, `f` follow/unfollow; `s` snooze and
 `R` remind open pickers; `t` track a link, `a` ask, `/` search, `i` command
@@ -148,8 +150,17 @@ as a nix build machine if `nix.buildMachines` is added later.
 
 ## Ops
 
-* Health check now covers `cx`, Slack, both models, codex sandbox, `nix run`,
-  `gh`, `tracking`, `vikunja`, `api`, `remote` — 11 checks.
+* Health check covers `cx`, Slack, both models, codex sandbox, `nix run`,
+  `gh`, `tracking`, `triage`, `vikunja`, `api`, `remote` — and it is now a
+  **single status card**: the same Slack message is edited in place every run
+  and pinned once (`state["healthMessage"]`). If the log says
+  `pin failed (missing_scope pins:write)`, add the `pins:write` bot scope to the
+  control app and reinstall it; until then the card is still updated in place.
+* **AI triage** (`triage.py`) gives every thread a short `headline`, a stable
+  `topic` slug and 0-100 `urgency` / `relevance`, using batched DeepSeek calls
+  (8 threads per call, 16 per cycle, cached against `latest_ts`). The TUI shows
+  the headline and score, collapses threads that share a topic into one row
+  (`space` expands) and sorts by urgency.
 * Logs: `journalctl -u hermes-agent -f` (odroid),
   `journalctl --user -u hermes-bridge -f` (amd-pc).
 * Deploy odroid: push `nix_dots` + `nix flake update coralogix-private`, then
