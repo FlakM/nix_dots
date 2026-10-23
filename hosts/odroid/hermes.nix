@@ -181,6 +181,15 @@ in
           timezone = "Europe/Warsaw";
           prRefreshSeconds = 1800;
           jiraRefreshSeconds = 1800;
+          # Reviews expire after two quiet days, anything else after four;
+          # merged/closed PRs close immediately. Starred threads survive.
+          autoClose = {
+            enable = true;
+            staleDays = 4;
+            reviewDays = 2;
+            mergedPrs = true;
+            keepImportant = true;
+          };
         };
         # HTTP API for the amd-pc TUI/CLI and the notification bridge.
         api = {

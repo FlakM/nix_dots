@@ -128,6 +128,8 @@ def thread_view(thread: dict[str, Any]) -> dict[str, Any]:
         "summary": summary,
         "headline": " ".join(str(item.get("headline") or "").split()),
         "topic": str(item.get("topic") or ""),
+        "closed_reason": str(item.get("closed_reason") or ""),
+        "closed_at": as_float(item.get("closed_at")),
         "urgency": as_float(item.get("urgency")),
         "relevance": as_float(item.get("relevance")),
         "link": item.get("link") or item.get("url") or "",

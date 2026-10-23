@@ -946,6 +946,14 @@ class HermesTUI(App):
                 text.append(f"{label:<9}", style=FAINT)
                 text.append(_bar(value), style=colour)
                 text.append(f" {int(value):>3}\n", style=colour)
+        if view.get("closed_reason"):
+            text.append(f"{'closed':<9}", style=FAINT)
+            reason = str(view["closed_reason"])
+            stamp = view.get("closed_at")
+            if isinstance(stamp, (int, float)) and stamp > 0:
+                reason += f" · {time.strftime('%d %b %H:%M', time.localtime(stamp))}"
+            text.append(reason, style=AMBER)
+            text.append("\n")
         if view.get("note"):
             text.append(f"{'note':<9}", style=FAINT)
             text.append(_short(str(view["note"]), pane_width - 9), style=INK)
