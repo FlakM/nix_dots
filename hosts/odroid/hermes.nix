@@ -32,6 +32,10 @@ in
       CODEX_HOME = "/home/flakm/.codex";
       CX_READ_ONLY = "1";
       HOME = "/home/flakm";
+      # HTTP API bearer token (the TUI/CLI and the amd-pc bridge use it).
+      HERMES_API_TOKEN_FILE = config.sops.secrets.hermes_api_token.path;
+      # Vikunja API token: project 26 (Coralogix) + 27 (private week).
+      VIKUNJA_API_TOKEN_FILE = config.sops.secrets.hermes_vikunja_token.path;
       # Share the machine's nix cache (codex gets it as a writable root, see
       # codex_base_cmd) so `nix run` reuses what is already fetched.
       XDG_CACHE_HOME = "/home/flakm/.cache";
@@ -164,6 +168,50 @@ in
           provider = null;
           model = null;
         };
+        # Follow-up tracking: per-thread cadence, "still waiting" reminders,
+        # PR/Jira refresh. See modules/hermes-agent/PLATFORM.md.
+        tracking = {
+          enable = true;
+          defaultReminderSeconds = 86400; # daily nudge when nothing moves
+          minReminderSeconds = 900;
+          maxRemindersPerCycle = 5;
+          quietHours = [ 22 8 ];
+          timezone = "Europe/Warsaw";
+          prRefreshSeconds = 1800;
+          jiraRefreshSeconds = 1800;
+        };
+        # HTTP API for the amd-pc TUI/CLI and the notification bridge.
+        api = {
+          enable = true;
+          port = 8790;
+        };
+        # Mirror tracked work threads into "Coralogix - pilne" and create
+        # personal tasks from natural language.
+        vikunja = {
+          enable = true;
+          url = "http://127.0.0.1:3456";
+          projectId = 26;
+          personalProjectId = 27;
+          label = "hermes";
+          syncSeconds = 300;
+        };
+        # Heavy commands run on amd-pc when it is reachable.
+        remote = {
+          enable = true;
+          host = "192.168.0.249";
+          user = "flakm";
+          sshKeyFile = config.sops.secrets.hermes_remote_ssh_key.path;
+          workdir = "/tmp/hermes-remote";
+          timeoutSeconds = 900;
+          offload = [
+            "nix build"
+            "nix run"
+            "nix develop"
+            "cargo build"
+            "cargo test"
+            "pytest"
+          ];
+        };
       };
       memory = {
         feedback = true;
@@ -251,6 +299,24 @@ in
     useACMEHost = "house.flakm.com";
     forceSSL = true;
     root = "/var/www/hermes";
+    # The agent's HTTP API (TUI/CLI + notification bridge). Token protected;
+    # LAN/tailnet only. SSE needs buffering off and a long read timeout.
+    locations."/api/" = {
+      proxyPass = "http://127.0.0.1:8790";
+      proxyWebsockets = true;
+      extraConfig = ''
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_buffering off;
+        proxy_cache off;
+        proxy_read_timeout 3600s;
+        proxy_send_timeout 3600s;
+        allow 192.168.0.0/16;
+        allow 100.64.0.0/10;
+        allow fd7a:115c:a1e0::/48;
+        deny all;
+      '';
+    };
   };
 
   sops.secrets = lib.optionalAttrs hasHermesSlackSecret
@@ -307,6 +373,28 @@ in
       owner = "flakm";
       group = "users";
       mode = "0400";
+    };
+  } // {
+    # Hermes HTTP API (TUI/CLI + amd-pc notification bridge).
+    hermes_api_token = {
+      owner = "flakm";
+      group = "users";
+      mode = "0400";
+      restartUnits = [ "hermes-agent.service" ];
+    };
+    # Vikunja API token for the tracked-thread mirror and natural-language tasks.
+    hermes_vikunja_token = {
+      owner = "flakm";
+      group = "users";
+      mode = "0400";
+      restartUnits = [ "hermes-agent.service" ];
+    };
+    # Key used for remote jobs (and as a nix build machine) on amd-pc.
+    hermes_remote_ssh_key = {
+      owner = "flakm";
+      group = "users";
+      mode = "0400";
+      restartUnits = [ "hermes-agent.service" ];
     };
   };
 }
