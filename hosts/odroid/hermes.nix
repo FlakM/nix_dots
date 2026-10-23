@@ -66,6 +66,8 @@ in
       # sandbox keeps the home directory read-only, so the cache lives in /tmp
       # (XDG_CACHE_HOME below) or nix cannot write its flake registry.
       pkgs.nix
+      # remote_exec: ssh to amd-pc for heavy builds; git for its known_hosts.
+      pkgs.openssh
     ];
     settings = {
       agent = {
@@ -306,9 +308,13 @@ in
       proxyWebsockets = true;
       extraConfig = ''
         proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header Connection "";
         proxy_buffering off;
         proxy_cache off;
+        gzip off;
         proxy_read_timeout 3600s;
         proxy_send_timeout 3600s;
         allow 192.168.0.0/16;
