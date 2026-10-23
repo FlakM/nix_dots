@@ -286,15 +286,33 @@ def run_command(api: HermesClient, line: str, *, current_key: str | None = None)
             state = api.state()
             tracked = api.threads("tracked", limit=100)
             waiting = sum(1 for thread in tracked if thread_view(thread)["waiting"])
+            snapshot = state.get("snapshot") if isinstance(state.get("snapshot"), dict) else {}
+            counts = state.get("state") if isinstance(state.get("state"), dict) else {}
+            following = snapshot.get("followed")
             version = health.get("version") or "-"
             age = health.get("state_age")
-            age_text = fmt_duration(age) if isinstance(age, (int, float)) else "-"
+            if isinstance(age, (int, float)):
+                age_text = "just now" if age < 60 else f"{fmt_duration(age)} old"
+            else:
+                age_text = "-"
+            second = f"{len(tracked)} tracked · {waiting} waiting on you"
+            if isinstance(following, int):
+                second += f" · {following} followed"
+            second += f" · default cadence {_default_cadence(api)}"
+            seen = counts.get("subscriptions")
+            history = counts.get("threads")
+            third = ""
+            if isinstance(seen, int) or isinstance(history, int):
+                third = f"{seen or 0} subscriptions · {history or 0} threads seen"
             return Result(
-                output=(
-                    f"hermes {version} · ok={health.get('ok', '?')} · state {age_text} old\n"
-                    f"{len(tracked)} tracked · {waiting} waiting on you · "
-                    f"default cadence {_default_cadence(api)}\n"
-                    f"threads in state: {state.get('threads') if isinstance(state.get('threads'), (int, list)) else '-'}"
+                output="\n".join(
+                    line
+                    for line in (
+                        f"hermes {version} · ok={health.get('ok', '?')} · state {age_text}",
+                        second,
+                        third,
+                    )
+                    if line
                 ),
                 data={"health": health, "state": state, "tracked": tracked},
             )
