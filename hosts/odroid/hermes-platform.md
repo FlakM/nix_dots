@@ -77,6 +77,23 @@ immediately (it reads the Vikunja API directly).
 Token: `hermes_vikunja_token` (sops), scopes on projects 14/26/27, **expires
 2027-10-23** — recreate with `PUT /api/v1/tokens` and update sops before then.
 
+## Auto-cleanup
+
+Threads disappear from the tracked/followed list when they stop needing
+attention (`agent.tracking.autoClose`):
+
+| rule | when |
+| --- | --- |
+| `merged` | every PR linked from the thread (or the tracked PR itself) is merged/closed — immediate |
+| `review expired` | AI urgency ≥ 60 (review/decision requested) and idle ≥ 2 days |
+| `stale` | anything else idle ≥ 4 days |
+
+Starred (`important`) threads survive unless their PR is merged; snoozed threads
+and threads without a known activity timestamp are never auto-closed. Closed
+items are **not deleted**: they stay under `filter=done`
+(`hermes list --filter done`), the detail shows `closed  <reason> · <date>`, and
+their mirrored Vikunja task is completed. Bring one back with `follow`/`track`.
+
 ## amd-pc clients
 
 ```bash
