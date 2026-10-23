@@ -1,4 +1,7 @@
-{ config, pkgs, pkgsUnstable, libs, ... }:
+{ config, lib, osConfig, pkgs, pkgsUnstable, libs, ... }:
+let
+  isAmdPc = lib.attrByPath [ "networking" "hostName" ] "" osConfig == "amd-pc";
+in
 {
 
   xdg.mimeApps = {
@@ -30,6 +33,11 @@
       settings = {
         # Broken Wayland HDR path produced green video artifacts.
         "gfx.wayland.hdr" = false;
+      }
+      // lib.optionalAttrs isAmdPc {
+        # VCN corrupts H.264/AV1 hw decode (green frames); decode in software.
+        "media.hardware-video-decoding.enabled" = false;
+        "media.ffmpeg.vaapi.enabled" = false;
       };
     };
   };

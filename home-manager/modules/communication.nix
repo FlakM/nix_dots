@@ -18,7 +18,8 @@ let
         --set NIXOS_OZONE_WL 1 \
         --add-flags "--ozone-platform=wayland" \
         --add-flags "--enable-features=UseOzonePlatform,VaapiVideoEncoder" \
-        --add-flags "--disable-features=VaapiVideoDecoder,VaapiAV1Decoder"
+        --add-flags "--disable-features=VaapiVideoDecoder,VaapiAV1Decoder" \
+        --add-flags "--disable-accelerated-video-decode"
 
       # Replace symlinked .desktop file so launcher-spawned Chrome goes
       # through the wrapper too (otherwise the .desktop Exec= points
