@@ -395,6 +395,15 @@ def cmd_remote(api: HermesClient, args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def cmd_notify(api: HermesClient, args: argparse.Namespace) -> int:
+    api.notify(" ".join(args.text), title=args.title, urgency=args.urgency)
+    if args.json:
+        emit_json({"ok": True})
+    else:
+        print("notification sent")
+    return EXIT_OK
+
+
 def cmd_watch(api: HermesClient, args: argparse.Namespace) -> int:
     stop = EventStream(api, since=args.since, max_backoff=30.0)
     connected_once = False
@@ -514,6 +523,12 @@ def build_parser() -> argparse.ArgumentParser:
     watch = sub.add_parser("watch", parents=[common], help="stream events (script friendly)")
     watch.add_argument("--since", type=int, default=0)
     watch.set_defaults(handler=cmd_watch)
+
+    notify = sub.add_parser("notify", parents=[common], help="desktop notification via the bridge")
+    notify.add_argument("text", nargs="+")
+    notify.add_argument("--title", default="Hermes")
+    notify.add_argument("--urgency", choices=["low", "normal", "critical"], default="normal")
+    notify.set_defaults(handler=cmd_notify)
 
     read = sub.add_parser("read", parents=[common], help="clear the bridge unread badge")
     read.set_defaults(handler=cmd_read)
