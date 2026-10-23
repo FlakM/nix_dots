@@ -116,15 +116,14 @@ ListItem {{
     height: 2;
     padding: 0 1;
     background: #090d11;
-    border-left: thick #090d11;
 }}
 ListItem.-highlight {{
-    background: #1b3527;
-    border-left: thick #4f8f6f;
+    background: #1d3b29;
+    color: #f3f8f5;
 }}
 ListView:focus ListItem.-highlight {{
-    background: #22452f;
-    border-left: thick #8ef0c0;
+    background: #2a5a3d;
+    color: #ffffff;
 }}
 #empty {{
     padding: 2 3;
