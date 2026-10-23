@@ -476,7 +476,9 @@ def build_parser() -> argparse.ArgumentParser:
     ask.set_defaults(handler=cmd_ask, wait=True)
 
     listing = sub.add_parser("list", parents=[common], help="list threads")
-    listing.add_argument("--filter", choices=["tracked", "all", "done"], default="tracked")
+    listing.add_argument(
+        "--filter", choices=["tracked", "followed", "all", "done"], default="tracked"
+    )
     listing.add_argument("--limit", type=int, default=50)
     listing.set_defaults(handler=cmd_list)
 

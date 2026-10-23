@@ -17,7 +17,12 @@ the API still answers; only toasts, the TUI and remote jobs pause.
 
 ## Tracking a thread
 
-In the control Slack channel (`#general`) or the TUI:
+"Tracked" means **explicitly added by Maciej** (a `track`, a `remind`, or a
+natural-language request). Hermes still auto-follows ~120 recent threads and
+notifies on activity, but those are *not* tracked: they do not show up in the
+panel/TUI "tracked" list and take no Vikunja space.
+
+In the control Slack channel (`#general`) or the TUI, either the command form:
 
 ```
 track https://coralogix-dev.slack.com/archives/C03K13XKV6G/p1792741470105999 every 6h
@@ -29,8 +34,21 @@ remind off
 reminders 1d         # global default for newly tracked threads
 ```
 
-* Reminders are **opt-in**: the ~120 threads Hermes follows only notify on
-  activity. A timed reminder exists only after `track …` or `remind …`.
+or plain language in any message (Slack / TUI / API):
+
+```
+śledź ten wątek i przypominaj co 2 dni
+dawaj znać o tym co 6 godzin
+przestań mi o tym przypominać
+wszystkie wątki przypominaj co 3 dni
+dodaj zadanie: kup taśmę malarską jutro
+```
+
+Polish and English, including `co drugi dzień`, `codziennie`, `co tydzień`,
+`every other day`; unusual phrasing falls back to one cheap model call inside a
+tracked thread. Questions are left alone and answered normally.
+
+* Reminders are **opt-in**: the auto-followed threads only notify on activity.
 * A reminder fires when `now >= next_at` **and** nothing happened since the last
   one; new activity slides the window instead. Quiet hours: 22:00–08:00
   (`agent.tracking.quietHours`), max 5 per cycle.
@@ -42,7 +60,8 @@ reminders 1d         # global default for newly tracked threads
 * `track`ed threads are mirrored to **26 Coralogix - pilne** (title, priority
   P1→5 … P4→1, description with permalink + `Hermes-Key:` marker).
   Completing the task in Vikunja marks the thread done (and un-completing reopens
-  it); marking done in Hermes completes the task.
+  it); marking done in Hermes completes the task. Auto-followed threads are
+  never mirrored, so the ALT+T panel only ever holds real work.
 * Natural language tasks go to **27 Dom · tydzień (Maciek)** by default:
 
 ```
@@ -95,7 +114,8 @@ Client config: `~/.config/hermes/client.env` (`HERMES_API_URL`,
 LAN/tailnet only.
 
 ```
-GET  /api/health | /api/state | /api/usage | /api/threads | /api/jobs
+GET  /api/health | /api/state | /api/usage | /api/jobs
+GET  /api/threads?filter=tracked|followed|all|done   (tracked = explicitly added)
 POST /api/threads | /api/tasks | /api/ask | /api/notify | /api/reminders | /api/remote/run
 PATCH/DELETE /api/threads/{key}
 POST /api/jobs/{id}/cancel
