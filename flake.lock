@@ -94,11 +94,11 @@
         "protofetch-nix": "protofetch-nix"
       },
       "locked": {
-        "lastModified": 1792752439,
-        "narHash": "sha256-2mygYX60hHrOqVwkJcIldbRV97BuGgqfnCe4uIK2UTo=",
+        "lastModified": 1792753161,
+        "narHash": "sha256-e7LIYC0eCZZ4mZaUupPb8SXY49cl3/5Ieqqu0Q+M78s=",
         "ref": "refs/heads/main",
-        "rev": "6396d0e89779df0d6eeaafb15a6c09615a25d098",
-        "revCount": 80,
+        "rev": "97b324bee33b7e003687820d74f795b067f61cbb",
+        "revCount": 81,
         "type": "git",
         "url": "ssh://git@github.com/FlakM/nix-coralogix-private"
       },
@@ -1178,17 +1178,17 @@
         "nixpkgs": "nixpkgs_9"
       },
       "locked": {
-        "lastModified": 1792749771,
-        "narHash": "sha256-cVARg5gZ9eJQmIrTfaz/6YbETOrC7i989mCRPjs4xHk=",
-        "owner": "FlakM",
-        "repo": "planer",
-        "rev": "093112b03fc5fae9b55b4938c22efb59c942ffe6",
-        "type": "github"
+        "lastModified": 1792750795,
+        "narHash": "sha256-vGbjN5djHCuyAaCpSTzxJ5CCB8f7FMOjf8nJW1BaMoQ=",
+        "ref": "refs/heads/main",
+        "rev": "6909f9c6519326e0609121e44788bb895b9b83b4",
+        "revCount": 3,
+        "type": "git",
+        "url": "ssh://git@github-planer/FlakM/planer"
       },
       "original": {
-        "owner": "FlakM",
-        "repo": "planer",
-        "type": "github"
+        "type": "git",
+        "url": "ssh://git@github-planer/FlakM/planer"
       }
     },
     "pre-commit-hooks": {
