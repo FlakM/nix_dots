@@ -78,6 +78,10 @@
       flake = false;
     };
 
+    planer = {
+      url = "github:FlakM/planer";
+    };
+
     coralogix-private = {
       url = "git+ssh://git@github.com/FlakM/nix-coralogix-private";
       # Don't override nixpkgs: aaa-help's deps (cx_* common-rs crates) need

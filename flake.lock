@@ -1141,6 +1141,22 @@
         "type": "github"
       }
     },
+    "nixpkgs_9": {
+      "locked": {
+        "lastModified": 1792615934,
+        "narHash": "sha256-MlvRfa1O5Cqc2/a+gG+l9TSuowEoCKCmrJ1d9oAVm0I=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "da6dc0e7b26060f2f71ce3ef7088fb56ee44fa36",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-26.05",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "permissions-service": {
       "flake": false,
       "locked": {
@@ -1155,6 +1171,24 @@
       "original": {
         "type": "git",
         "url": "ssh://git@github.com/coralogix/permissions-service"
+      }
+    },
+    "planer": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_9"
+      },
+      "locked": {
+        "lastModified": 1792749771,
+        "narHash": "sha256-cVARg5gZ9eJQmIrTfaz/6YbETOrC7i989mCRPjs4xHk=",
+        "owner": "FlakM",
+        "repo": "planer",
+        "rev": "093112b03fc5fae9b55b4938c22efb59c942ffe6",
+        "type": "github"
+      },
+      "original": {
+        "owner": "FlakM",
+        "repo": "planer",
+        "type": "github"
       }
     },
     "pre-commit-hooks": {
@@ -1250,6 +1284,7 @@
         "nixpkgs": "nixpkgs_8",
         "nixpkgs-master": "nixpkgs-master",
         "nixpkgs-unstable": "nixpkgs-unstable",
+        "planer": "planer",
         "sops-nix": "sops-nix"
       }
     },
