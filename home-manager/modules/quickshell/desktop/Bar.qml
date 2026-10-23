@@ -299,6 +299,17 @@ PanelWindow {
                 onSecondaryClicked: Qt.openUrlExternally("https://tasks.house.flakm.com/")
             }
 
+            IconButton {
+                icon: bar.shell.hermesUnread > 0 ? "notifications_active" : "forum"
+                statusText: bar.shell.hermesUnread > 0 ? `${bar.shell.hermesUnread}` : ""
+                tooltip: !bar.shell.hermesConnected
+                    ? `Hermes: ${bar.shell.hermesBridgeError || "bridge not running"}`
+                    : `${bar.shell.hermesThreads.length} tracked · ${bar.shell.hermesJobs.filter(job => job.status === "running").length} running`
+                active: bar.shell.overlayMode === "hermes" || bar.shell.hermesUnread > 0
+                accent: bar.shell.hermesUnread > 0 ? "#f6c177" : "#72e4ae"
+                onClicked: bar.shell.toggle("hermes")
+            }
+
             Rectangle {
                 visible: bar.width >= 1800
                 implicitWidth: visible ? resources.implicitWidth + 18 : 0

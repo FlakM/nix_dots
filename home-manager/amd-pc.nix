@@ -48,6 +48,7 @@
 
     ./modules/ai.nix
     ./modules/vikunja.nix
+    ./modules/hermes-client.nix
 
     ./modules/k8s.nix
     ./modules/front.nix

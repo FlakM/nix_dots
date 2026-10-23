@@ -43,11 +43,23 @@ ShellRoot {
     property int vikunjaTaskCount: 0
     property bool vikunjaLoading: true
     property string vikunjaError: ""
+    // Hermes bridge cache (~/.cache/hermes/bridge.json), read-only.
+    property var hermesBridge: ({})
+    property int hermesUnread: 0
+    property bool hermesConnected: false
+    property string hermesBridgeError: ""
+    property var hermesThreads: []
+    property var hermesJobs: []
+    property var hermesEvents: []
+    property var hermesUpdated: 0
+    property string hermesBridgeRaw: ""
+    readonly property string hermesBridgePath: `${Quickshell.env("HOME") || "/home/flakm"}/.cache/hermes/bridge.json`
 
     function toggle(mode) {
         if (mode === "cameras") cameraAutoOpened = false
         if (mode === "calendar") refreshCalendar()
         if (mode === "tailscale") refreshTailscale()
+        if (mode === "hermes") refreshHermes()
         overlayMode = overlayMode === mode ? "" : mode
     }
 
@@ -166,6 +178,32 @@ ShellRoot {
         vikunjaProcess.running = true
     }
 
+    function refreshHermes() {
+        hermesBridgeFile.reload()
+    }
+
+    // bridge.json is written atomically by hermes-bridge; tolerate an empty or
+    // missing file (first boot, service down) without spamming the log.
+    function applyHermesBridge(raw) {
+        if (!raw || raw === root.hermesBridgeRaw) return
+        try {
+            const data = JSON.parse(raw)
+            if (!data || typeof data !== "object") return
+            root.hermesBridgeRaw = raw
+            root.hermesBridge = data
+            root.hermesUnread = Number(data.unread || 0)
+            root.hermesThreads = Array.isArray(data.threads) ? data.threads : []
+            root.hermesJobs = Array.isArray(data.jobs) ? data.jobs : []
+            root.hermesEvents = Array.isArray(data.events) ? data.events : []
+            root.hermesUpdated = Number(data.updated || 0)
+            root.hermesConnected = data.connection ? data.connection.connected !== false : true
+            root.hermesBridgeError = data.connection && data.connection.error
+                ? String(data.connection.error) : ""
+        } catch (error) {
+            console.warn("Unable to parse Hermes bridge cache:", error)
+        }
+    }
+
     function completeVikunjaTask(taskId) {
         if (vikunjaAction.running) return
         vikunjaAction.command = ["quickshell-vikunja", "done", `${taskId}`]
@@ -200,6 +238,7 @@ ShellRoot {
         function toggleBluetooth(): void { root.toggle("bluetooth") }
         function toggleAudio(): void { root.toggle("audio") }
         function toggleTasks(): void { root.toggle("tasks") }
+        function toggleHermes(): void { root.toggle("hermes") }
         function toggleCalendar(): void { root.toggle("calendar") }
         function toggleTailscale(): void { root.toggle("tailscale") }
     }
@@ -433,6 +472,26 @@ ShellRoot {
         }
     }
 
+    // Hermes: the bridge owns the SSE connection; quickshell only renders its
+    // cache. watchChanges catches atomic renames, the timer is a safety net.
+    FileView {
+        id: hermesBridgeFile
+        path: root.hermesBridgePath
+        watchChanges: true
+        printErrors: false
+        onLoaded: root.applyHermesBridge(hermesBridgeFile.text())
+        onTextChanged: root.applyHermesBridge(hermesBridgeFile.text())
+        onFileChanged: hermesBridgeFile.reload()
+    }
+
+    Timer {
+        interval: 5000
+        running: true
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: hermesBridgeFile.reload()
+    }
+
     Timer {
         interval: 3000
         running: true
@@ -500,6 +559,10 @@ ShellRoot {
     }
 
     VikunjaPanel {
+        shell: root
+    }
+
+    HermesPanel {
         shell: root
     }
 

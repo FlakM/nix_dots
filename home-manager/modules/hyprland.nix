@@ -1768,6 +1768,7 @@ in
     hl.bind(mod .. " + D",                hl.dsp.exec_cmd("${if isAmdPc then "qs --config desktop ipc call desktop toggleLauncher" else "rofi -show drun"}"))
     ${lib.optionalString isAmdPc ''
     hl.bind("ALT + T",                    hl.dsp.exec_cmd("qs --config desktop ipc call desktop toggleTasks"))
+    hl.bind("ALT + H",                    hl.dsp.exec_cmd("qs --config desktop ipc call desktop toggleHermes"))
     ''}
     hl.bind("ALT + CTRL + N",             hl.dsp.exec_cmd("${config.home.homeDirectory}/.config/theme-switch.sh"))
     hl.bind(mod .. " + SHIFT + W",        hl.dsp.exec_cmd([=[hyprctl hyprpaper wallpaper "DP-1,${config.home.homeDirectory}/.config/wallpaper.png"]=]))
