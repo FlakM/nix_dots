@@ -55,6 +55,7 @@ ACTION_VERBS = {
     "task",
     "notify",
 }
+COMMAND_PLACEHOLDER = "❯ command — track/ask/remind/task · tab filters · / search · ? help"
 FILTERS = ("tracked", "followed", "all")
 FILTER_LABEL = {"tracked": "TRACKED", "followed": "FOLLOWED", "all": "ALL THREADS"}
 PRIORITY_COLOUR = {1: RED, 2: AMBER, 3: BLUE, 4: MUTED, 0: FAINT}
@@ -456,6 +457,7 @@ class HermesTUI(App):
         self.filter_mode = "tracked"
         self.grouping = True
         self.expanded_topics: set[str] = set()
+        self.awaiting_search = False
         self.active_job: str | None = None
         self.jobs: dict[str, dict[str, Any]] = {}
         self.config_error = ""
@@ -478,7 +480,7 @@ class HermesTUI(App):
                 yield Static("LIVE", id="live-title")
                 yield Static("", id="live-hint", markup=False)
                 yield RichLog(id="live", markup=False, wrap=True)
-        yield Input(placeholder="❯ command — track/ask/remind/task · tab filters · ? help", id="command")
+        yield Input(placeholder=COMMAND_PLACEHOLDER, id="command")
         yield Footer()
 
     def on_mount(self) -> None:
@@ -995,6 +997,14 @@ class HermesTUI(App):
         line = event.value.strip()
         event.input.value = ""
         self.query_one("#threads", ListView).focus()
+        if self.awaiting_search:
+            # The "/" prompt takes the raw text as the filter, no command word.
+            self.awaiting_search = False
+            event.input.placeholder = COMMAND_PLACEHOLDER
+            self.search_query = line
+            self.request_refresh()
+            self._update_topbar()
+            return
         if not line:
             return
         if line.lower() in {"exit", "quit", "q"}:
@@ -1169,12 +1179,19 @@ class HermesTUI(App):
 
     def action_search(self) -> None:
         command = self.query_one("#command", Input)
-        command.value = "search "
+        self.awaiting_search = True
+        command.value = ""
+        command.placeholder = "filter threads — enter applies, esc cancels"
         command.focus()
-        command.cursor_position = len(command.value)
 
     def action_escape(self) -> None:
         command = self.query_one("#command", Input)
+        if self.awaiting_search:
+            self.awaiting_search = False
+            command.value = ""
+            command.placeholder = COMMAND_PLACEHOLDER
+            self._list_view().focus()
+            return
         if command.has_focus:
             if command.value:
                 command.value = ""
@@ -1274,17 +1291,28 @@ class HermesTUI(App):
 
         self.push_screen(ChoiceScreen("Reminder cadence", REMIND_CHOICES), apply)
 
-    def action_track(self) -> None:
+    def _prefill(self, text: str) -> None:
+        # Focusing an Input selects its contents; setting the value in the same
+        # tick means the first typed character would replace everything.
         command = self.query_one("#command", Input)
-        command.value = "track "
+        self.awaiting_search = False
+        command.placeholder = COMMAND_PLACEHOLDER
+        command.value = ""
         command.focus()
-        command.cursor_position = len(command.value)
+
+        def apply() -> None:
+            command.value = text
+            command.cursor_position = len(text)
+            command.selection_start = len(text)
+            command.selection_end = len(text)
+
+        self.call_after_refresh(apply)
+
+    def action_track(self) -> None:
+        self._prefill("track ")
 
     def action_ask(self) -> None:
-        command = self.query_one("#command", Input)
-        command.value = "ask "
-        command.focus()
-        command.cursor_position = len(command.value)
+        self._prefill("ask ")
 
 
 def main(argv: list[str] | None = None) -> int:

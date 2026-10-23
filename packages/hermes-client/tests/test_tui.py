@@ -233,3 +233,44 @@ class GroupingTest(unittest.IsolatedAsyncioTestCase):
             self.assertIn("relevance", detail)
             self.assertIn("2 threads · topic dlocal-saml-login", detail)
             self.assertIn("█", detail)
+
+
+class SearchPromptTest(unittest.IsolatedAsyncioTestCase):
+    def setUp(self):
+        self.api = FakeApi()
+        self.app = tui.HermesTUI(client=self.api, auto_stream=False)
+
+    async def test_slash_prompt_filters_without_the_search_word(self):
+        async with self.app.run_test(size=(130, 40)) as pilot:
+            await pilot.pause(0.15)
+            self.app.apply_threads(self.api.data["tracked"])
+            await pilot.press("slash")
+            await pilot.pause(0.05)
+            await pilot.press(*"auditor")
+            await pilot.press("enter")
+            await pilot.pause(0.15)
+            self.assertEqual("auditor", self.app.search_query)
+            rows = list(self.app.query(tui.ThreadRow))
+            self.assertEqual(1, len(rows))
+            self.assertIn("auditor-v2", rows[0].entry["view"]["summary"])
+
+    async def test_escape_cancels_the_search_prompt(self):
+        async with self.app.run_test(size=(130, 40)) as pilot:
+            await pilot.pause(0.15)
+            self.app.apply_threads(self.api.data["tracked"])
+            await pilot.press("slash")
+            await pilot.pause(0.05)
+            await pilot.press("escape")
+            await pilot.pause(0.05)
+            self.assertFalse(self.app.awaiting_search)
+            self.assertEqual("", self.app.search_query)
+
+    async def test_track_prefill_survives_the_focus_selection(self):
+        async with self.app.run_test(size=(130, 40)) as pilot:
+            await pilot.press("t")
+            await pilot.pause(0.1)
+            command = self.app.query_one("#command", tui.Input)
+            self.assertEqual("track ", command.value)
+            await pilot.press("x")
+            await pilot.pause(0.05)
+            self.assertEqual("track x", command.value)
