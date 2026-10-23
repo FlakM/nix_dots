@@ -153,7 +153,6 @@ ListView:focus ListItem.-highlight {{
     scrollbar-size-vertical: 1;
 }}
 #command {{
-    dock: bottom;
     height: 1;
     background: #0e141a;
     border: none;
