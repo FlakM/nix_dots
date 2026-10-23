@@ -36,6 +36,9 @@ in
       ExecStart = "${hermes-client}/bin/hermes-bridge";
       Restart = "always";
       RestartSec = 5;
+      # The SSE read can block past systemd's stop grace period; do not let a
+      # restart wait 90s and report `Result=timeout`.
+      TimeoutStopSec = 5;
       Environment = [ "PYTHONUNBUFFERED=1" ];
     };
     Install.WantedBy = [ "default.target" ];
