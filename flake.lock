@@ -94,11 +94,11 @@
         "protofetch-nix": "protofetch-nix"
       },
       "locked": {
-        "lastModified": 1792742471,
-        "narHash": "sha256-N6po4RaMDA3HlEUdHE+MXIcsRD4xSFeRRzvos7WXtq4=",
+        "lastModified": 1792743060,
+        "narHash": "sha256-QjUiK/dgV7I93fDn0UVazpdDS2xkG5lh05EfKhXw5ss=",
         "ref": "refs/heads/main",
-        "rev": "b1cbab5711a536bbbd53143992143f98ffaaf6be",
-        "revCount": 71,
+        "rev": "7b42a63408aad8ca1628151b0c9d5b040d1eaeb0",
+        "revCount": 72,
         "type": "git",
         "url": "ssh://git@github.com/FlakM/nix-coralogix-private"
       },
@@ -1127,11 +1127,11 @@
     },
     "nixpkgs_8": {
       "locked": {
-        "lastModified": 1791765022,
-        "narHash": "sha256-ZGq3ptZzA+oO0N/Wi/F+GbuTijLkYExD01LvpNFAvr0=",
+        "lastModified": 1792615934,
+        "narHash": "sha256-MlvRfa1O5Cqc2/a+gG+l9TSuowEoCKCmrJ1d9oAVm0I=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "7993f34ee47e28a3d607a525aadc6c94b73be728",
+        "rev": "da6dc0e7b26060f2f71ce3ef7088fb56ee44fa36",
         "type": "github"
       },
       "original": {
