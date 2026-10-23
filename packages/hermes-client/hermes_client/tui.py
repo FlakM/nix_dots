@@ -26,7 +26,7 @@ from textual.widgets import Footer, Input, ListItem, ListView, OptionList, RichL
 
 from . import __version__, store
 from .client import HermesClient, HermesError, HermesUnreachable
-from .commands import HELP_TEXT, Result, run_command
+from .commands import Result, run_command
 from .config import ConfigError, load_config
 from .format import job_status, step_line, thread_view
 
@@ -279,13 +279,59 @@ class ThreadItem(ListItem):
         self.row.set_view(view)
 
 
+TUI_HELP = (
+    ("KEYS", [
+        ("j / k", "move down / up"),
+        ("g / G", "first / last thread"),
+        ("tab", "tracked → followed → all"),
+        ("/", "search the list (esc clears)"),
+        ("t / a", "track a link / ask about the selection"),
+        ("R / s", "reminder cadence / snooze pickers"),
+        ("d / i / f", "done / important / follow"),
+        ("o / y", "open link / copy link"),
+        ("r / ?", "refresh now / this help"),
+        ("q", "quit"),
+    ]),
+    ("COMMANDS  (press i, same words as the Slack control surface)", [
+        ("track <url> [every 1d]", "track a Slack / PR / Jira link"),
+        ("untrack [key]", "stop tracking (defaults to the selection)"),
+        ("remind 6h | off", "per-thread reminder cadence"),
+        ("reminders 1d | off", "global default cadence"),
+        ("task <text>", "natural-language Vikunja task"),
+        ("notify <text>", "desktop notification on this machine"),
+        ("ask <question>", "agentic question, steps stream live"),
+        ("investigate | draft", "deep dive / suggested reply"),
+        ("snooze 2h | off", "silence reminders for the selection"),
+        ("done | important", "act on the selected thread"),
+        ("follow | unfollow", "follow or unfollow the selection"),
+        ("search <text>", "filter the list (empty clears)"),
+        ("history [n]", "recent jobs"),
+        ("remote <command>", "offload a build/test to amd-pc"),
+        ("status", "health, counts and default cadence"),
+    ]),
+)
+
+
+def help_text() -> Text:
+    text = Text()
+    for section, rows in TUI_HELP:
+        text.append(section + "\n", style=f"bold {ACCENT}")
+        for keys, description in rows:
+            text.append(f"  {keys:<24}", style=f"bold {BLUE}")
+            text.append(description + "\n", style=MUTED)
+        text.append("\n")
+    text.append("esc / ? / q", style=f"bold {ACCENT}")
+    text.append("  close this help", style=FAINT)
+    return text
+
+
 class HelpScreen(ModalScreen):
     """The ``?`` overlay."""
 
     BINDINGS = [Binding("escape,q,question_mark,enter", "dismiss", "Close")]
 
     def compose(self) -> ComposeResult:
-        yield Static(HELP_TEXT, id="help", markup=False)
+        yield Static(help_text(), id="help", markup=False)
 
     def action_dismiss(self) -> None:
         self.app.pop_screen()
