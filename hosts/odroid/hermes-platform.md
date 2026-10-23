@@ -151,12 +151,12 @@ as a nix build machine if `nix.buildMachines` is added later.
 ## Ops
 
 * Health check covers `cx`, Slack, both models, codex sandbox, `nix run`,
-  `gh`, `tracking`, `triage`, `vikunja`, `api`, `remote` — and it is now a
+  `gh`, `tracking`, `enrich`, `vikunja`, `api`, `remote` — and it is now a
   **single status card**: the same Slack message is edited in place every run
   and pinned once (`state["healthMessage"]`). If the log says
   `pin failed (missing_scope pins:write)`, add the `pins:write` bot scope to the
   control app and reinstall it; until then the card is still updated in place.
-* **AI triage** (`triage.py`) gives every thread a short `headline`, a stable
+* **AI enrichment** (`enrich.py`) gives every thread a short `headline`, a stable
   `topic` slug and 0-100 `urgency` / `relevance`, using batched DeepSeek calls
   (8 threads per call, 16 per cycle, cached against `latest_ts`). The TUI shows
   the headline and score, collapses threads that share a topic into one row
