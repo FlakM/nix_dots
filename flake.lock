@@ -1178,11 +1178,11 @@
         "nixpkgs": "nixpkgs_9"
       },
       "locked": {
-        "lastModified": 1792759483,
-        "narHash": "sha256-K3AtVSoXLVsX07/iJtm4N+41bGZXz4lOISS97aT4MSA=",
+        "lastModified": 1792762247,
+        "narHash": "sha256-kDbrvWmsPlZjKOS8r3T3dzzGNbMsbbAiu/TQ9LiCYww=",
         "ref": "refs/heads/main",
-        "rev": "f982228d5d920ff9c1d775452df1394627c7f517",
-        "revCount": 10,
+        "rev": "dfe875fa5d671eab00c15a8eb858a0043927d756",
+        "revCount": 11,
         "type": "git",
         "url": "ssh://git@github-planer/FlakM/planer"
       },
