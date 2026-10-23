@@ -79,7 +79,7 @@
     };
 
     planer = {
-      url = "github:FlakM/planer";
+      url = "git+ssh://git@github-planer/FlakM/planer";
     };
 
     coralogix-private = {
