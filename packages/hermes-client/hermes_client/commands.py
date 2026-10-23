@@ -261,6 +261,12 @@ def run_command(api: HermesClient, line: str, *, current_key: str | None = None)
                 lines.append(f"{job_id}  {status:<9}  {title[:90]}")
             return Result(output="\n".join(lines), data=jobs)
 
+        if word == "notify":
+            if not argument:
+                raise ValueError("usage: notify <text>")
+            api.notify(argument)
+            return Result(output="notification sent")
+
         if word == "remote":
             if not argument:
                 raise ValueError("usage: remote <command>")
@@ -320,6 +326,7 @@ Hermes commands (same words as the Slack control surface)
   search <text>              filter the thread list (empty text clears)
   history [n]                recent jobs
   remote <command>           offload a build/test to amd-pc
+  notify <text>              desktop notification on this machine
   status                     health, counts and default cadence
   quit                       leave the TUI
 

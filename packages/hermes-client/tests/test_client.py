@@ -162,6 +162,10 @@ class FakeApi:
         self.calls.append(("ask", question, thread_key, mode))
         return {"job_id": "j1"}
 
+    def notify(self, body, title="Hermes", urgency="normal"):
+        self.calls.append(("post", "/api/notify", {"title": title, "body": body, "urgency": urgency}))
+        return {"ok": True}
+
     def job_id(self, data):
         return "j1"
 
@@ -223,6 +227,15 @@ class CommandTest(unittest.TestCase):
         result = run_command(FakeApi(), "investigate")
         self.assertTrue(result.error)
         self.assertIn("selected thread", result.output)
+
+    def test_notify_sends_a_desktop_notification(self) -> None:
+        api = FakeApi()
+        result = run_command(api, "notify build finished")
+        self.assertFalse(result.error, result.output)
+        self.assertEqual(
+            api.calls[-1],
+            ("post", "/api/notify", {"title": "Hermes", "body": "build finished", "urgency": "normal"}),
+        )
 
     def test_global_reminders(self) -> None:
         api = FakeApi()

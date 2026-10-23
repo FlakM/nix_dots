@@ -411,6 +411,14 @@ class HermesClient:
             payload["conversation"] = conversation
         return self.post("/api/ask", json_body=payload) or {}
 
+    def notify(
+        self, body: str, *, title: str = "Hermes", urgency: str = "normal"
+    ) -> dict[str, Any]:
+        return self.post(
+            "/api/notify",
+            json_body={"title": title, "body": body, "urgency": urgency},
+        ) or {}
+
     def jobs(self) -> list[dict[str, Any]]:
         data = self.get("/api/jobs")
         if isinstance(data, list):
