@@ -212,11 +212,11 @@ def _fit(line: Text, width: int) -> Text:
 def _score_style(value: Any) -> str:
     if not isinstance(value, (int, float)):
         return FAINT
-    if value >= 85:
+    if value >= 80:
         return f"bold {RED}"
-    if value >= 70:
+    if value >= 60:
         return f"bold {AMBER}"
-    if value >= 50:
+    if value >= 40:
         return BLUE
     return FAINT
 
@@ -535,6 +535,10 @@ class HermesTUI(App):
         bar.append("   ")
         bar.append(f"{len(self.views)}", style=f"bold {INK}")
         bar.append(" shown", style=MUTED)
+        groups = sum(1 for entry in self._entries() if entry.get("kind") == "group")
+        if groups:
+            bar.append("   ")
+            bar.append(f"{groups} groups", style=BLUE)
         bar.append("   ")
         bar.append(f"{waiting}", style=f"bold {AMBER}")
         bar.append(" waiting", style=MUTED)
