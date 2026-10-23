@@ -135,7 +135,8 @@ ListView:focus ListItem.-highlight {{
     background: #090d11;
 }}
 #actions {{
-    height: 1;
+    height: auto;
+    max-height: 2;
     padding: 0 2;
     color: {FAINT};
     background: #090d11;
@@ -234,6 +235,8 @@ class ThreadRow(Static):
             head.append("★ ", style=f"bold {AMBER}")
         else:
             head.append("  ")
+        if waiting:
+            head.append("⏳ ", style=f"bold {AMBER}")
         head.append(str(view.get("summary") or ""), style=INK)
 
         meta = Text()
@@ -248,15 +251,13 @@ class ThreadRow(Static):
         meta.append(str(view.get("age") or "-"), style=MUTED)
         meta.append("  ·  ", style=FAINT)
         cadence = view.get("cadence")
-        meta.append(
-            "every " + str(cadence)
-            if cadence not in (None, "", "-")
-            else "activity",
-            style=MUTED,
-        )
-        if waiting:
-            meta.append("  ·  ", style=FAINT)
-            meta.append("⏳ waiting", style=f"bold {AMBER}")
+        if cadence in (None, "", "-"):
+            cadence_text = "activity"
+        elif str(cadence) == "off":
+            cadence_text = "no reminders"
+        else:
+            cadence_text = "every " + str(cadence)
+        meta.append(cadence_text, style=MUTED)
         if view.get("snoozed"):
             meta.append("  ·  ", style=FAINT)
             meta.append("snoozed", style=FAINT)
@@ -730,9 +731,13 @@ class HermesTUI(App):
             ("idle", str(view.get("age") or "-"), MUTED),
             (
                 "cadence",
-                str(view.get("cadence") or "-")
-                if view.get("cadence") not in (None, "", "-")
-                else "activity",
+                "no reminders"
+                if str(view.get("cadence") or "") == "off"
+                else (
+                    str(view.get("cadence"))
+                    if view.get("cadence") not in (None, "", "-")
+                    else "activity"
+                ),
                 MUTED,
             ),
         ]
@@ -755,6 +760,7 @@ class HermesTUI(App):
         detail.update(text + Text("\n"))
 
         hints = Text()
+        line_width = 0
         for keys, label in (
             ("o", "open"),
             ("a", "ask"),
@@ -765,8 +771,13 @@ class HermesTUI(App):
             ("f", "follow"),
             ("y", "copy"),
         ):
+            chunk = f" {keys} {label} "
+            if line_width and line_width + len(chunk) + 2 > pane_width:
+                hints.append("\n")
+                line_width = 0
             hints.append(f" {keys} ", style=f"bold {ACCENT}")
             hints.append(f"{label}  ", style=FAINT)
+            line_width += len(chunk) + 2
         actions.update(hints)
 
     # -- list + input events ----------------------------------------------
