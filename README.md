@@ -83,6 +83,10 @@ This is a set of very opinionated configurations. The mix of shortcuts is a resu
 
 Home-manager is wired into the system module on all hosts — a single rebuild command handles both system and user config.
 
+### Home Assistant smart plugs
+
+See [pairing Shelly smart plugs](SMART_PLUG_PAIRING.md) for the local setup procedure, the second plug (`Biuro PC`), and connection checks.
+
 ### NixOS (Linux)
 
 ```bash

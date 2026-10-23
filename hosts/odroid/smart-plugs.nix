@@ -15,6 +15,9 @@ let
   officeSwitch = "switch.biuro_pc";
   officePower = "sensor.biuro_pc_power";
   officeEnergy = "sensor.biuro_pc_energy";
+  # Bezpieczne gniazdko: nie wyłączy PC, gdy pobiera prąd (patrz template switch).
+  officeSafeSwitch = "switch.biuro_pc_gniazdko";
+  officeForceOff = "script.biuro_pc_wylacz_na_sile";
 
   # --- Encje pomocnicze definiowane w tym pliku ---
   kidsPause = "input_boolean.sypialnia_dzieci_harmonogram_wstrzymany";
@@ -67,10 +70,15 @@ let
         cards = [
           {
             type = "conditional";
+            # Warunkowa karta nie obsługuje `condition: template` w HA 2026.5
+            # (walidacja zwraca "Conditions are invalid"). Używamy stanów encji.
             conditions = [
               {
-                condition = "template";
-                value_template = "{{ states('${kidsSwitch}') in ['unknown', 'unavailable'] or states('${officeSwitch}') in ['unknown', 'unavailable'] }}";
+                condition = "or";
+                conditions = [
+                  { condition = "state"; entity = kidsSwitch; state = [ "unknown" "unavailable" ]; }
+                  { condition = "state"; entity = officeSwitch; state = [ "unknown" "unavailable" ]; }
+                ];
               }
             ];
             card = {
@@ -92,7 +100,7 @@ let
               }
               {
                 type = "tile";
-                entity = officeSwitch;
+                entity = officeSafeSwitch;
                 name = "Biuro PC (PC + monitor)";
                 icon = "mdi:desktop-tower";
                 tap_action = { action = "more-info"; };
@@ -118,12 +126,26 @@ let
             type = "entities";
             title = "Biuro PC — bieżące";
             entities = [
-              { entity = officeSwitch; name = "Gniazdko"; }
+              { entity = officeSafeSwitch; name = "Gniazdko"; }
               { entity = officeActive; name = "PC pracuje"; }
               { entity = officePower; name = "Moc (W)"; }
               { entity = officeCostHour; name = "Koszt bieżący (PLN/h)"; }
               { entity = officeRuntime; name = "Czas pracy dziś"; }
             ];
+          }
+          {
+            type = "button";
+            name = "Wymuś wyłączenie PC";
+            icon = "mdi:power-off";
+            icon_height = "40px";
+            tap_action = {
+              action = "perform-action";
+              perform_action = "script.turn_on";
+              target = { entity_id = officeForceOff; };
+              confirmation = {
+                text = "PC pobiera prąd. Naprawdę odciąć zasilanie?";
+              };
+            };
           }
           {
             type = "entities";
@@ -175,7 +197,10 @@ let
             period = "day";
             days_to_show = 30;
             chart_type = "bar";
-            stat_types = [ "change" ];
+            # history_stats to sensor typu measurement i nie ma statystyk sum,
+            # więc "change" jest niedostępne. Licznik rośnie w ciągu doby od 0,
+            # więc maksimum z doby to łączny czas pracy tego dnia.
+            stat_types = [ "max" ];
           }
           {
             type = "entities";
@@ -247,6 +272,65 @@ in
           source = officeEnergy;
           cycle = "monthly";
         };
+      };
+      # Bezpieczne gniazdko: wyłączenie jest dozwolone tylko wtedy, gdy PC nie
+      # pobiera prądu. Przy większym obciążeniu akcja jest blokowana i tworzy
+      # powiadomienie; świadome odcięcie zasilania to osobny skrypt z
+      # potwierdzeniem w dashboardzie (script.biuro_pc_wylacz_na_sile).
+      switch = [
+        {
+          platform = "template";
+          switches = {
+            biuro_pc_gniazdko = {
+              friendly_name = "Biuro PC gniazdko";
+              unique_id = "biuro_pc_gniazdko";
+              value_template = "{{ states('${officeSwitch}') }}";
+              availability_template = "{{ states('${officeSwitch}') not in ['unknown', 'unavailable'] }}";
+              turn_on = {
+                action = "switch.turn_on";
+                target.entity_id = officeSwitch;
+              };
+              turn_off = [
+                {
+                  "if" = [
+                    {
+                      condition = "numeric_state";
+                      entity_id = officePower;
+                      below = 31;
+                    }
+                  ];
+                  "then" = [
+                    {
+                      action = "switch.turn_off";
+                      target.entity_id = officeSwitch;
+                    }
+                  ];
+                  "else" = [
+                    {
+                      action = "persistent_notification.create";
+                      data = {
+                        title = "Biuro PC — gniazdko nie wyłączone";
+                        message = "PC pobiera prąd, więc bezpieczne gniazdko odmówiło wyłączenia. Jeśli naprawdę chcesz odciąć zasilanie, użyj przycisku „Wymuś wyłączenie PC” (wymaga potwierdzenia).";
+                        notification_id = "biuro_pc_off_blocked";
+                      };
+                    }
+                  ];
+                }
+              ];
+            };
+          };
+        }
+      ];
+      script.biuro_pc_wylacz_na_sile = {
+        alias = "Biuro PC: wymuś wyłączenie";
+        description = "Odłącza zasilanie PC bez sprawdzania poboru mocy. Wywoływać tylko z potwierdzeniem.";
+        mode = "single";
+        sequence = [
+          {
+            action = "switch.turn_off";
+            target.entity_id = officeSwitch;
+          }
+        ];
       };
       sensor = [
         {

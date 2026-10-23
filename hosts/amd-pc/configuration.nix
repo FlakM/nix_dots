@@ -87,6 +87,9 @@ in
 
   nix.package = pkgs.nixVersions.latest;
 
+  # Hermes runs jobs (and optionally builds) on this machine over SSH.
+  nix.settings.trusted-users = [ "flakm" ];
+
   # Import the boot pool so /boot is mounted from bpool (GRUB-compatible).
   boot.zfs.extraPools = [ "bpool" ];
 
@@ -369,6 +372,22 @@ in
     firmware = [ pkgs.linux-firmware ];
   };
 
+  # Temporary VCN bisect: boot "oldfw" from GRUB to run today's kernel with
+  # the linux-firmware 20260910 blobs (VCN 3.1.2 ucode 0x04121015).
+  specialisation.oldfw.configuration = {
+    hardware.firmware = lib.mkForce [
+      (pkgs.linux-firmware.overrideAttrs (old: rec {
+        version = "20260910";
+        src = pkgs.fetchFromGitLab {
+          owner = "kernel-firmware";
+          repo = "linux-firmware";
+          tag = version;
+          hash = "sha256-gT9XYrQk5oZvbJgp4u8xkGWR4NdDomx5tzLmB4V52H8=";
+        };
+      }))
+    ];
+  };
+
   # MediaTek MT7922 Bluetooth needs rfkill unblock before bluez can power it on.
   systemd.services.bluetooth-rfkill-unblock = {
     description = "Unblock Bluetooth rfkill";
@@ -476,6 +495,8 @@ in
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINJ/re3ma3iPQIXyixzDjaQ7Jf7+M/byFMoCHmH9I3pj root@pikvm"
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDVvK18r4EdYJOW8Ml9Dp0y0TDqnVaTQswA8AdNmHyde flakm@odroid"
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBCSh4nXWO827OwprBKa63SzLnGBqzbG0h6/H9gtjn17 odroid-ccusage-push"
+    # Hermes on the odroid: remote jobs and (optionally) a nix build machine.
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF9YvmbFWHCu+5AY6TYA14KObAWVW4SwI2aNS2HRoJ7T hermes@odroid"
   ];
 
   environment.pathsToLink = [ "/share/zsh" ];
