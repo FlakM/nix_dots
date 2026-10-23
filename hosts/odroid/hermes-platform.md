@@ -98,7 +98,7 @@ hermes-tui                    # full interactive client
 
 `hermes-tui` (ALT+H): two-line rows with priority badges, AI headline, urgency
 score and a waiting marker; repeated topics collapse into one row (`space`
-expands);
+expands, `enter` opens); `/` filters the list with a plain query (esc cancels);
 `tab` switches tracked → followed → all; `j/k` move, `g/G` jump; `o` open,
 `y` copy the link; `d` done, `i` important, `f` follow/unfollow; `s` snooze and
 `R` remind open pickers; `t` track a link, `a` ask, `/` search, `i` command
