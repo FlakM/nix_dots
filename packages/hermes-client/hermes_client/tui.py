@@ -366,6 +366,16 @@ def help_text() -> Text:
     return text
 
 
+class ThreadList(ListView):
+    """ListView without the space key binding: space toggles groups, not links."""
+
+    BINDINGS = [
+        binding
+        for binding in ListView.BINDINGS
+        if getattr(binding, "key", "") != "enter,space"
+    ] + [Binding("enter", "select_cursor", "Open", show=False)]
+
+
 class HelpScreen(ModalScreen):
     """The ``?`` overlay."""
 
@@ -472,7 +482,7 @@ class HermesTUI(App):
         with Horizontal(id="main"):
             with Vertical(id="left"):
                 yield Static("TRACKED", id="list-title")
-                yield ListView(id="threads")
+                yield ThreadList(id="threads")
                 yield Static("", id="empty", markup=False)
             with Vertical(id="right"):
                 yield Static("", id="detail")
