@@ -74,8 +74,42 @@ on failure the text becomes the title in the personal project. Identical titles
 created within an hour are deduplicated. Tasks appear in the quickshell panel
 immediately (it reads the Vikunja API directly).
 
+Plain-language creation works in any message — no command word needed:
+
+```
+Add to the Coralogix project: Clean up my Jira tasks
+dodaj do projektu Coralogix: posprzątaj stare flagi
+add task to the Inbox project: file the taxes
+```
+
+Projects are resolved by alias (`Coralogix`/`praca` → 26, `dom`/`personal` →
+27) or by name/id (`Inbox`, `14`). An unknown explicit project is reported
+instead of silently falling back to the personal one.
+
 Token: `hermes_vikunja_token` (sops), scopes on projects 14/26/27, **expires
 2027-10-23** — recreate with `PUT /api/v1/tokens` and update sops before then.
+
+## Jira
+
+Hermes can also create Jira issues on demand in `https://coralogix.atlassian.net`
+(default project **CX**, default type **Task**):
+
+```
+utwórz jira ticket: posprzątaj stare feature flagi
+create a jira issue in project CX: fix the redirect
+jira: rotate the API token
+jira CX: fix login loop
+```
+
+The project can be given as `CX:` at the start, `w projekcie CX` / `in project
+CX` anywhere in the note; `bug`/`story`/`epic` in the request selects the issue
+type. A second line becomes the description; the reply links to the issue.
+Credentials: `jira_coralogix_token` (sops, read via `JIRA_TOKEN_FILE`) plus
+`JIRA_EMAIL`. The pinned health card shows `jira credentials` and `jira auth` —
+if the token is rejected, create a fresh API token at
+<https://id.atlassian.com/manage-profile/security/api-tokens>, update
+`jira_coralogix_token` in `secrets/secrets.yaml`, and redeploy.
+The model-facing reference is `skills/tasks.md` in the agent module.
 
 ## Auto-cleanup
 
@@ -106,6 +140,7 @@ hermes track <url> every 6h
 hermes remind 6h --thread <key>
 hermes reminders 6h
 hermes task "kup mleko jutro"
+hermes jira "fix the login loop" --project CX
 hermes remote "nix build .#foo"   # runs on amd-pc, steps streamed
 hermes notify "build finished"    # desktop toast via the bridge
 hermes jobs [--cancel <id>]

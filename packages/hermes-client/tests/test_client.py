@@ -101,6 +101,22 @@ class ClientTest(unittest.TestCase):
         self.assertTrue(any("%3A" in str(call.url) for call in calls))
         client.close()
 
+    def test_task_creation_sends_the_kind(self) -> None:
+        bodies = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            bodies.append(json.loads(request.content))
+            return httpx.Response(201, json={"title": "x"})
+
+        client = make_client(handler)
+        client.create_task("buy milk")
+        client.create_task("fix login", kind="jira", project="CX")
+        self.assertEqual(bodies[0], {"text": "buy milk"})
+        self.assertEqual(
+            bodies[1], {"text": "fix login", "project": "CX", "kind": "jira"}
+        )
+        client.close()
+
     def test_error_message(self) -> None:
         def handler(request: httpx.Request) -> httpx.Response:
             return httpx.Response(401, json={"error": "bad token"})

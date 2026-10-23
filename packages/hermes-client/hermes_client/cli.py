@@ -303,6 +303,20 @@ def cmd_task(api: HermesClient, args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def cmd_jira(api: HermesClient, args: argparse.Namespace) -> int:
+    text = " ".join(args.text)
+    created = api.create_task(text, project=args.project, kind="jira")
+    if args.json:
+        emit_json(created)
+    else:
+        key = created.get("key") or ""
+        url = created.get("url") or ""
+        print(f"jira issue created: {key}".strip())
+        if url:
+            print(url)
+    return EXIT_OK
+
+
 def cmd_status(api: HermesClient, args: argparse.Namespace) -> int:
     health = api.health()
     state = api.state()
@@ -507,6 +521,11 @@ def build_parser() -> argparse.ArgumentParser:
     task.add_argument("text", nargs="+")
     task.add_argument("--project", choices=["personal", "coralogix"])
     task.set_defaults(handler=cmd_task)
+
+    jira = sub.add_parser("jira", parents=[common], help="create a Jira issue from text")
+    jira.add_argument("text", nargs="+")
+    jira.add_argument("--project", help="Jira project key (default: server config, CX)")
+    jira.set_defaults(handler=cmd_jira)
 
     status = sub.add_parser("status", parents=[common], help="health, counts, cadence")
     status.set_defaults(handler=cmd_status)

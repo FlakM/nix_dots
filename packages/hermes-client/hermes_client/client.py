@@ -376,10 +376,14 @@ class HermesClient:
 
     # -- tasks ------------------------------------------------------------
 
-    def create_task(self, text: str, project: str | None = None) -> dict[str, Any]:
+    def create_task(
+        self, text: str, project: str | None = None, kind: str = "vikunja"
+    ) -> dict[str, Any]:
         payload: dict[str, Any] = {"text": text}
         if project:
             payload["project"] = project
+        if kind and kind != "vikunja":
+            payload["kind"] = kind
         return self.post("/api/tasks", json_body=payload) or {}
 
     # -- jobs -------------------------------------------------------------

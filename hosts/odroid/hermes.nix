@@ -36,6 +36,10 @@ in
       HERMES_API_TOKEN_FILE = config.sops.secrets.hermes_api_token.path;
       # Vikunja API token: project 26 (Coralogix) + 27 (private week).
       VIKUNJA_API_TOKEN_FILE = config.sops.secrets.hermes_vikunja_token.path;
+      # Jira Cloud API: issue refresh (tracking) and on-demand issue creation.
+      JIRA_BASE_URL = "https://coralogix.atlassian.net";
+      JIRA_EMAIL = "maciej.flak@coralogix.com";
+      JIRA_TOKEN_FILE = config.sops.secrets.jira_coralogix_token.path;
       # Share the machine's nix cache (codex gets it as a writable root, see
       # codex_base_cmd) so `nix run` reuses what is already fetched.
       XDG_CACHE_HOME = "/home/flakm/.cache";
@@ -205,6 +209,17 @@ in
           personalProjectId = 27;
           label = "hermes";
           syncSeconds = 300;
+        };
+        # Jira: create issues on demand ("utwórz jira ticket …"). The token
+        # comes from JIRA_TOKEN_FILE; the health card reports a rejected token.
+        jira = {
+          enable = true;
+          baseUrl = "https://coralogix.atlassian.net";
+          email = "maciej.flak@coralogix.com";
+          tokenFile = config.sops.secrets.jira_coralogix_token.path;
+          project = "CX";
+          issueType = "Task";
+          labels = [ "hermes" ];
         };
         # Heavy commands run on amd-pc when it is reachable.
         remote = {
@@ -397,6 +412,14 @@ in
     };
     # Vikunja API token for the tracked-thread mirror and natural-language tasks.
     hermes_vikunja_token = {
+      owner = "flakm";
+      group = "users";
+      mode = "0400";
+      restartUnits = [ "hermes-agent.service" ];
+    };
+    # Jira Cloud API token (shared with the tracking refresh and the
+    # on-demand issue creation). Rotate at id.atlassian.com if it is rejected.
+    jira_coralogix_token = {
       owner = "flakm";
       group = "users";
       mode = "0400";
