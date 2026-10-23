@@ -96,8 +96,13 @@ hermes watch                  # raw event stream (scripting)
 hermes-tui                    # full interactive client
 ```
 
-`hermes-tui` keys: `↑↓/jk` move, `⏎/o` open the thread link, `i` or `/` command
-line, `?` help, `q` quit. Same command words as Slack, plus `notify`.
+`hermes-tui` (ALT+H): two-line rows with priority badges and a waiting marker;
+`tab` switches tracked → followed → all; `j/k` move, `g/G` jump; `o` open,
+`y` copy the link; `d` done, `i` important, `f` follow/unfollow; `s` snooze and
+`R` remind open pickers; `t` track a link, `a` ask, `/` search, `i` command
+line, `?` keys, `q` quit. The header shows connection, shown/waiting counts,
+unread notifications, running jobs and the active filter. Same command words as
+Slack, plus `notify`.
 
 `hermes-bridge` subscribes to `/api/events`, sends `notify-send -a Hermes` and
 writes `~/.cache/hermes/bridge.json` (`unread`, `events`, `jobs`, `threads`,

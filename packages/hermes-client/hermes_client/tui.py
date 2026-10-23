@@ -1,134 +1,281 @@
-"""``hermes-tui`` — textual dashboard for tracked threads and running jobs.
+"""``hermes-tui`` — a readable dashboard for tracked threads and live jobs.
 
-Left: tracked threads (priority, age, cadence, kind, waiting-on-you).
-Right: the selected thread's detail plus job steps streamed over SSE.
-Bottom: the same command words as the Slack control surface.
+Left: two-line thread rows (priority badge, waiting marker, channel, age,
+cadence). Right: a detail card for the selection and the live event/step log.
+Bottom: the same command words as the Slack control surface plus one-key actions.
 
 Everything network-facing runs off the UI thread; when the API is down the app
-shows a reconnect banner, retries every few seconds and never raises.
+shows a slim reconnect banner, retries every few seconds and never raises.
 """
 
 from __future__ import annotations
 
 import subprocess
 import sys
+import textwrap
 import threading
 import time
 from typing import Any
 
+from rich.text import Text
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
-from textual.widgets import DataTable, Footer, Header, Input, RichLog, Static
+from textual.widgets import Footer, Input, ListItem, ListView, OptionList, RichLog, Static
 
-from . import __version__
+from . import __version__, store
 from .client import HermesClient, HermesError, HermesUnreachable
 from .commands import HELP_TEXT, Result, run_command
 from .config import ConfigError, load_config
 from .format import job_status, step_line, thread_view
 
 REFRESH_SECONDS = 5.0
+SPINNER = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
 
+INK = "#d7e3e0"
+MUTED = "#7d8f8a"
+FAINT = "#4b5b57"
+ACCENT = "#72e4ae"
+BLUE = "#72d7ff"
+AMBER = "#f6c177"
+RED = "#ff7b86"
+PURPLE = "#c3a6ff"
 
-def _escape(value: object) -> str:
-    """Escape Rich markup without importing rich directly.
+ACTION_VERBS = {
+    "done",
+    "important",
+    "follow",
+    "unfollow",
+    "snooze",
+    "remind",
+    "reminders",
+    "track",
+    "untrack",
+    "task",
+    "notify",
+}
+FILTERS = ("tracked", "followed", "all")
+FILTER_LABEL = {"tracked": "TRACKED", "followed": "FOLLOWED", "all": "ALL THREADS"}
+PRIORITY_COLOUR = {1: RED, 2: AMBER, 3: BLUE, 4: MUTED, 0: FAINT}
+KIND_COLOUR = {"slack": BLUE, "pr": PURPLE, "jira": AMBER}
 
-    ``textual`` vendors rich and its log/static widgets read rich markup;
-    a backslash before the bracket is the documented way to keep user text
-    (Slack titles are full of [brackets]) literal.
-    """
-    return str(value).replace("[", "\\[")
+SNOOZE_CHOICES = [
+    ("1h", "in an hour"),
+    ("4h", "in four hours"),
+    ("1d", "tomorrow"),
+    ("3d", "in three days"),
+    ("off", "clear the snooze"),
+]
+REMIND_CHOICES = [
+    ("1h", "hourly"),
+    ("6h", "every six hours"),
+    ("1d", "daily"),
+    ("3d", "every three days"),
+    ("off", "no timed reminders"),
+]
 
-
-CSS = """
-Screen {
-    background: #0b1016;
-    color: #d7e3e0;
-}
-Header {
-    background: #101815;
-    color: #72e4ae;
-}
-Footer {
-    background: #101815;
-    color: #8ca098;
-}
-#body {
-    height: 1fr;
-}
-#left {
-    width: 46%;
-    border-right: solid #2f3d42;
-}
-#right {
-    width: 1fr;
-}
-#left-title, #right-title {
+CSS = f"""
+Screen {{
+    background: #090d11;
+    color: {INK};
+}}
+#topbar {{
     height: 1;
     padding: 0 1;
-    color: #72e4ae;
+    background: #0e141a;
+    color: {MUTED};
+}}
+#banner {{
+    height: 1;
+    padding: 0 1;
+    background: #261317;
+    color: {RED};
+    display: none;
+}}
+#main {{ height: 1fr; }}
+#left {{
+    width: 56%;
+    border-right: solid #1c262d;
+}}
+#right {{ width: 1fr; }}
+#list-title, #live-title {{
+    height: 2;
+    padding: 1 1 0 1;
+    background: #0e141a;
+    color: {ACCENT};
     text-style: bold;
-}
-#threads {
+}}
+#threads {{
     height: 1fr;
-    background: #0e1512;
-}
-#threads > .datatable--cursor {
-    background: #1f3a30;
-    color: #f3f8f5;
-}
-#threads > .datatable--header {
-    background: #16211c;
-    color: #9bb5aa;
-}
-#banner {
-    height: auto;
+    background: #090d11;
+    scrollbar-size-vertical: 1;
+}}
+ThreadRow {{ height: 2; }}
+ListItem {{
+    height: 2;
     padding: 0 1;
-    color: #ff7b86;
-    background: #2a1418;
-}
-#status {
+    background: #090d11;
+}}
+ListItem.-highlight {{
+    background: #14221c;
+}}
+ListView:focus ListItem.-highlight {{
+    background: #182b22;
+}}
+#empty {{
+    padding: 2 3;
+    height: 1fr;
+    color: {MUTED};
+}}
+#detail {{
     height: auto;
-    padding: 0 1;
-    color: #8ca098;
-    background: #101815;
-}
-#detail {
+    max-height: 14;
+    padding: 1 2 0 2;
+    background: #090d11;
+}}
+#actions {{
+    height: 1;
+    padding: 0 2;
+    color: {FAINT};
+    background: #090d11;
+}}
+#live-hint {{
     height: auto;
-    max-height: 16;
     padding: 1 2;
-    background: #101815;
-    border-bottom: solid #2f3d42;
-}
-#steps {
+    color: {MUTED};
+}}
+#live {{
     height: 1fr;
     padding: 0 1;
-    background: #0b1016;
-}
-#command {
+    background: #090d11;
+    scrollbar-size-vertical: 1;
+}}
+#command {{
     dock: bottom;
-    background: #16211c;
-    border-top: solid #3f6b58;
+    height: 1;
+    background: #0e141a;
+    border: none;
+    padding: 0 1;
     color: #f3f8f5;
-}
-#command:focus {
-    border-top: solid #72e4ae;
-}
-#help {
-    padding: 2 4;
-    width: 78;
+}}
+#command:focus {{ background: #121c23; }}
+Footer {{
+    background: #0e141a;
+    color: {MUTED};
+}}
+HelpScreen {{ align: center middle; background: #9905080e; }}
+#help {{
+    width: 84;
     height: auto;
-    max-height: 90%;
-    background: #101815;
-    border: solid #3f6b58;
-    color: #d7e3e0;
-}
-HelpScreen {
-    align: center middle;
-    background: #9905080e;
-}
+    max-height: 92%;
+    padding: 1 2;
+    background: #0e141a;
+    border: round #2c4a3e;
+}}
+ChoiceScreen {{ align: center middle; background: #9905080e; }}
+#choice {{
+    width: 44;
+    height: auto;
+    padding: 1 2;
+    background: #0e141a;
+    border: round #2c4a3e;
+}}
+#choice-title {{ height: 1; text-style: bold; color: {ACCENT}; }}
 """
+
+
+def _colour_for_priority(view: dict[str, Any]) -> str:
+    try:
+        priority = int(view.get("priority") or 0)
+    except (TypeError, ValueError):
+        priority = 0
+    return PRIORITY_COLOUR.get(priority, MUTED)
+
+
+def _short(value: str, width: int) -> str:
+    value = " ".join(value.split())
+    if width > 4 and len(value) > width:
+        return value[: width - 1] + "…"
+    return value
+
+
+def _fit(line: Text, width: int) -> Text:
+    if width > 0 and line.cell_len > width:
+        line.truncate(width, overflow="ellipsis")
+    return line
+
+
+class ThreadRow(Static):
+    """Two-line row: priority/title, then channel · kind · age · cadence."""
+
+    def __init__(self, view: dict[str, Any]) -> None:
+        super().__init__()
+        self.view = view
+
+    def set_view(self, view: dict[str, Any]) -> None:
+        self.view = view
+        self.refresh(layout=True)
+
+    def render(self) -> Text:
+        view = self.view
+        width = max(20, (self.size.width or 80) - 1)
+        priority_colour = _colour_for_priority(view)
+        waiting = bool(view.get("waiting"))
+
+        head = Text()
+        head.append("▌ ", style=AMBER if waiting else "#182b22")
+        label = str(view.get("priority_label") or "-")
+        if label in {"-", ""}:
+            head.append(" · ", style=FAINT)
+        else:
+            head.append(f"{label:>2} ", style=f"bold {priority_colour}")
+        if view.get("importance"):
+            head.append("★ ", style=f"bold {AMBER}")
+        else:
+            head.append("  ")
+        head.append(str(view.get("summary") or ""), style=INK)
+
+        meta = Text()
+        meta.append("     ")
+        channel = str(view.get("channel_name") or "")
+        if channel:
+            meta.append(channel, style=BLUE)
+            meta.append("  ·  ", style=FAINT)
+        kind = str(view.get("kind") or "slack")
+        meta.append(kind, style=KIND_COLOUR.get(kind, MUTED))
+        meta.append("  ·  ", style=FAINT)
+        meta.append(str(view.get("age") or "-"), style=MUTED)
+        meta.append("  ·  ", style=FAINT)
+        cadence = view.get("cadence")
+        meta.append(
+            "every " + str(cadence)
+            if cadence not in (None, "", "-")
+            else "activity",
+            style=MUTED,
+        )
+        if waiting:
+            meta.append("  ·  ", style=FAINT)
+            meta.append("⏳ waiting", style=f"bold {AMBER}")
+        if view.get("snoozed"):
+            meta.append("  ·  ", style=FAINT)
+            meta.append("snoozed", style=FAINT)
+
+        return _fit(head, width) + Text("\n") + _fit(meta, width)
+
+
+class ThreadItem(ListItem):
+    def __init__(self, view: dict[str, Any]) -> None:
+        super().__init__(ThreadRow(view))
+        self.key = str(view.get("key") or "")
+
+    @property
+    def row(self) -> ThreadRow:
+        return self.query_one(ThreadRow)
+
+    def set_view(self, view: dict[str, Any]) -> None:
+        self.key = str(view.get("key") or "")
+        self.row.set_view(view)
 
 
 class HelpScreen(ModalScreen):
@@ -143,64 +290,129 @@ class HelpScreen(ModalScreen):
         self.app.pop_screen()
 
 
+class ChoiceScreen(ModalScreen[str | None]):
+    """A small centred picker used by snooze/remind."""
+
+    BINDINGS = [Binding("escape,q", "cancel", "Cancel")]
+
+    def __init__(self, title: str, choices: list[tuple[str, str]]) -> None:
+        super().__init__()
+        self.title_text = title
+        self.choices = choices
+
+    def compose(self) -> ComposeResult:
+        with Vertical(id="choice"):
+            yield Static(self.title_text, id="choice-title")
+            options = OptionList(*[f"{value:<4}  {label}" for value, label in self.choices])
+            yield options
+
+    def on_mount(self) -> None:
+        self.query_one(OptionList).focus()
+
+    def on_option_list_option_selected(self, event: OptionList.OptionSelected) -> None:
+        index = event.option_index
+        if 0 <= index < len(self.choices):
+            self.dismiss(self.choices[index][0])
+        else:
+            self.dismiss(None)
+
+    def action_cancel(self) -> None:
+        self.dismiss(None)
+
+
 class HermesTUI(App):
     TITLE = "Hermes"
-    SUB_TITLE = "tracked threads · jobs · remote"
+    SUB_TITLE = "tracked threads · live jobs"
+    ENABLE_COMMAND_PALETTE = False
     CSS = CSS
     BINDINGS = [
         Binding("q", "quit_app", "Quit"),
         Binding("ctrl+q", "quit_app", "Quit", show=False),
         Binding("question_mark", "help", "Help"),
-        Binding("r", "refresh", "Refresh"),
+        Binding("j", "cursor_down", "Down", show=False),
+        Binding("k", "cursor_up", "Up", show=False),
+        Binding("g", "cursor_home", "Top", show=False),
+        Binding("G", "cursor_end", "Bottom", show=False),
+        Binding("tab", "cycle_filter", "Filter", priority=True),
+        Binding("r", "refresh", "Refresh", show=False),
         Binding("i", "focus_command", "Command"),
-        Binding("slash", "focus_command", "Command", show=False),
-        Binding("o", "open_link", "Open"),
-        Binding("escape", "blur_command", "", show=False),
+        Binding("slash", "search", "Search"),
+        Binding("o", "open_link", "Open", show=False),
+        Binding("d", "done", "Done"),
+        Binding("f", "follow", "Follow", show=False),
+        Binding("s", "snooze", "Snooze"),
+        Binding("R", "remind", "Remind"),
+        Binding("t", "track", "Track"),
+        Binding("a", "ask", "Ask"),
+        Binding("y", "copy_link", "Copy link", show=False),
+        Binding("escape", "escape", "", show=False),
     ]
 
-    def __init__(self) -> None:
+    def __init__(
+        self, client: HermesClient | None = None, auto_stream: bool = True
+    ) -> None:
         super().__init__()
-        self.client: HermesClient | None = None
+        self.client: HermesClient | None = client
+        self.auto_stream = auto_stream
         self._client_lock = threading.Lock()
         self._refreshing = False
         self._stopping = False
         self._stream: Any = None
+        self._spin = 0
         self.last_event_id = 0
         self.threads: list[dict[str, Any]] = []
         self.views: list[dict[str, Any]] = []
         self.row_keys: list[str] = []
         self.current_key: str | None = None
         self.search_query = ""
+        self.filter_mode = "tracked"
         self.active_job: str | None = None
         self.jobs: dict[str, dict[str, Any]] = {}
         self.config_error = ""
+        self.connected: bool | None = None
+        self.status_note = "starting…"
 
     # -- layout -----------------------------------------------------------
 
     def compose(self) -> ComposeResult:
-        yield Header(show_clock=True)
-        with Horizontal(id="body"):
+        yield Static("Hermes", id="topbar")
+        yield Static("", id="banner", markup=False)
+        with Horizontal(id="main"):
             with Vertical(id="left"):
-                yield Static("TRACKED THREADS", id="left-title")
-                yield DataTable(id="threads")
-                yield Static("", id="banner", markup=False)
-                yield Static("starting…", id="status", markup=False)
+                yield Static("TRACKED", id="list-title")
+                yield ListView(id="threads")
+                yield Static("", id="empty", markup=False)
             with Vertical(id="right"):
-                yield Static("DETAIL · LIVE JOB STEPS", id="right-title")
-                yield Static("", id="detail", markup=True)
-                yield RichLog(id="steps", highlight=False, markup=True, wrap=True)
-        yield Input(placeholder="command — track/ask/remind/… · ? for help", id="command")
+                yield Static("", id="detail")
+                yield Static("", id="actions")
+                yield Static("LIVE", id="live-title")
+                yield Static("", id="live-hint", markup=False)
+                yield RichLog(id="live", markup=False, wrap=True)
+        yield Input(placeholder="❯ command — track/ask/remind/task · tab filters · ? help", id="command")
         yield Footer()
 
     def on_mount(self) -> None:
-        table = self.query_one("#threads", DataTable)
-        table.cursor_type = "row"
-        table.zebra_stripes = True
-        table.add_columns("P", "Thread", "Age", "Cadence", "Kind", "W")
-        table.focus()
+        self.query_one("#threads", ListView).focus()
+        hint = self.query_one("#live-hint", Static)
+        hint.update(
+            Text.assemble(
+                ("Live events and job steps land here.\n\n", f"bold {INK}"),
+                ("  a  ", f"bold {ACCENT}"),
+                ("ask about the selected thread\n", MUTED),
+                ("  R  ", f"bold {ACCENT}"),
+                ("set a reminder cadence\n", MUTED),
+                ("  t  ", f"bold {ACCENT}"),
+                ("track a Slack / PR / Jira link\n", MUTED),
+            )
+        )
+        self._update_topbar()
         self.request_refresh()
         self.set_interval(REFRESH_SECONDS, self.request_refresh)
-        threading.Thread(target=self._stream_thread, name="hermes-sse", daemon=True).start()
+        self.set_interval(0.12, self._tick_spinner)
+        if self.auto_stream:
+            threading.Thread(
+                target=self._stream_thread, name="hermes-sse", daemon=True
+            ).start()
 
     def on_unmount(self) -> None:
         self._stopping = True
@@ -209,6 +421,77 @@ class HermesTUI(App):
                 self._stream.stop()
             except Exception:
                 pass
+
+    # -- chrome -----------------------------------------------------------
+
+    def _update_topbar(self) -> None:
+        waiting = sum(1 for view in self.views if view.get("waiting"))
+        running = sum(
+            1
+            for job in self.jobs.values()
+            if job_status(job) in {"running", "pending", "queued"}
+        )
+        bar = Text()
+        if self.connected is False:
+            bar.append("● ", style=RED)
+            bar.append("offline", style=f"bold {RED}")
+        elif self.connected is None:
+            bar.append("● ", style=AMBER)
+            bar.append("connecting", style=AMBER)
+        else:
+            bar.append("● ", style=ACCENT)
+            bar.append("connected", style=ACCENT)
+        bar.append("   ")
+        bar.append(f"{len(self.views)}", style=f"bold {INK}")
+        bar.append(" shown", style=MUTED)
+        bar.append("   ")
+        bar.append(f"{waiting}", style=f"bold {AMBER}")
+        bar.append(" waiting", style=MUTED)
+        if running:
+            bar.append("   ")
+            bar.append(f"{SPINNER[self._spin % len(SPINNER)]} {running} job", style=BLUE)
+        unread = 0
+        try:
+            unread = int(store.load_bridge().get("unread") or 0)
+        except Exception:
+            unread = 0
+        if unread:
+            bar.append("   ")
+            bar.append(f"● {unread} new", style=f"bold {AMBER}")
+        bar.append("   ")
+        bar.append(f"filter: {self.filter_mode}", style=MUTED)
+        if self.search_query:
+            bar.append(f"   /{self.search_query}", style=BLUE)
+        bar.append("   ")
+        bar.append(time.strftime("%H:%M:%S"), style=FAINT)
+        self.query_one("#topbar", Static).update(bar)
+
+        title = self.query_one("#list-title", Static)
+        label = FILTER_LABEL.get(self.filter_mode, "THREADS")
+        title.update(
+            Text.assemble(
+                (f"{label}", f"bold {ACCENT}"),
+                (f"  {len(self.views)}", MUTED),
+                ("   tab to switch", FAINT),
+            )
+        )
+
+    def _tick_spinner(self) -> None:
+        running = any(
+            job_status(job) in {"running", "pending", "queued"}
+            for job in self.jobs.values()
+        )
+        if running:
+            self._spin += 1
+            self._update_topbar()
+
+    def set_banner(self, text: str, visible: bool) -> None:
+        banner = self.query_one("#banner", Static)
+        banner.update(text or "")
+        banner.styles.display = "block" if visible and text else "none"
+
+    def set_status(self, text: str) -> None:
+        self.status_note = text
 
     # -- client -----------------------------------------------------------
 
@@ -228,6 +511,14 @@ class HermesTUI(App):
     def _safe_call(self, callback: Any, *args: Any) -> None:
         try:
             self.call_from_thread(callback, *args)
+            return
+        except RuntimeError:
+            # Already on the UI thread (tests, or a synchronous timer callback).
+            pass
+        except Exception:
+            return
+        try:
+            callback(*args)
         except Exception:
             pass
 
@@ -237,10 +528,11 @@ class HermesTUI(App):
         while not self._stopping:
             client = self.ensure_client()
             if client is None:
-                self._safe_call(self.set_banner, f"not configured: {self.config_error}", True)
+                self._safe_call(
+                    self.set_banner, f"not configured: {self.config_error}", True
+                )
                 time.sleep(REFRESH_SECONDS)
                 continue
-
             stream = client.stream(
                 since=self.last_event_id,
                 on_state=lambda state: self._safe_call(self.apply_stream_state, state),
@@ -251,7 +543,7 @@ class HermesTUI(App):
                     if self._stopping:
                         break
                     self._safe_call(self.handle_event, event)
-            except Exception as exc:  # EventStream swallows, this is belt and braces
+            except Exception as exc:  # EventStream swallows; belt and braces
                 self._safe_call(self.set_banner, f"event stream error: {exc}", True)
             finally:
                 stream.stop()
@@ -262,18 +554,14 @@ class HermesTUI(App):
 
     def apply_stream_state(self, state: dict[str, Any]) -> None:
         self.last_event_id = max(self.last_event_id, int(state.get("since") or 0))
-        if state.get("connected"):
+        self.connected = bool(state.get("connected"))
+        if self.connected:
             self.set_banner("", False)
         else:
-            self.set_banner(f"API unreachable — retrying: {state.get('error') or 'offline'}", True)
-
-    def set_banner(self, text: str, visible: bool) -> None:
-        banner = self.query_one("#banner", Static)
-        banner.update(text or "")
-        banner.styles.display = "block" if visible and text else "none"
-
-    def set_status(self, text: str) -> None:
-        self.query_one("#status", Static).update(text)
+            self.set_banner(
+                f"API unreachable — retrying ({state.get('error') or 'offline'})", True
+            )
+        self._update_topbar()
 
     # -- thread list ------------------------------------------------------
 
@@ -281,15 +569,24 @@ class HermesTUI(App):
         if self._refreshing:
             return
         self._refreshing = True
-        threading.Thread(target=self._refresh_worker, name="hermes-threads", daemon=True).start()
+        # Capture the filter: a fetch that lands after the user pressed tab must
+        # not overwrite the newer list.
+        mode = self.filter_mode
+        threading.Thread(
+            target=self._refresh_worker, args=(mode,), name="hermes-threads", daemon=True
+        ).start()
 
-    def _refresh_worker(self) -> None:
+    def _refresh_worker(self, mode: str) -> None:
         try:
             client = self.ensure_client()
             if client is None:
-                self._safe_call(self.set_banner, f"not configured: {self.config_error}", True)
+                self._safe_call(
+                    self.set_banner, f"not configured: {self.config_error}", True
+                )
                 return
-            threads = client.threads("tracked", limit=100)
+            threads = client.threads(mode, limit=100)
+            if mode != self.filter_mode:
+                return
             self._safe_call(self.apply_threads, threads)
         except HermesUnreachable as exc:
             self._safe_call(self.set_banner, f"API unreachable — retrying: {exc}", True)
@@ -298,14 +595,15 @@ class HermesTUI(App):
             self._safe_call(self.set_banner, f"API error: {exc}", True)
             self._safe_call(self.set_status, "no thread data — API error")
         except Exception as exc:
-            self._safe_call(self.set_banner, f"refresh failed: {exc.__class__.__name__}: {exc}", True)
+            self._safe_call(
+                self.set_banner, f"refresh failed: {exc.__class__.__name__}: {exc}", True
+            )
             self._safe_call(self.set_status, "no thread data — refresh failed")
         finally:
             self._refreshing = False
 
-    def apply_threads(self, threads: list[dict[str, Any]]) -> None:
-        self.threads = threads
-        views = [thread_view(thread) for thread in threads]
+    def _visible_views(self) -> list[dict[str, Any]]:
+        views = [thread_view(thread) for thread in self.threads]
         if self.search_query:
             needle = self.search_query.lower()
             views = [
@@ -314,164 +612,178 @@ class HermesTUI(App):
                 if needle
                 in " ".join(
                     [
-                        view["summary"],
-                        view["key"],
-                        view["kind"],
-                        view["note"],
-                        view["channel_name"],
+                        str(view["summary"]),
+                        str(view["key"]),
+                        str(view["kind"]),
+                        str(view["note"]),
+                        str(view["channel_name"]),
                     ]
                 ).lower()
             ]
         views.sort(
             key=lambda view: (
                 not view["waiting"],
-                -float(view["priority"] or 0),
+                -int(view.get("priority") or 0),
                 view["age_seconds"] if view["age_seconds"] is not None else 1e12,
             )
         )
-        self.views = views
-        table = self.query_one("#threads", DataTable)
-        previous = self.current_key
-        table.clear(columns=False)
-        self.row_keys = []
-        for view in views:
-            summary = view["summary"]
-            if len(summary) > 70:
-                summary = summary[:69] + "…"
-            table.add_row(
-                view["priority_label"] + ("!" if view["importance"] else ""),
-                summary,
-                view["age"],
-                view["cadence"],
-                view["kind"],
-                "●" if view["waiting"] else "·",
-                key=view["key"],
-            )
-            self.row_keys.append(view["key"])
+        return views
 
-        if previous in self.row_keys:
-            table.move_cursor(row=self.row_keys.index(previous))
-        elif self.row_keys:
-            table.move_cursor(row=0)
+    def apply_threads(self, threads: list[dict[str, Any]]) -> None:
+        self.threads = threads
+        views = self._visible_views()
+        self.views = views
+        keys = [str(view["key"]) for view in views]
+        list_view = self.query_one("#threads", ListView)
+
+        if keys != self.row_keys:
+            previous = self.current_key
+            self.row_keys = keys
+            list_view.clear()
+            for view in views:
+                list_view.append(ThreadItem(view))
+            if previous in keys:
+                list_view.index = keys.index(previous)
+            elif keys:
+                list_view.index = 0
         else:
+            for item, view in zip(list_view.children, views):
+                if isinstance(item, ThreadItem):
+                    item.set_view(view)
+
+        empty = self.query_one("#empty", Static)
+        if views:
+            empty.update("")
+            empty.styles.display = "none"
+            list_view.styles.display = "block"
+        else:
+            list_view.styles.display = "none"
+            empty.styles.display = "block"
+            empty.update(self._empty_state())
+
+        if not keys:
             self.current_key = None
             self.show_detail(None)
-
-        waiting = sum(1 for view in views if view["waiting"])
-        jobs_running = sum(1 for job in self.jobs.values() if job_status(job) in {"running", "pending", "queued"})
-        suffix = f" · filter {self.search_query!r}" if self.search_query else ""
-        self.set_status(
-            f"{len(views)} tracked · {waiting} waiting · {jobs_running} job(s) running{suffix}"
-        )
-        if views:
-            self.set_banner("", False)
-        if self.row_keys:
-            if self.current_key not in self.row_keys:
-                self.current_key = self.row_keys[0]
+        elif self.current_key not in keys:
+            self.current_key = keys[0]
+            self.show_detail(keys[0])
+        else:
             self.show_detail(self.current_key)
+        self._update_topbar()
+
+    def _empty_state(self) -> Text:
+        text = Text()
+        if self.search_query:
+            text.append(f"Nothing matches “{self.search_query}”.\n\n", style=INK)
+            text.append("esc clears the filter\n", style=MUTED)
+            return text
+        text.append("Nothing tracked here yet.\n\n", style=f"bold {INK}")
+        if self.filter_mode == "tracked":
+            text.append("Add what you actually care about:\n", style=MUTED)
+            text.append("  t            ", style=ACCENT)
+            text.append("track a Slack / PR / Jira link\n", style=MUTED)
+            text.append("  i            ", style=ACCENT)
+            text.append("open the command line\n", style=MUTED)
+            text.append("  tab          ", style=ACCENT)
+            text.append("look at auto-followed threads\n\n", style=MUTED)
+            text.append(
+                "Auto-followed threads still notify you; they just are not tracked.",
+                style=FAINT,
+            )
+        else:
+            text.append("Switch with tab; press t to track a link.", style=MUTED)
+        return text
 
     def show_detail(self, key: str | None) -> None:
         detail = self.query_one("#detail", Static)
+        actions = self.query_one("#actions", Static)
         view = next((item for item in self.views if item["key"] == key), None)
         if view is None:
-            detail.update("[#8ca098]Select a tracked thread.  [b]i[/b] opens the command line, [b]?[/b] the help.[/#8ca098]")
-            return
-        lines = [
-            f"[b #f3f8f5]{_escape(view['summary'])}[/]",
-            f"[#8ca098]{_escape(view['key'])}[/]",
-        ]
-        meta = [
-            f"prio {view['priority_label']}",
-            f"age {view['age']}",
-            f"cadence {view['cadence']}",
-            f"kind {view['kind']}",
-            "WAITING ON YOU" if view["waiting"] else "waiting on them",
-        ]
-        if view["importance"]:
-            meta.append("important")
-        lines.append("[#72d7ff]" + _escape(" · ".join(meta)) + "[/]")
-        if view["status"]:
-            lines.append(f"[#9bb5aa]status[/] {_escape(view['status'])}")
-        if view["link"]:
-            lines.append(f"[#9bb5aa]link[/]   {_escape(view['link'])}")
-        if view["note"]:
-            lines.append(f"[#9bb5aa]note[/]   {_escape(view['note'])}")
-        lines.append(
-            "[#67827a]o open · remind/snooze/done/important/follow act on this thread[/#67827a]"
-        )
-        detail.update("\n".join(lines))
-
-    def on_data_table_row_highlighted(self, event: DataTable.RowHighlighted) -> None:
-        index = event.cursor_row
-        if 0 <= index < len(self.row_keys):
-            self.current_key = self.row_keys[index]
-            self.show_detail(self.current_key)
-
-    def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
-        self.action_open_link()
-
-    # -- events -----------------------------------------------------------
-
-    def handle_event(self, event: dict[str, Any]) -> None:
-        event_type = str(event.get("type") or "")
-        payload = event.get("payload") if isinstance(event.get("payload"), dict) else {}
-        log = self.query_one("#steps", RichLog)
-
-        if event_type in {"notify", "reminder"}:
-            title = str(payload.get("title") or "Still waiting")
-            body = str(payload.get("body") or payload.get("summary") or "")
-            log.write(f"[#72e4ae]● {_escape(title)}[/] {_escape(body)}")
-            try:
-                self.notify(body or title, title=title, timeout=8)
-            except Exception:
-                pass
-
-        elif event_type == "job.step":
-            job_id = str(payload.get("job_id") or "")
-            line = step_line(payload)
-            log.write(f"[#72d7ff]→[/] {_escape(line)}")
-            if job_id:
-                job = self.jobs.setdefault(job_id, {"id": job_id, "steps": []})
-                job.setdefault("steps", []).append({"label": line})
-                job["status"] = "running"
-                if self.active_job is None:
-                    self.active_job = job_id
-
-        elif event_type == "job.done":
-            job_id = str(payload.get("job_id") or "")
-            ok = payload.get("ok", True)
-            result = payload.get("result")
-            error = payload.get("error")
-            colour = "#72e4ae" if ok else "#ff7b86"
-            label = "done" if ok else "failed"
-            log.write(f"[{colour}]■ job {_escape(job_id or '?')} {label}[/]")
-            if result:
-                log.write(_escape(str(result)))
-            if error:
-                log.write(f"[#ff7b86]{_escape(str(error))}[/]")
-            if job_id:
-                self.jobs.setdefault(job_id, {"id": job_id}).update(
-                    {"status": "done" if ok else "error", "result": result, "error": error}
+            detail.update(
+                Text(
+                    "Select a thread to see its detail, or press ? for the key map.",
+                    style=MUTED,
                 )
-                if self.active_job == job_id:
-                    self.active_job = None
-            self.request_refresh()
+            )
+            actions.update("")
+            return
 
-        elif event_type == "thread.update":
-            key = str(payload.get("key") or "")
-            if key:
-                log.write(f"[#8ca098]thread {_escape(key)} {_escape(str(payload.get('status') or 'updated'))}[/]")
-            self.request_refresh()
+        text = Text()
+        if view.get("waiting"):
+            text.append("WAITING ON YOU", style=f"bold {AMBER}")
+            text.append("   ", style=MUTED)
+        if view.get("importance"):
+            text.append("★ important", style=f"bold {AMBER}")
+            text.append("   ", style=MUTED)
+        text.append(str(view.get("status") or "open"), style=MUTED)
+        text.append("\n\n")
+        pane_width = max(40, (self.query_one("#detail", Static).size.width or 90) - 4)
+        summary = " ".join(str(view.get("summary") or "").split())
+        if len(summary) > pane_width * 3:
+            summary = summary[: pane_width * 3 - 1] + "…"
+        text.append(summary, style=f"bold {INK}")
+        text.append("\n\n")
+        meta = [
+            ("priority", view.get("priority_label") or "-", _colour_for_priority(view)),
+            ("channel", str(view.get("channel_name") or "-"), BLUE),
+            ("kind", str(view.get("kind") or "slack"), KIND_COLOUR.get(str(view.get("kind")), MUTED)),
+            ("idle", str(view.get("age") or "-"), MUTED),
+            (
+                "cadence",
+                str(view.get("cadence") or "-")
+                if view.get("cadence") not in (None, "", "-")
+                else "activity",
+                MUTED,
+            ),
+        ]
+        per_line = 3 if pane_width >= 74 else 2
+        for start in range(0, len(meta), per_line):
+            for label, value, colour in meta[start : start + per_line]:
+                text.append(f"{label:<9}", style=FAINT)
+                value = str(value)
+                if len(value) > 12:
+                    value = value[:11] + "…"
+                text.append(f"{value:<12}", style=colour)
+            text.append("\n")
+        if view.get("note"):
+            text.append(f"{'note':<9}", style=FAINT)
+            text.append(_short(str(view["note"]), pane_width - 9), style=INK)
+            text.append("\n")
+        if view.get("link"):
+            text.append(f"{'link':<9}", style=FAINT)
+            text.append(_short(str(view["link"]), pane_width - 9), style=BLUE)
+        detail.update(text + Text("\n"))
 
-        if isinstance(event.get("id"), int):
-            self.last_event_id = max(self.last_event_id, int(event["id"]))
+        hints = Text()
+        for keys, label in (
+            ("o", "open"),
+            ("a", "ask"),
+            ("R", "remind"),
+            ("s", "snooze"),
+            ("d", "done"),
+            ("i", "important"),
+            ("f", "follow"),
+            ("y", "copy"),
+        ):
+            hints.append(f" {keys} ", style=f"bold {ACCENT}")
+            hints.append(f"{label}  ", style=FAINT)
+        actions.update(hints)
 
-    # -- commands ---------------------------------------------------------
+    # -- list + input events ----------------------------------------------
+
+    def on_list_view_highlighted(self, event: ListView.Highlighted) -> None:
+        item = event.item
+        if isinstance(item, ThreadItem):
+            self.current_key = item.key
+            self.show_detail(item.key)
+
+    def on_list_view_selected(self, event: ListView.Selected) -> None:
+        self.action_open_link()
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
         line = event.value.strip()
         event.input.value = ""
-        self.query_one("#threads", DataTable).focus()
+        self.query_one("#threads", ListView).focus()
         if not line:
             return
         if line.lower() in {"exit", "quit", "q"}:
@@ -490,7 +802,11 @@ class HermesTUI(App):
     def _command_worker(self, line: str, current_key: str | None) -> None:
         client = self.ensure_client()
         if client is None:
-            self._safe_call(self.apply_result, line, Result(output=f"error: {self.config_error}", error=True))
+            self._safe_call(
+                self.apply_result,
+                line,
+                Result(output=f"error: {self.config_error}", error=True),
+            )
             return
         try:
             result = run_command(client, line, current_key=current_key)
@@ -499,13 +815,19 @@ class HermesTUI(App):
         self._safe_call(self.apply_result, line, result)
 
     def apply_result(self, line: str, result: Result) -> None:
-        log = self.query_one("#steps", RichLog)
-        if line:
-            log.write(f"[#3f6b58]› {_escape(line)}[/]")
+        log = self.query_one("#live", RichLog)
+        self.query_one("#live-hint", Static).styles.display = "none"
+        echo = Text()
+        echo.append("❯ ", style=ACCENT)
+        echo.append(line, style=MUTED)
+        log.write(echo)
         if result.output:
-            colour = "#ff7b86" if result.error else "#d7e3e0"
+            width = max(30, (log.size.width or 90) - 4)
             for chunk in result.output.splitlines() or [""]:
-                log.write(f"[{colour}]{_escape(chunk)}[/]")
+                for part in textwrap.wrap(chunk, width=width) or [""]:
+                    body = Text("  ")
+                    body.append(part, style=RED if result.error else INK)
+                    log.write(body)
         if result.help:
             self.action_help()
         if result.quit:
@@ -516,11 +838,109 @@ class HermesTUI(App):
             self.request_refresh()
         if result.job_id:
             self.active_job = result.job_id
-            log.write(f"[#72d7ff]■ job {_escape(str(result.job_id))} streaming…[/]")
+            line_text = Text()
+            line_text.append("  ")
+            line_text.append(f"job {result.job_id} streaming…", style=BLUE)
+            log.write(line_text)
         if result.refresh:
             self.request_refresh()
+        verb = line.split()[0].lower() if line.split() else ""
+        if not result.error and result.output and verb in ACTION_VERBS:
+            try:
+                self.notify(result.output.splitlines()[0][:80], timeout=3)
+            except Exception:
+                pass
+
+    def _log_body(self, head: Text, body: str, style: str = INK) -> None:
+        """Write a headline and pre-wrapped body lines (RichLog does not re-wrap)."""
+        log = self.query_one("#live", RichLog)
+        log.write(head)
+        body = " ".join(str(body or "").split())
+        if not body:
+            return
+        width = max(30, (log.size.width or 90) - 6)
+        for chunk in textwrap.wrap(body, width=width) or [body]:
+            line = Text("    ")
+            line.append(chunk, style=style)
+            log.write(line)
+
+    # -- events -----------------------------------------------------------
+
+    def handle_event(self, event: dict[str, Any]) -> None:
+        event_type = str(event.get("type") or "")
+        payload = event.get("payload") if isinstance(event.get("payload"), dict) else {}
+        log = self.query_one("#live", RichLog)
+        self.query_one("#live-hint", Static).styles.display = "none"
+
+        if event_type in {"notify", "reminder"}:
+            title = str(payload.get("title") or "Still waiting")
+            body = str(payload.get("body") or payload.get("summary") or "")
+            line = Text()
+            line.append("⏰ ", style=AMBER)
+            line.append(title, style=f"bold {AMBER}")
+            self._log_body(line, body, INK)
+            try:
+                self.notify(body or title, title=title, timeout=8)
+            except Exception:
+                pass
+
+        elif event_type == "job.step":
+            job_id = str(payload.get("job_id") or "")
+            step = Text()
+            step.append("  ✓ ", style=ACCENT)
+            step.append(step_line(payload), style=MUTED)
+            log.write(step)
+            if job_id:
+                job = self.jobs.setdefault(job_id, {"id": job_id, "steps": []})
+                job.setdefault("steps", []).append({"label": step_line(payload)})
+                job["status"] = "running"
+                if self.active_job is None:
+                    self.active_job = job_id
+                self._update_topbar()
+
+        elif event_type == "job.done":
+            job_id = str(payload.get("job_id") or "")
+            ok = payload.get("ok", True)
+            result = payload.get("result")
+            error = payload.get("error")
+            line = Text()
+            line.append("  ■ " if ok else "  ✗ ", style=ACCENT if ok else RED)
+            line.append(f"job {job_id or '?'} {'done' if ok else 'failed'}", style=MUTED)
+            log.write(line)
+            if result:
+                self._log_body(Text(""), str(result), INK)
+            if error:
+                self._log_body(Text(""), str(error), RED)
+            if job_id:
+                self.jobs.setdefault(job_id, {"id": job_id}).update(
+                    {"status": "done" if ok else "error", "result": result, "error": error}
+                )
+                if self.active_job == job_id:
+                    self.active_job = None
+            self._update_topbar()
+            self.request_refresh()
+
+        elif event_type == "thread.update":
+            key = str(payload.get("key") or "")
+            if key:
+                line = Text()
+                line.append("  · ", style=FAINT)
+                line.append(f"{key} {payload.get('status') or 'updated'}", style=FAINT)
+                log.write(line)
+            self.request_refresh()
+
+        if isinstance(event.get("id"), int):
+            self.last_event_id = max(self.last_event_id, int(event["id"]))
 
     # -- actions ----------------------------------------------------------
+
+    def _list_view(self) -> ListView:
+        return self.query_one("#threads", ListView)
+
+    def _selected_view(self) -> dict[str, Any] | None:
+        return next(
+            (item for item in self.views if item["key"] == self.current_key), None
+        )
 
     def action_quit_app(self) -> None:
         self.exit()
@@ -534,25 +954,124 @@ class HermesTUI(App):
     def action_focus_command(self) -> None:
         self.query_one("#command", Input).focus()
 
-    def action_blur_command(self) -> None:
+    def action_search(self) -> None:
+        command = self.query_one("#command", Input)
+        command.value = "search "
+        command.focus()
+        command.cursor_position = len(command.value)
+
+    def action_escape(self) -> None:
         command = self.query_one("#command", Input)
         if command.has_focus:
-            self.query_one("#threads", DataTable).focus()
+            if command.value:
+                command.value = ""
+            self._list_view().focus()
+            return
+        if self.search_query:
+            self.search_query = ""
+            self.request_refresh()
+            return
+        self._update_topbar()
+
+    def action_cursor_down(self) -> None:
+        self._list_view().action_cursor_down()
+
+    def action_cursor_up(self) -> None:
+        self._list_view().action_cursor_up()
+
+    def action_cursor_home(self) -> None:
+        view = self._list_view()
+        if view.children:
+            view.index = 0
+
+    def action_cursor_end(self) -> None:
+        view = self._list_view()
+        if view.children:
+            view.index = len(view.children) - 1
+
+    def action_cycle_filter(self) -> None:
+        index = FILTERS.index(self.filter_mode)
+        self.filter_mode = FILTERS[(index + 1) % len(FILTERS)]
+        self.row_keys = []
+        self.query_one("#threads", ListView).clear()
+        self.request_refresh()
+        self._update_topbar()
 
     def action_open_link(self) -> None:
-        view = next((item for item in self.views if item["key"] == self.current_key), None)
+        view = self._selected_view()
         if not view or not view["link"]:
             self.notify("Selected thread has no link", severity="warning")
             return
         try:
             subprocess.Popen(
-                ["xdg-open", view["link"]],
+                ["xdg-open", str(view["link"])],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
                 start_new_session=True,
             )
         except OSError as exc:
             self.notify(f"cannot open link: {exc}", severity="error")
+
+    def action_copy_link(self) -> None:
+        view = self._selected_view()
+        if not view or not view["link"]:
+            self.notify("Selected thread has no link", severity="warning")
+            return
+        self.copy_to_clipboard(str(view["link"]))
+        self.notify("link copied", timeout=2)
+
+    def _run_action(self, line: str) -> None:
+        threading.Thread(
+            target=self._command_worker,
+            args=(line, self.current_key),
+            name="hermes-action",
+            daemon=True,
+        ).start()
+
+    def action_done(self) -> None:
+        if self.current_key:
+            self._run_action("done")
+
+    def action_important(self) -> None:
+        if self.current_key:
+            self._run_action("important")
+
+    def action_follow(self) -> None:
+        view = self._selected_view()
+        if view:
+            self._run_action("unfollow" if view.get("followed") else "follow")
+
+    def action_snooze(self) -> None:
+        if not self.current_key:
+            return
+
+        def apply(choice: str | None) -> None:
+            if choice:
+                self._run_action(f"snooze {choice}")
+
+        self.push_screen(ChoiceScreen("Snooze this thread", SNOOZE_CHOICES), apply)
+
+    def action_remind(self) -> None:
+        if not self.current_key:
+            return
+
+        def apply(choice: str | None) -> None:
+            if choice:
+                self._run_action(f"remind {choice}")
+
+        self.push_screen(ChoiceScreen("Reminder cadence", REMIND_CHOICES), apply)
+
+    def action_track(self) -> None:
+        command = self.query_one("#command", Input)
+        command.value = "track "
+        command.focus()
+        command.cursor_position = len(command.value)
+
+    def action_ask(self) -> None:
+        command = self.query_one("#command", Input)
+        command.value = "ask "
+        command.focus()
+        command.cursor_position = len(command.value)
 
 
 def main(argv: list[str] | None = None) -> int:
