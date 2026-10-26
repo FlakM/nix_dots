@@ -407,12 +407,15 @@ class HermesClient:
         thread_key: str | None = None,
         conversation: Any = None,
         mode: str = "ask",
+        speed: str = "auto",
     ) -> dict[str, Any]:
         payload: dict[str, Any] = {"question": question, "mode": mode}
         if thread_key:
             payload["thread_key"] = thread_key
         if conversation is not None:
             payload["conversation"] = conversation
+        if speed and speed != "auto":
+            payload["speed"] = speed
         return self.post("/api/ask", json_body=payload) or {}
 
     def notify(

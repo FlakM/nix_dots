@@ -130,6 +130,24 @@ items are **not deleted**: they stay under `filter=done`
 (`hermes list --filter done`), the detail shows `closed  <reason> · <date>`, and
 their mirrored Vikunja task is completed. Bring one back with `follow`/`track`.
 
+## Quick answers and bumping
+
+Plain questions answer **fast** by default: a compact state snapshot goes to
+DeepSeek Flash (`agent.tasks.askFast`, ~2–5 s). If the snapshot is not enough
+(live Slack search, `cx` logs/spans, repos, PR/Jira state, files) the model
+returns `NEED_DEEP` and Hermes automatically bumps to Codex with tools.
+
+Bump explicitly when you know it needs the big model:
+
+```
+deep: what changed in that PR since Tuesday?
+hermes ask --deep "trace this login failure"
+hermes ask --fast "co jest teraz najważniejsze?"   # never escalate
+```
+
+Config: `agent.fastAsk` (`enable`, `contextThreads`, `maxContextChars`) and
+`agent.tasks.askFast`. Attachments always take the deep path.
+
 ## amd-pc clients
 
 ```bash

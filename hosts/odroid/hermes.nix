@@ -99,6 +99,19 @@ in
             provider = "opencode";
             model = "opencode-go/deepseek-v4.1-flash";
           };
+          # Quick answers: same fast model, no tools. Codex is reserved for
+          # `deep:` / `hermes ask --deep` and automatic bumps.
+          askFast = {
+            provider = "opencode";
+            model = "opencode-go/deepseek-v4.1-flash";
+          };
+        };
+        # Answer from a state snapshot by default; the fast answer asks for a
+        # bump when it needs live tools.
+        fastAsk = {
+          enable = true;
+          contextThreads = 12;
+          maxContextChars = 6000;
         };
         contextCacheSeconds = 300; # cache control-thread context + searches
         decisionPolicy = builtins.readFile ./hermes-interest.md;

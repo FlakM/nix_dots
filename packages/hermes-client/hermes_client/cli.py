@@ -165,11 +165,13 @@ def cmd_ask(api: HermesClient, args: argparse.Namespace) -> int:
         eprint("hermes: ask needs a question")
         return 2
     question = " ".join(args.question)
+    speed = "deep" if args.deep else "fast" if args.fast else "auto"
     created = api.ask(
         question,
         thread_key=args.thread,
         conversation=args.conversation or None,
         mode=getattr(args, "mode", "ask"),
+        speed=speed,
     )
     job_id = api.job_id(created)
     if not job_id:
@@ -495,6 +497,17 @@ def build_parser() -> argparse.ArgumentParser:
         choices=["ask", "investigate", "draft"],
         default="ask",
         help="deep dive or draft a reply for --thread",
+    )
+    speed = ask.add_mutually_exclusive_group()
+    speed.add_argument(
+        "--fast",
+        action="store_true",
+        help="answer from the state snapshot only (no tools)",
+    )
+    speed.add_argument(
+        "--deep",
+        action="store_true",
+        help="bump to the tool-capable model (slower, can search/read everything)",
     )
     ask.add_argument("--no-wait", dest="wait", action="store_false", help="print the job id and exit")
     ask.add_argument("--timeout", type=float, default=900.0)
