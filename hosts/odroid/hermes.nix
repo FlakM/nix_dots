@@ -112,6 +112,7 @@ in
           enable = true;
           contextThreads = 12;
           maxContextChars = 6000;
+          timeoutSeconds = 30;
         };
         contextCacheSeconds = 300; # cache control-thread context + searches
         decisionPolicy = builtins.readFile ./hermes-interest.md;
