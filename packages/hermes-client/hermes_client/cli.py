@@ -165,7 +165,12 @@ def cmd_ask(api: HermesClient, args: argparse.Namespace) -> int:
         eprint("hermes: ask needs a question")
         return 2
     question = " ".join(args.question)
-    created = api.ask(question, thread_key=args.thread, conversation=args.conversation or None)
+    created = api.ask(
+        question,
+        thread_key=args.thread,
+        conversation=args.conversation or None,
+        mode=getattr(args, "mode", "ask"),
+    )
     job_id = api.job_id(created)
     if not job_id:
         if args.json:
@@ -485,6 +490,12 @@ def build_parser() -> argparse.ArgumentParser:
     ask.add_argument("question", nargs="+")
     ask.add_argument("--thread", help="thread key to attach the conversation to")
     ask.add_argument("--conversation", help="continue an existing conversation id")
+    ask.add_argument(
+        "--mode",
+        choices=["ask", "investigate", "draft"],
+        default="ask",
+        help="deep dive or draft a reply for --thread",
+    )
     ask.add_argument("--no-wait", dest="wait", action="store_false", help="print the job id and exit")
     ask.add_argument("--timeout", type=float, default=900.0)
     ask.set_defaults(handler=cmd_ask, wait=True)

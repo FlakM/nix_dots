@@ -5,6 +5,9 @@ description: Create work items on demand — Vikunja tasks and Jira issues — t
 
 # Creating tasks through Hermes
 
+Full capability index (commands, tracking, Jira, API): `modules/hermes-agent/README.md`
+in `nix-coralogix-private`.
+
 Hermes (the Slack triage agent on the odroid) exposes task creation as an HTTP
 API, so it works even where the local workspace is read-only and the usual CLI
 cannot write its JWT cache.

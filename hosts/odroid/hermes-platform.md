@@ -1,7 +1,9 @@
 # Hermes platform: tracking, API, TUI, Vikunja, remote builds
 
-Operational notes for the features added on 2026-10-23. Design and contracts:
-`nix-coralogix-private/modules/hermes-agent/PLATFORM.md`.
+Operational notes for the features added on 2026-10-23. **Full capability
+index with examples (for you and for agents)**:
+[`nix-coralogix-private/modules/hermes-agent/README.md`](https://github.com/FlakM/nix-coralogix-private/blob/main/modules/hermes-agent/README.md).
+Design and contracts: `PLATFORM.md` in the same module.
 
 ## What runs where
 
@@ -134,8 +136,8 @@ their mirrored Vikunja task is completed. Bring one back with `follow`/`track`.
 hermes status                 # health, counts, cadence, unread
 hermes list --json
 hermes ask "what is waiting on me?"
-hermes investigate            # deep dive on the selected thread (TUI/--thread)
-hermes draft                  # suggested reply for the selected thread
+hermes ask --mode investigate --thread <key>   # deep dive
+hermes ask --mode draft --thread <key>         # suggested reply
 hermes track <url> every 6h
 hermes remind 6h --thread <key>
 hermes reminders 6h
