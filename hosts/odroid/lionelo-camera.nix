@@ -253,6 +253,107 @@ let
       main()
     '';
   };
+  # The bridge occasionally hangs silently: it stays "active" but stops
+  # talking to Tuya (no MQTT/WebRTC signaling), so go2rtc never gets a producer
+  # and Frigate loops "404 Not Found" on rtsp://127.0.0.1:8554/babyline. The
+  # process must then be SIGKILLed (it ignores SIGTERM while hung), which the
+  # below watchdog does after three consecutive unhealthy checks (~6 min).
+  lioneloStreamWatchdog = pkgs.writeTextFile {
+    name = "lionelo-stream-watchdog";
+    executable = true;
+    text = ''
+      #!${pkgs.python3}/bin/python3
+      import json
+      import subprocess
+      import urllib.request
+      from pathlib import Path
+
+      STATE_PATH = Path("/var/lib/lionelo-watchdog/state.json")
+      GO2RTC_URL = "http://127.0.0.1:1984/api/streams"
+      MQTT_SUB = "${pkgs.mosquitto}/bin/mosquitto_sub"
+      WATCHED_STREAM = "babyline"
+      RESTART_UNIT = "lionelo-camera.service"
+      MAX_FAILURES = 3
+
+      def load_state():
+          try:
+              return json.loads(STATE_PATH.read_text())
+          except (FileNotFoundError, ValueError):
+              return {"bytes": None, "failures": 0}
+
+      def save_state(state):
+          STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
+          temporary = STATE_PATH.with_suffix(".tmp")
+          temporary.write_text(json.dumps(state))
+          temporary.replace(STATE_PATH)
+
+      def should_skip_check():
+          # While private mode is on the camera may legitimately stop sending
+          # frames, and when Frigate is down there is no consumer to pull the
+          # stream - neither warrants restarting the bridge.
+          try:
+              state = subprocess.run(
+                  [MQTT_SUB, "-h", "127.0.0.1", "-t", "lionelo/babyline/private/state", "-C", "1", "-W", "5"],
+                  capture_output=True,
+                  text=True,
+                  timeout=10,
+              ).stdout.strip().upper()
+              if state == "ON":
+                  print("Private mode on - skipping check", flush=True)
+                  return True
+          except Exception as error:
+              print(f"Could not read private mode state ({error}) - skipping check", flush=True)
+              return True
+          status = subprocess.run(["systemctl", "is-active", "--quiet", "frigate.service"])
+          if status.returncode != 0:
+              print("Frigate not active - skipping check", flush=True)
+              return True
+          return False
+
+      def producer_bytes():
+          with urllib.request.urlopen(GO2RTC_URL, timeout=10) as response:
+              streams = json.load(response)
+          producer = next(iter(streams.get(WATCHED_STREAM, {}).get("producers", [])), {})
+          if "sdp" not in producer:
+              raise RuntimeError("no active producer")
+          receiver = next(
+              (r for r in producer.get("receivers", []) if r.get("codec", {}).get("codec_type") == "video"),
+              None,
+          )
+          if receiver is None:
+              raise RuntimeError("producer has no video receiver")
+          return producer.get("bytes_recv", 0)
+
+      def main():
+          state = load_state()
+          if should_skip_check():
+              return
+          try:
+              bytes_recv = producer_bytes()
+          except Exception as error:
+              state["failures"] += 1
+              print(f"UNHEALTHY ({state['failures']}/{MAX_FAILURES}): {error}", flush=True)
+              bytes_recv = None
+          else:
+              if state["bytes"] is not None and bytes_recv == state["bytes"]:
+                  state["failures"] += 1
+                  print(f"UNHEALTHY ({state['failures']}/{MAX_FAILURES}): stream stalled at {bytes_recv} bytes", flush=True)
+              else:
+                  if state["failures"]:
+                      print("Stream recovered", flush=True)
+                  state["failures"] = 0
+                  state["bytes"] = bytes_recv
+          if state["failures"] >= MAX_FAILURES:
+              print(f"Restarting {RESTART_UNIT}", flush=True)
+              subprocess.run(["systemctl", "restart", RESTART_UNIT], check=True)
+              state = {"bytes": None, "failures": 0}
+          elif bytes_recv is not None:
+              state["bytes"] = bytes_recv
+          save_state(state)
+
+      main()
+    '';
+  };
 in
 {
   users.groups.lionelo-camera = { };
@@ -299,11 +400,35 @@ in
       '';
       Restart = "on-failure";
       RestartSec = 5;
+      # The hung bridge ignores SIGTERM; cut the 90s default stop timeout so
+      # restarts (including watchdog-triggered ones) SIGKILL it quickly.
+      TimeoutStopSec = "15s";
       NoNewPrivileges = true;
       PrivateTmp = true;
       ProtectHome = true;
       ProtectSystem = "strict";
       ReadWritePaths = [ "/var/lib/lionelo-camera" ];
+    };
+  };
+
+  systemd.services.lionelo-camera-watchdog = {
+    description = "Check the go2rtc babyline stream and restart the Lionelo bridge when it stalls";
+    after = [ "go2rtc.service" "lionelo-camera.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      StateDirectory = "lionelo-watchdog";
+      ExecStart = lioneloStreamWatchdog;
+    };
+  };
+
+  systemd.timers.lionelo-camera-watchdog = {
+    description = "Periodic Lionelo babyline stream health check";
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnBootSec = "5min";
+      OnUnitActiveSec = "2min";
+      RandomizedDelaySec = "20s";
+      Persistent = true;
     };
   };
 
