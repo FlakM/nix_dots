@@ -3,7 +3,7 @@
 You paste a review request — the message plus a link — and this sets up everything
 the review needs, then hands off:
 
-    herdr workspace create --cwd <worktree> --label "PR <n>: <title>"
+    herdr workspace create --cwd <worktree> --label "💻 <repo> PR <n>: <title>"
     herdr pane run <pane> eink-review-agent      # opencode mini, seeded with the request
 
 The flow is deliberately conversational, because a paste can be ambiguous:
@@ -706,9 +706,27 @@ def registry_entry(number, slug, worktree, session="", socket="", pane="", title
 
 
 def existing_workspace(label):
-    for workspace in herdr("workspace", "list").get("result", {}).get("workspaces", []):
+    workspaces = herdr("workspace", "list").get("result", {}).get("workspaces", [])
+    for workspace in workspaces:
         if workspace.get("label") == label:
             return workspace
+    # A workspace from an earlier run is the same review even when its label predates the
+    # repository prefix (`PR 501: …`). Reuse it — and bring the label up to date — rather
+    # than leaving two workspaces for one pull request.
+    number = label_pr(label)
+    if number is None:
+        return None
+    for workspace in workspaces:
+        if not reading_label(workspace.get("label", "")):
+            continue
+        if label_pr(workspace["label"]) != number:
+            continue
+        try:
+            herdr("workspace", "rename", workspace["workspace_id"], label)
+        except (RuntimeError, json.JSONDecodeError) as error:
+            print(f"    {yellow('!')} could not rename {workspace['label']}: {error}")
+        workspace["label"] = label
+        return workspace
     return None
 
 
@@ -764,13 +782,48 @@ def prune_registry(numbers):
         save_registry(kept)
 
 
+# The reviewer's short name for a repository, so the workspace list reads
+# `sts 💻 PR 501` instead of `security-token-service 💻 PR 501`. An unlisted repository is
+# shortened by rule: the `cx-api-`/`cx-` prefix and the `-service`/`-workspace` suffix go.
+REPO_ALIASES = {"security-token-service": "sts"}
+READING_EMOJI = "💻"
+
+
+def repo_label(name):
+    name = (name or "").strip()
+    for prefix in ("cx-api-", "cx-"):
+        if name.startswith(prefix) and len(name) > len(prefix):
+            name = name[len(prefix):]
+    name = REPO_ALIASES.get(name, name)
+    for suffix in ("-workspace", "-service"):
+        if name.endswith(suffix) and len(name) > len(suffix):
+            name = name[: -len(suffix)]
+    return name or "pr"
+
+
+def reading_label_text(repo, number, title):
+    """`💻 sts PR 501: <title>` — the emoji first, so the labels line up in the sidebar.
+
+    The emoji is what tells a workspace holding an editor from the one holding the agent,
+    and putting it first keeps the repository column aligned however long a repository's
+    name is. An unknown title is left off instead of becoming a trailing colon.
+    """
+    label = f"{READING_EMOJI} {repo or 'pr'} PR {number}"
+    return f"{label}: {title}" if title else label
+
+
+# Older launchers wrote `PR <n>[: title]`, then `repo 💻 PR <n>`; both are still reading
+# workspaces, so an editor opened by an older run is renamed, not duplicated.
+READING_LABEL = re.compile(r"^(?:💻 \S+ |\S+ 💻 )?PR (\d+)")
+
+
 def reading_label(label):
-    """The launcher's reading workspaces are `PR <n>[: title]`; agents are `Review…`."""
-    return bool(re.match(r"^PR \d+", label or ""))
+    """The launcher's reading workspaces are `<repo> 💻 PR <n>[: title]`; agents are `Review…`."""
+    return bool(READING_LABEL.match(label or ""))
 
 
 def label_pr(label):
-    match = re.match(r"^PR (\d+)", label or "")
+    match = READING_LABEL.match(label or "")
     return int(match.group(1)) if match else None
 
 
@@ -787,13 +840,17 @@ def socket_alive(path):
         return False
 
 
-def select_stale(workspaces, current_sockets, registry_rows, socket_exists):
+def select_stale(workspaces, current_sockets, registry_rows, socket_exists, current=None):
     """Reading workspaces with no live editor socket.
 
     A live socket means someone is working there, even if it is from an earlier review.
     A missing one means the editor is gone (or was started before `--listen` existed), and
     the workspace is only taking up room in the workspace list.
+
+    `current` is the set of labels this launch is about to (re)open; `tidy` passes an
+    empty set, because a workspace it looks at is not part of any batch being launched.
     """
+    current = set(current_sockets) if current is None else set(current)
     stale = []
     for workspace in workspaces:
         label = workspace.get("label", "")
@@ -815,7 +872,7 @@ def select_stale(workspaces, current_sockets, registry_rows, socket_exists):
             "label": label,
             "workspace_id": workspace.get("workspace_id"),
             "socket": socket,
-            "current": label in current_sockets,
+            "current": label in current,
         })
     return stale
 
@@ -845,8 +902,12 @@ def remove_worktree(path):
     return True, "removed"
 
 
-def offer_cleanup(stale):
-    """One question before anything is created: close the room left by old reviews."""
+def offer_cleanup(stale, assume=None):
+    """One question before anything is created: close the room left by old reviews.
+
+    `assume` is `close` or `remove` when the caller already said what to do (the `--tidy`
+    command with `--yes`); otherwise the question is asked, and a non-terminal keeps them.
+    """
     if not stale:
         return True
     noun = "workspace" if len(stale) == 1 else "workspaces"
@@ -855,30 +916,32 @@ def offer_cleanup(stale):
         note = "this batch — reopens on the diff" if item["current"] else "earlier review"
         print(f"    {item['label']}  {dim(note)}")
     print()
-    if not sys.stdin.isatty():
+    if assume in ("close", "remove"):
+        mode = assume
+    elif not sys.stdin.isatty():
         print(f"    {dim('keeping them (no terminal to ask)')}")
         return True
-
-    print(f"    {cyan('Enter')} close them (files are kept)")
-    print(f"    {cyan('w')}     close them and remove the earlier worktrees")
-    print(f"    {cyan('k')}     keep them")
-    print(f"    {cyan('q')}     cancel")
-    mode = None
-    while mode is None:
-        try:
-            raw = input(f"  {yellow('›')} ").strip().lower()
-        except EOFError:
-            return True
-        if raw in ("", "c", "close"):
-            mode = "close"
-        elif raw in ("w", "worktree", "remove"):
-            mode = "remove"
-        elif raw in ("k", "keep"):
-            return True
-        elif raw in ("q", "quit", "cancel"):
-            return False
-        else:
-            print(f"    {red('?')} Enter, w, k, or q")
+    else:
+        print(f"    {cyan('Enter')} close them (files are kept)")
+        print(f"    {cyan('w')}     close them and remove the earlier worktrees")
+        print(f"    {cyan('k')}     keep them")
+        print(f"    {cyan('q')}     cancel")
+        mode = None
+        while mode is None:
+            try:
+                raw = input(f"  {yellow('›')} ").strip().lower()
+            except EOFError:
+                return True
+            if raw in ("", "c", "close"):
+                mode = "close"
+            elif raw in ("w", "worktree", "remove"):
+                mode = "remove"
+            elif raw in ("k", "keep"):
+                return True
+            elif raw in ("q", "quit", "cancel"):
+                return False
+            else:
+                print(f"    {red('?')} Enter, w, k, or q")
 
     with working(f"closing {len(stale)} old {noun}"):
         for item in stale:
@@ -888,13 +951,18 @@ def offer_cleanup(stale):
                 print(f"    {yellow('!')} {item['label']}: {error}")
 
     earlier = [item for item in stale if not item["current"]]
+    # Resolve the worktree paths before pruning: the registry is what names most of them,
+    # and pruning first made "remove the earlier worktrees" silently remove nothing.
+    worktrees = [
+        (item, item.get("worktree") or worktree_for_label(item["label"]))
+        for item in earlier
+    ]
     prune_registry(label_pr(item["label"]) for item in earlier)
 
     if mode == "remove":
         removed, kept = 0, []
         with working("removing earlier worktrees"):
-            for item in earlier:
-                path = worktree_for_label(item["label"])
+            for item, path in worktrees:
                 if not path:
                     continue
                 if not Path(path).exists():
@@ -1011,7 +1079,7 @@ def build_plan(prs, args):
         if repo_root is None:
             return None
         title, base = pr_title(pr["url"], pr)
-        label = f"PR {pr['number']}: {title}" if title else f"PR {pr['number']}"
+        label = reading_label_text(repo_label(pr["repo"]), pr["number"], title)
         worktree = worktree_path(repo_root, pr["number"])
         entries.append({
             "pr": pr,
@@ -1215,6 +1283,80 @@ def wait_for_agent(pane, timeout=15):
     return "timed out"
 
 
+def workspace_cwd(workspace_id, panes):
+    """The directory a workspace's first pane sits in, which is the review's worktree."""
+    for pane in panes:
+        if pane.get("workspace_id") == workspace_id and pane.get("cwd"):
+            return pane["cwd"]
+    return ""
+
+
+def workspace_socket(workspace, panes):
+    """The socket an editor in this workspace listens on, by the launcher's own rule."""
+    number = label_pr(workspace.get("label", ""))
+    cwd = workspace_cwd(workspace["workspace_id"], panes)
+    if not number or not cwd:
+        return ""
+    return socket_path(number, Path(cwd).name)
+
+
+def tidy(yes=False, dry=False):
+    """Bring the open review workspaces up to date, then clear out the unused ones.
+
+    A workspace is *used* while its editor still answers on its socket; the rest are
+    cleanup candidates. Renaming happens before closing so a live review keeps its tabs
+    and its ink -- only the label changes. `--dry-run` prints what would happen.
+    """
+    workspaces = herdr("workspace", "list").get("result", {}).get("workspaces", [])
+    panes = herdr("pane", "list").get("result", {}).get("panes", [])
+    reading = [w for w in workspaces if reading_label(w.get("label", ""))]
+    if not reading:
+        print(f"    {dim('no review workspaces')}")
+        return 0
+
+    section("Workspaces", f"{len(reading)} review workspace(s)")
+    renames = []
+    for workspace in reading:
+        label = workspace["label"]
+        cwd = workspace_cwd(workspace["workspace_id"], panes)
+        title = label.split(": ", 1)[1] if ": " in label else ""
+        want = reading_label_text(
+            repo_label(Path(cwd).name), label_pr(label), title
+        )
+        if want == label:
+            print(f"    {green('✓')} {label}")
+            continue
+        renames.append((workspace["workspace_id"], label, want))
+        print(f"    {cyan('→')} {label}  →  {want}")
+
+    sockets = {
+        workspace["label"]: socket
+        for workspace in reading
+        if (socket := workspace_socket(workspace, panes))
+    }
+    stale = select_stale(workspaces, sockets, load_registry(), socket_alive, current=set())
+    by_id = {workspace_id: want for workspace_id, _, want in renames}
+    for item in stale:
+        item["label"] = by_id.get(item["workspace_id"], item["label"])
+        item["worktree"] = workspace_cwd(item["workspace_id"], panes)
+
+    if dry:
+        for item in stale:
+            print(f"    {yellow('·')} unused: {item['label']}")
+        print(f"\n    {dim('dry run: nothing renamed or closed')}")
+        return 0
+
+    for workspace_id, label, want in renames:
+        try:
+            herdr("workspace", "rename", workspace_id, want)
+        except (RuntimeError, json.JSONDecodeError) as error:
+            print(f"    {yellow('!')} {label}: {error}")
+
+    if not offer_cleanup(stale, assume="remove" if yes else None):
+        return 1
+    return 0
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(
         description="Launch one e-ink review, or one aggregated review for a pasted batch.",
@@ -1224,6 +1366,7 @@ def main(argv=None):
             "  eink-pr-launch                 paste the request, then Ctrl-D\n"
             "  eink-pr-launch --dry-run       print the plan and the seed, create nothing\n"
             "  eink-pr-launch --link URL      skip stdin (add --context for the message)\n"
+            "  eink-pr-launch --tidy --yes    rename open review workspaces, close the unused\n"
         ),
     )
     parser.add_argument("--dry-run", action="store_true", help="print the plan and seed; create nothing")
@@ -1233,7 +1376,13 @@ def main(argv=None):
     parser.add_argument("--agent", choices=["claude", "opencode"], help="force the agent kind")
     parser.add_argument("--no-launch", action="store_true", help="prepare the workspace, do not start the agent")
     parser.add_argument("--yes", "-y", action="store_true", help="skip the final confirmation")
+    parser.add_argument("--tidy", action="store_true",
+                        help="rename open review workspaces and close the ones with no live editor")
     args = parser.parse_args(argv)
+
+    if args.tidy:
+        return tidy(yes=args.yes, dry=args.dry_run)
+
     if sys.stdin.isatty():
         banner()
 

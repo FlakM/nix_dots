@@ -188,15 +188,48 @@ def test_reusing_a_worktree_checks_out_the_fetched_pull_request_head():
         check("reused" in note, "and is reported as reused")
 
 
+def test_a_reading_workspace_names_its_repository_first():
+    label = launch.reading_label_text("sts", 501, "social login method")
+    check(label == "💻 sts PR 501: social login method",
+          f"the label puts the editor first, then the repository, then the PR: {label!r}")
+    check(launch.reading_label_text("sts", 501, "") == "💻 sts PR 501",
+          "an unknown title does not leave a trailing colon")
+    check(launch.reading_label("sts 💻 PR 501: old middle format"),
+          "a label from the in-between format is still a reading workspace")
+    check(launch.reading_label(label), "the new label is a reading workspace")
+    check(launch.label_pr(label) == 501, "and its PR number is readable")
+    check(launch.label_pr("sts 💻 PR 501: fix PR 42 handling") == 501,
+          "a title naming another PR does not win")
+    check(launch.reading_label("PR 501: social login method"),
+          "a workspace from before the rename is still a reading workspace")
+    check(launch.label_pr("PR 501: social login method") == 501,
+          "and keeps its number, so it is renamed instead of duplicated")
+    check(not launch.reading_label("Review: PR 501"), "the agent workspace is not a reading workspace")
+    check(not launch.reading_label("my notes on PR 12"), "a title mentioning a PR is not a reading workspace")
+
+
+def test_repositories_are_named_the_way_the_reviewer_says_them():
+    for name, want in [
+        ("security-token-service", "sts"),
+        ("cx-api-security-token-service", "sts"),
+        ("identity-service", "identity"),
+        ("sso-service", "sso"),
+        ("cx-web-workspace", "web"),
+        ("eink-bridge", "eink-bridge"),
+    ]:
+        check(launch.repo_label(name) == want, f"{name} is {want}")
+    check(launch.repo_label("") == "pr", "an unnamed checkout still gets a label")
+
+
 def test_stale_workspaces_are_reading_workspaces_without_a_live_editor():
     workspaces = [
         {"label": "PR 1: old", "workspace_id": "w1"},
-        {"label": "PR 2: live", "workspace_id": "w2"},
-        {"label": "PR 3: mine", "workspace_id": "w3"},
+        {"label": "💻 sts PR 2: live", "workspace_id": "w2"},
+        {"label": "💻 web PR 3: mine", "workspace_id": "w3"},
         {"label": "Review batch: 2 PRs", "workspace_id": "w4"},
         {"label": "Nixos tasks", "workspace_id": "w5"},
     ]
-    current = {"PR 3: mine": "/run/jump-pr-3.sock"}
+    current = {"💻 web PR 3: mine": "/run/jump-pr-3.sock"}
     registry = [
         {"pr": "1", "socket": "/run/jump-pr-1.sock"},
         {"pr": "2", "socket": "/run/jump-pr-2.sock"},
@@ -205,7 +238,7 @@ def test_stale_workspaces_are_reading_workspaces_without_a_live_editor():
         workspaces, current, registry,
         lambda path: path == "/run/jump-pr-2.sock",
     )
-    check([item["label"] for item in stale] == ["PR 1: old", "PR 3: mine"],
+    check([item["label"] for item in stale] == ["PR 1: old", "💻 web PR 3: mine"],
           "only workspaces without a live editor are offered")
     check(stale[0]["current"] is False, "an earlier review is marked as such")
     check(stale[1]["current"] is True, "a stale workspace of this batch is marked")
@@ -269,6 +302,8 @@ test_choice_interpretation_is_explicit()
 test_the_plan_names_every_review_and_marks_reuse()
 
 test_reusing_a_worktree_checks_out_the_fetched_pull_request_head()
+test_a_reading_workspace_names_its_repository_first()
+test_repositories_are_named_the_way_the_reviewer_says_them()
 test_stale_workspaces_are_reading_workspaces_without_a_live_editor()
 test_pruning_the_registry_forgets_only_the_closed_reviews()
 test_a_new_worktree_is_trusted_for_claude_without_losing_the_others()
