@@ -94,11 +94,11 @@
         "protofetch-nix": "protofetch-nix"
       },
       "locked": {
-        "lastModified": 1793007289,
-        "narHash": "sha256-hCsmnMmM8sYXDEP+LubxKGwkYM7rSIzqbV/B5CfzDi0=",
+        "lastModified": 1793021972,
+        "narHash": "sha256-L2w4gbyKNj3xqSTkWZoZQAuvX/u9eoBOAEP/sRPug3c=",
         "ref": "refs/heads/main",
-        "rev": "1df8e31dc9086998613eec81f5bc6c0db3cd64ed",
-        "revCount": 89,
+        "rev": "73318ca319dba12bde988a7ccea75fdb3dfe4e3a",
+        "revCount": 90,
         "type": "git",
         "url": "ssh://git@github.com/FlakM/nix-coralogix-private"
       },
@@ -203,11 +203,11 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1792758818,
-        "narHash": "sha256-PTDTIX0VOCcwSXHRkfCcMbP7V4Njs94wr6h88rtmsBU=",
+        "lastModified": 1793172511,
+        "narHash": "sha256-TaHyN56tOvy0TPePUnFY5YBCwZSGm2Wvv5plvMYmXcA=",
         "owner": "FlakM",
         "repo": "eink-bridge",
-        "rev": "455e47a0ca40e5a9875ad43d68f57214c51cfaf1",
+        "rev": "b9c5f2e085fdebadf60781fe89529440bf22b4df",
         "type": "github"
       },
       "original": {
