@@ -209,8 +209,57 @@ in
       onboarding = false
 
       [theme]
-      # follow kitty's ANSI palette so dark/light/sunlight switching carries over
-      name = "terminal"
+      # Follow the system light/dark appearance by switching herdr's own UI
+      # palette, like neovim swaps colorschemes. kitty reports the appearance
+      # (terminal color-scheme protocol, DEC mode 2031), so no reload or
+      # SIGWINCH nudge is needed when ~/.config/kitty/switch.sh flips.
+      name = "one-dark"
+      auto_switch = true
+      dark_name = "one-dark"
+      light_name = "one-light"
+
+      # Tokens copied from the kitty palettes in kitty.nix (dark: GitHub Dark
+      # High Contrast, light: Bluloco) so herdr's chrome matches the terminal.
+      # sidebar_bg stays "reset" so the sidebar keeps the kitty background.
+      [theme.custom.dark]
+      panel_bg = "#161b22"
+      active_row_bg = "#21262d"
+      selection_bg = "#264f78"
+      surface0 = "#21262d"
+      surface1 = "#30363d"
+      surface_dim = "#161b22"
+      overlay0 = "#6e7681"
+      overlay1 = "#8b949e"
+      text = "#e6edf3"
+      subtext0 = "#b1bac4"
+      accent = "#79c0ff"
+      blue = "#79c0ff"
+      green = "#56d364"
+      yellow = "#e3b341"
+      red = "#ff7b72"
+      mauve = "#d2a8ff"
+      teal = "#56d4dd"
+      peach = "#ffa198"
+
+      [theme.custom.light]
+      panel_bg = "#ececec"
+      active_row_bg = "#e6e5e5"
+      selection_bg = "#daf1ff"
+      surface0 = "#e6e5e5"
+      surface1 = "#cccccc"
+      surface_dim = "#ececec"
+      overlay0 = "#929396"
+      overlay1 = "#676a77"
+      text = "#373a41"
+      subtext0 = "#676a77"
+      accent = "#275fe4"
+      blue = "#275fe4"
+      green = "#23974a"
+      yellow = "#df631c"
+      red = "#d52753"
+      mauve = "#823ff1"
+      teal = "#27618d"
+      peach = "#df631c"
 
       [terminal]
       default_shell = "${pkgs.zsh}/bin/zsh"

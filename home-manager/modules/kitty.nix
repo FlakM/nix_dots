@@ -150,10 +150,11 @@ in
         done
       }
 
-      herdr_theme() {
-        # herdr's "terminal" theme re-reads the host palette on SIGWINCH
-        pkill -WINCH -x herdr 2>/dev/null || true
-      }
+      # herdr needs no nudge here: kitty reports the palette/appearance change
+      # to attached apps (DEC mode 2031) and herdr's auto_switch picks the
+      # matching dark/light UI theme. `pkill -WINCH -x herdr` used to target the
+      # server (comm "herdr"), not the client (".herdr-wrapped"), so it was a
+      # no-op anyway.
 
       claude_theme() {
         # ~/.claude.json: absent/null = dark, "light" = light
@@ -176,7 +177,6 @@ in
         echo "prefer-dark" > ~/.config/current-color_scheme 2>/dev/null || true
         { cat "${aerc}/stylesets/dark" > "${aerc}/stylesets/current"; } 2>/dev/null || true
         tmux_theme dark
-        herdr_theme
         claude_theme dark
       }
 
@@ -186,7 +186,6 @@ in
         echo "prefer-light" > ~/.config/current-color_scheme 2>/dev/null || true
         { cat "${aerc}/stylesets/light" > "${aerc}/stylesets/current"; } 2>/dev/null || true
         tmux_theme light
-        herdr_theme
         claude_theme light
       }
 
@@ -196,7 +195,6 @@ in
         echo "prefer-sunlight" > ~/.config/current-color_scheme 2>/dev/null || true
         { cat "${aerc}/stylesets/light" > "${aerc}/stylesets/current"; } 2>/dev/null || true
         tmux_theme sunlight
-        herdr_theme
         claude_theme light
       }
 
