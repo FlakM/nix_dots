@@ -58,6 +58,8 @@
 
     ./opencode-proxy.nix
 
+    ./ntfy.nix
+
     inputs.nixos-hardware.nixosModules.hardkernel-odroid-h3
   ];
 

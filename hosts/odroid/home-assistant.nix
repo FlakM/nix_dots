@@ -33,6 +33,122 @@ let
       ];
     }
   ];
+  # The upstream integration only serves/registers this standalone frontend file.
+  # NixOS customLovelaceModules does both, without HACS or a custom Python backend.
+  wledControlCard = pkgs.runCommand "wled-control-card-1.4.5" {
+    pname = "wled-control-card";
+    version = "1.4.5";
+    src = pkgs.fetchurl {
+      url = "https://raw.githubusercontent.com/Si-Al-Ri/wled-control-card/de5dee3df44466c1345746676202d124322c986b/custom_components/wled_control_card/dist/wled-control-card.js";
+      hash = "sha256-OtYjgfBQDLFc4Yp6Ha3SwtgZtVk3roMbIqtREIEKcpU=";
+    };
+  } ''
+    install -Dm444 "$src" "$out/wled-control-card.js"
+  '';
+  kitchenLight = "light.kuchnia_blat_b";
+  kitchenDashboard = (pkgs.formats.yaml { }).generate "kitchen-lighting.yaml" {
+    title = "Kuchnia";
+    views = [
+      {
+        title = "Blat B";
+        path = "blat-b";
+        icon = "mdi:led-strip-variant";
+        cards = [
+          {
+            type = "conditional";
+            conditions = [
+              { condition = "state"; entity = kitchenLight; state = "unknown"; }
+            ];
+            card = {
+              type = "markdown";
+              content = ''
+                ## Dodaj oświetlenie blatu B
+
+                1. Włącz sprawdzony zestaw WLED i ustal jego aktualny adres IP.
+                2. W **Ustawienia → Urządzenia i usługi → Dodaj integrację → WLED**
+                   dodaj kontroler o MAC **88:57:21:B1:A2:DC**.
+                   Ostatni znany adres to **192.168.0.4** — sprawdź go przed dodaniem.
+                3. Przypisz urządzenie do obszaru **Kuchnia**, nazwij **Kuchnia blat B**
+                   i ustaw identyfikator głównej encji światła na `${kitchenLight}`.
+
+                Tylko strefa B. Bez harmonogramów i automatycznego włączania.
+                Przycisk IO33 działa lokalnie, niezależnie od Home Assistanta.
+              '';
+            };
+          }
+          {
+            type = "conditional";
+            conditions = [
+              { condition = "state"; entity = kitchenLight; state_not = "unknown"; }
+            ];
+            card = {
+              type = "custom:wled-control-card";
+              entity = kitchenLight;
+              name = "Blat B";
+              show_segments = false;
+              show_brightness = true;
+              show_color_pickers = true;
+              show_favorites = false;
+              show_favorite_presets = true;
+              favorite_presets = [ ];
+              show_presets = true;
+              show_palettes = false;
+              show_playlist = false;
+              show_effects = false;
+              show_speed = false;
+              show_intensity = false;
+              dynamic_brightness_color = true;
+              extra_controls = [ ];
+            };
+          }
+          {
+            type = "conditional";
+            conditions = [
+              { condition = "state"; entity = kitchenLight; state = "unavailable"; }
+            ];
+            card = {
+              type = "markdown";
+              content = "**Brak połączenia ze strefą B.** Sprawdź zasilanie kontrolera, Wi-Fi i jego aktualny adres IP. Podczas montażu pozostaw zasilacz odłączony.";
+            };
+          }
+          {
+            type = "markdown";
+            content = ''
+              **Pierwsze uruchomienie:** zacznij od małej jasności na sprawdzonym zestawie.
+              Nie zwiększaj limitu prądu przed doborem zabezpieczenia i próbą całej taśmy w profilu.
+              RGB+CCT ma ograniczenia sterowania w HA; presety bieli dodamy po ich sprawdzeniu w WLED.
+            '';
+          }
+        ];
+      }
+      {
+        title = "Podstawowe";
+        path = "podstawowe";
+        icon = "mdi:lightbulb-outline";
+        cards = [
+          {
+            type = "markdown";
+            content = "Podstawowe sterowanie B, bez zależności od dodatkowej karty WLED. Jeśli światło nie zostało jeszcze dodane, skorzystaj z instrukcji w zakładce **Blat B**.";
+          }
+          {
+            type = "conditional";
+            conditions = [
+              { condition = "state"; entity = kitchenLight; state_not = "unknown"; }
+            ];
+            card = {
+              type = "tile";
+              entity = kitchenLight;
+              name = "Blat B";
+              icon = "mdi:led-strip-variant";
+              tap_action.action = "more-info";
+              icon_tap_action.action = "toggle";
+              features = [ { type = "light-brightness"; } ];
+            };
+          }
+        ];
+      }
+    ];
+  };
   frigateComponent = pkgs.home-assistant-custom-components.frigate.overridePythonAttrs (old: {
     patches = (old.patches or [ ]) ++ [ ./frigate-notification-auth.patch ];
     doCheck = false;
@@ -70,6 +186,7 @@ in
     enable = true;
     openFirewall = true;
     package = homeAssistantPackage;
+    customLovelaceModules = [ wledControlCard ];
     lovelaceConfig = {
       title = "Camera controls";
       views = [
@@ -145,6 +262,7 @@ in
       # media integrations
       "jellyfin"
       # device integrations
+      "wled"
       "webostv"
       "brother"
       "xiaomi_miio"
@@ -208,6 +326,13 @@ in
         filename = "ui-lovelace.yaml";
         title = "Camera controls";
         icon = "mdi:cctv";
+        show_in_sidebar = true;
+      };
+      lovelace.dashboards.kitchen-lighting = {
+        mode = "yaml";
+        filename = "${kitchenDashboard}";
+        title = "Kuchnia";
+        icon = "mdi:led-strip-variant";
         show_in_sidebar = true;
       };
       automation = [

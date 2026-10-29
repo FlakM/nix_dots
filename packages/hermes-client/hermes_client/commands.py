@@ -1,9 +1,11 @@
-"""Command surface shared by the TUI input line and the CLI helpers.
+"""Command surface shared by the CLI helpers and programmatic callers.
 
 The words are the Slack control surface from PLATFORM.md, so muscle memory
-carries over between Slack and ``hermes-tui``.  ``run_command`` is pure apart
-from the API calls: it returns a :class:`Result`, never touches a UI, and
-converts every exception into a readable line.
+carries over between Slack, ``hermes`` and ``hermes-tui``.  The Rust TUI in
+``packages/hermes-tui`` mirrors these verbs in its command bar;
+``run_command`` remains here for scripts and tests.  It is pure apart from the
+API calls: it returns a :class:`Result`, never touches a UI, and converts every
+exception into a readable line.
 """
 
 from __future__ import annotations

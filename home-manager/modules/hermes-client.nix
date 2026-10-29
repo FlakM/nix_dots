@@ -2,6 +2,7 @@
 
 let
   hermes-client = pkgs.callPackage ../../packages/hermes-client.nix { };
+  hermes-tui = pkgs.callPackage ../../packages/hermes-tui.nix { };
 in
 {
   # Token for the agent HTTP API on the odroid. The value lives in
@@ -13,13 +14,14 @@ in
   };
 
   # Client config read by `hermes`, `hermes-tui` and `hermes-bridge`
-  # (see packages/hermes-client/hermes_client/config.py).
+  # (see packages/hermes-client/hermes_client/config.py and
+  # packages/hermes-tui/src/config.rs).
   xdg.configFile."hermes/client.env".text = ''
     HERMES_API_URL=https://hermes.house.flakm.com
     HERMES_API_TOKEN_FILE=${config.sops.secrets.hermes_api_token.path}
   '';
 
-  home.packages = [ hermes-client ];
+  home.packages = [ hermes-client hermes-tui ];
 
   # SSE → notify-send + ~/.cache/hermes/bridge.json for the quickshell panel.
   # The bridge retries forever with exponential backoff, so a missing token or

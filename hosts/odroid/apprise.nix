@@ -19,7 +19,10 @@ let
   # subscription on the phone as well.
   # Podcast descriptions come out of RSS as HTML. Treat incoming bodies as
   # HTML so Apprise converts them for the target instead of forwarding tags.
-  ntfyUrl = "ntfys://ntfy.sh/audiobookshelf?format=markdown";
+  # Target is the self-hosted private ntfy (hosts/odroid/ntfy.nix); the
+  # `agents` user credential is injected at preStart time from sops so the
+  # password never ends up in the nix store (see systemd.services below).
+  ntfyHost = "ntfy.house.flakm.com";
 in
 {
   # Apprise API is a notification fan-out service. Audiobookshelf posts a
@@ -81,8 +84,9 @@ in
   # module restarts ABS and re-applies the settings. ABS posts to the relay,
   # not straight to Apprise.
   systemd.services.audiobookshelf.preStart = lib.mkAfter ''
+    agentsPassword="$(</run/secrets/ntfy_agents_password)"
     ${pkgs.python3}/bin/python3 ${./audiobookshelf-notify.py} \
-      '${relayUrl}' '${ntfyUrl}'
+      '${relayUrl}' "ntfys://agents:''${agentsPassword}@${ntfyHost}/audiobookshelf?format=markdown"
   '';
 
   # Adds the per-episode `storii://play?id=...&episodeId=...` button to episode
